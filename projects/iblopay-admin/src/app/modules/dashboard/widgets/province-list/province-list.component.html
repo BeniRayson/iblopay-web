@@ -1,0 +1,21 @@
+<div class="province-list">
+    <div class="list-header" *ngIf="totalLabel">
+        <span class="total-label">{{ totalLabel }}</span>
+        <span class="total-value" [class]="colorClass">{{ total | number:'1.0-0':'fr' }} Fbu</span>
+        <span class="change-badge" [class]="getChangeClass()" *ngIf="change !== 0">
+            {{ change > 0 ? '+' : '' }}{{ change }}%
+        </span>
+    </div>
+
+    <div class="province-items">
+        <div class="province-item" *ngFor="let item of data">
+            <span class="province-name">
+                <span class="emoji">{{ item.emoji || '📍' }}</span>
+                {{ item.name }}
+            </span>
+            <span class="province-amount" [class]="item.color || getColorClass(item.amount)">
+                {{ formatAmount(item.amount) }}
+            </span>
+        </div>
+    </div>
+</div>

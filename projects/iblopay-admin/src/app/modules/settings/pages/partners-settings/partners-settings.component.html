@@ -1,0 +1,437 @@
+<div class="settings-page">
+  <!-- HEADER -->
+  <header class="page-header">
+   
+    <div class="page-header__title">
+      <span class="icon">🌍</span>
+      <div>
+        <h1>Gestion des Partenaires</h1>
+        <p>Banques, opérateurs télécom, fournisseurs de services, marchands, institutions.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stats-bar__item">
+      <span class="stats-bar__value">{{ totalPartners }}</span>
+      <span class="stats-bar__label">Total</span>
+    </div>
+    <div class="stats-bar__item">
+      <span class="stats-bar__value">{{ activePartners }}</span>
+      <span class="stats-bar__label">Actifs</span>
+    </div>
+    <div class="stats-bar__item">
+      <span class="stats-bar__value">{{ inactivePartners }}</span>
+      <span class="stats-bar__label">Inactifs</span>
+    </div>
+    <div class="stats-bar__item">
+      <span class="stats-bar__value">{{ totalCategories }}</span>
+      <span class="stats-bar__label">Catégories</span>
+    </div>
+    <div class="stats-bar__item">
+      <span class="stats-bar__value">{{ totalTransactions | number:'1.0-0' }}</span>
+      <span class="stats-bar__label">Transactions</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <nav class="tabs-nav">
+    <button class="tab-btn" *ngFor="let tab of tabs"
+            [class.active]="activeTab === tab.key"
+            (click)="setActiveTab(tab.key)">
+      <span class="tab-btn__icon">{{ tab.icon }}</span>
+      {{ tab.label }}
+      <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
+    </button>
+  </nav>
+
+  <!-- ============ TOUS LES PARTENAIRES ============ -->
+  <div *ngIf="activeTab === 'tous'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">Tous les Partenaires</h3>
+      <div class="panel__actions">
+        <span class="panel__badge">{{ filteredPartners.length }} partenaires</span>
+        <button class="btn btn--primary" (click)="addPartner()">+ Ajouter</button>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="partner-filters">
+      <input type="text" class="filter-input" placeholder="Rechercher un partenaire..." [(ngModel)]="searchTerm" (input)="applyFilters()" />
+      <select class="filter-select" [(ngModel)]="categoryFilter" (change)="applyFilters()">
+        <option value="">Toutes les catégories</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+        <option value="">Tous les statuts</option>
+        <option value="active">Actif</option>
+        <option value="inactive">Inactif</option>
+        <option value="pending">En attente</option>
+        <option value="suspended">Suspendu</option>
+      </select>
+      <button class="btn btn--primary" (click)="applyFilters()">Filtrer</button>
+      <button class="btn btn--secondary" (click)="resetFilters()">Réinitialiser</button>
+    </div>
+
+    <div class="partner-grid">
+      <div class="partner-card" *ngFor="let partner of paginatedPartners">
+        <div class="partner-card__header">
+          <div class="partner-card__avatar">{{ partner.icon }}</div>
+          <div class="partner-card__info">
+            <h4>{{ partner.name }}</h4>
+            <span class="partner-card__category">{{ partner.category }}</span>
+          </div>
+          <span class="status-badge" [class]="getStatusBadgeClass(partner.status)">
+            {{ getStatusLabel(partner.status) }}
+          </span>
+        </div>
+        <div class="partner-card__body">
+          <div class="partner-card__row">
+            <span class="partner-card__label">Code</span>
+            <span class="partner-card__value">{{ partner.code }}</span>
+          </div>
+          <div class="partner-card__row">
+            <span class="partner-card__label">Contact</span>
+            <span class="partner-card__value">{{ partner.contact }}</span>
+          </div>
+          <div class="partner-card__row" *ngIf="partner.email">
+            <span class="partner-card__label">Email</span>
+            <span class="partner-card__value">{{ partner.email }}</span>
+          </div>
+          <div class="partner-card__row">
+            <span class="partner-card__label">Transactions</span>
+            <span class="partner-card__value">{{ partner.transactions | number:'1.0-0' }}</span>
+          </div>
+          <div class="partner-card__row" *ngIf="partner.commission">
+            <span class="partner-card__label">Commission</span>
+            <span class="partner-card__value partner-card__value--highlight">{{ partner.commission }}</span>
+          </div>
+        </div>
+        <div class="partner-card__footer">
+          <button class="btn btn--primary btn--sm" (click)="viewPartner(partner)">Voir</button>
+          <button class="btn btn--secondary btn--sm" (click)="editPartner(partner)">Modifier</button>
+          <button class="btn btn--sm" [class.btn--success]="partner.status !== 'active'" [class.btn--danger]="partner.status === 'active'" (click)="togglePartnerStatus(partner)">
+            {{ partner.status === 'active' ? 'Désactiver' : partner.status === 'pending' ? 'En attente' : 'Activer' }}
+          </button>
+          <button class="btn btn--danger btn--sm" (click)="deletePartner(partner)">Supprimer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="filteredPartners.length > 0">
+      <div class="pagination__info">
+        {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredPartners.length) }} sur {{ filteredPartners.length }}
+      </div>
+      <div class="pagination__controls">
+        <button class="btn btn--sm" (click)="previousPage()" [disabled]="currentPage === 1">‹</button>
+        <span class="pagination__page">{{ currentPage }} / {{ totalPages }}</span>
+        <button class="btn btn--sm" (click)="nextPage()" [disabled]="currentPage === totalPages">›</button>
+        <select class="pagination__size" [(ngModel)]="pageSize" (change)="applyFilters()">
+          <option [value]="6">6</option>
+          <option [value]="12">12</option>
+          <option [value]="24">24</option>
+          <option [value]="48">48</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PAR CATÉGORIE ============ -->
+  <div *ngIf="activeTab === 'categories'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">Partenaires par Catégorie</h3>
+      <span class="panel__badge">{{ categories.length }} catégories</span>
+    </div>
+
+    <div class="category-grid">
+      <div class="category-card" *ngFor="let category of categoryStats" (click)="filterByCategory(category.name)">
+        <div class="category-card__icon">{{ category.icon }}</div>
+        <div class="category-card__info">
+          <h4>{{ category.name }}</h4>
+          <span class="category-card__count">{{ category.count }} partenaire(s)</span>
+        </div>
+        <div class="category-card__stats">
+          <span class="category-card__stat category-card__stat--active">{{ category.active }} actif(s)</span>
+          <span class="category-card__stat category-card__stat--inactive">{{ category.inactive }} inactif(s)</span>
+        </div>
+        <div class="category-card__progress">
+          <div class="category-card__progress-bar" [style.width]="(category.active / category.count) * 100 + '%'"></div>
+        </div>
+        <span class="category-card__percent">{{ (category.active / category.count) * 100 | number:'1.0-0' }}% actif</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ INTÉGRATIONS ============ -->
+  <div *ngIf="activeTab === 'integrations'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">Intégrations & API</h3>
+      <span class="panel__badge">{{ activeIntegrations }} actives</span>
+    </div>
+
+    <div class="integration-grid">
+      <div class="integration-card" *ngFor="let integration of integrations">
+        <div class="integration-card__header">
+          <span class="integration-card__icon">{{ integration.icon }}</span>
+          <h4>{{ integration.name }}</h4>
+          <span class="status-badge" [class]="integration.active ? 'status-badge--success' : 'status-badge--danger'">
+            {{ integration.active ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
+        <div class="integration-card__body">
+          <div class="integration-card__row">
+            <span class="integration-card__label">Type</span>
+            <span class="integration-card__value">{{ integration.type }}</span>
+          </div>
+          <div class="integration-card__row">
+            <span class="integration-card__label">Version</span>
+            <span class="integration-card__value">{{ integration.version }}</span>
+          </div>
+          <div class="integration-card__row" *ngIf="integration.partner">
+            <span class="integration-card__label">Partenaire</span>
+            <span class="integration-card__value">{{ integration.partner }}</span>
+          </div>
+          <div class="integration-card__row" *ngIf="integration.endpoint">
+            <span class="integration-card__label">Endpoint</span>
+            <span class="integration-card__value integration-card__value--muted">{{ integration.endpoint }}</span>
+          </div>
+          <div class="integration-card__row" *ngIf="integration.lastSync">
+            <span class="integration-card__label">Dernière synchro</span>
+            <span class="integration-card__value">{{ integration.lastSync }}</span>
+          </div>
+        </div>
+        <div class="integration-card__footer">
+          <button class="btn btn--primary btn--sm" (click)="configureIntegration(integration)">Configurer</button>
+          <button class="btn btn--secondary btn--sm" (click)="testIntegration(integration)">Tester</button>
+          <button class="btn btn--sm" [class.btn--success]="!integration.active" [class.btn--danger]="integration.active" (click)="toggleIntegration(integration)">
+            {{ integration.active ? 'Désactiver' : 'Activer' }}
+          </button>
+          <button class="btn btn--warning btn--sm" (click)="syncIntegration(integration)" *ngIf="integration.active">Synchroniser</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COMMISSIONS ============ -->
+  <div *ngIf="activeTab === 'commissions'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">Commissions & Tarification</h3>
+      <span class="panel__badge">{{ commissionRules.length }} règles</span>
+    </div>
+
+    <div class="commission-grid">
+      <div class="commission-card" *ngFor="let rule of commissionRules">
+        <div class="commission-card__header">
+          <span class="commission-card__icon">{{ rule.icon }}</span>
+          <h4>{{ rule.partner }}</h4>
+          <span class="status-badge" [class]="rule.active ? 'status-badge--success' : 'status-badge--danger'">
+            {{ rule.active ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
+        <div class="commission-card__body">
+          <div class="commission-card__row">
+            <span class="commission-card__label">Type</span>
+            <span class="commission-card__value">{{ rule.type }}</span>
+          </div>
+          <div class="commission-card__row">
+            <span class="commission-card__label">Taux</span>
+            <span class="commission-card__value commission-card__value--highlight">{{ rule.rate }}</span>
+          </div>
+          <div class="commission-card__row" *ngIf="rule.minAmount">
+            <span class="commission-card__label">Montant min</span>
+            <span class="commission-card__value">{{ rule.minAmount | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="commission-card__row" *ngIf="rule.maxAmount">
+            <span class="commission-card__label">Montant max</span>
+            <span class="commission-card__value">{{ rule.maxAmount | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="commission-card__row" *ngIf="rule.category">
+            <span class="commission-card__label">Catégorie</span>
+            <span class="commission-card__value">{{ rule.category }}</span>
+          </div>
+        </div>
+        <div class="commission-card__footer">
+          <button class="btn btn--primary btn--sm" (click)="editCommission(rule)">Modifier</button>
+          <button class="btn btn--sm" [class.btn--success]="!rule.active" [class.btn--danger]="rule.active" (click)="toggleCommission(rule)">
+            {{ rule.active ? 'Désactiver' : 'Activer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODALES ============ -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal modal--animated modal--large" *ngIf="showModal">
+    <div class="modal__header">
+      <h2 class="modal__title">{{ modalTitle }}</h2>
+      <button class="modal__close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal__body modal__body--large">
+
+      <!-- Détail Partenaire -->
+      <div *ngIf="modalType === 'partner_detail'">
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Nom</span><span class="detail-value"><strong>{{ formData.name }}</strong></span></div>
+          <div class="detail-item"><span class="detail-label">Catégorie</span><span class="detail-value">{{ formData.category }}</span></div>
+          <div class="detail-item"><span class="detail-label">Code</span><span class="detail-value">{{ formData.code }}</span></div>
+          <div class="detail-item"><span class="detail-label">Contact</span><span class="detail-value">{{ formData.contact }}</span></div>
+          <div class="detail-item" *ngIf="formData.email"><span class="detail-label">Email</span><span class="detail-value">{{ formData.email }}</span></div>
+          <div class="detail-item"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="getStatusBadgeClass(formData.status)">{{ getStatusLabel(formData.status) }}</span></span></div>
+          <div class="detail-item"><span class="detail-label">Transactions</span><span class="detail-value">{{ formData.transactions | number:'1.0-0' }}</span></div>
+          <div class="detail-item" *ngIf="formData.commission"><span class="detail-label">Commission</span><span class="detail-value">{{ formData.commission }}</span></div>
+          <div class="detail-item" *ngIf="formData.apiKey"><span class="detail-label">Clé API</span><span class="detail-value detail-value--mono">{{ formData.apiKey }}</span></div>
+          <div class="detail-item" *ngIf="formData.webhook"><span class="detail-label">Webhook</span><span class="detail-value detail-value--mono">{{ formData.webhook }}</span></div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="editPartner(formData)">Modifier</button>
+        </div>
+      </div>
+
+      <!-- Édition Partenaire -->
+      <div *ngIf="modalType === 'partner_edit' || modalType === 'partner_add'">
+        <h3 class="modal__subtitle">{{ modalType === 'partner_add' ? 'Ajouter un partenaire' : 'Modifier ' + formData.name }}</h3>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Nom du partenaire *</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.name" placeholder="Nom du partenaire" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Catégorie *</label>
+              <select class="form-control" [(ngModel)]="formData.category">
+                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Code *</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.code" placeholder="Code unique" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Contact *</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.contact" placeholder="Numéro de téléphone" />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-control" [(ngModel)]="formData.email" placeholder="Email" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Commission</label>
+              <input type="text" class="form-control" [(ngModel)]="formData.commission" placeholder="Ex: 1.5% ou 500 BIF" />
+            </div>
+            <div class="form-group">
+              <label>Statut</label>
+              <select class="form-control" [(ngModel)]="formData.status">
+                <option value="active">Actif</option>
+                <option value="inactive">Inactif</option>
+                <option value="pending">En attente</option>
+                <option value="suspended">Suspendu</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Clé API</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.apiKey" placeholder="Clé API (générée automatiquement)" />
+          </div>
+          <div class="form-group">
+            <label>Webhook</label>
+            <input type="url" class="form-control" [(ngModel)]="formData.webhook" placeholder="https://api.partner.com/webhook" />
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Annuler</button>
+          <button class="btn btn--primary" (click)="savePartner()">Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- Configuration Intégration -->
+      <div *ngIf="modalType === 'integration_config'">
+        <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Endpoint API</label>
+            <input type="url" class="form-control" [(ngModel)]="formData.endpoint" placeholder="https://api.partner.com/v1" />
+          </div>
+          <div class="form-group">
+            <label>Clé API</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.apiKey" placeholder="Clé API" />
+          </div>
+          <div class="form-group">
+            <label>Version</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.version" placeholder="v1.0.0" />
+          </div>
+          <div class="form-check-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="formData.autoSync" />
+              <span>Synchronisation automatique</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="formData.webhookEnabled" />
+              <span>Webhook activé</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="saveIntegration()">Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- Commission Edit -->
+      <div *ngIf="modalType === 'commission_edit'">
+        <h3 class="modal__subtitle">Commission - {{ formData.partner }}</h3>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Type</label>
+            <select class="form-control" [(ngModel)]="formData.type">
+              <option value="fixe">Fixe</option>
+              <option value="pourcentage">Pourcentage</option>
+              <option value="mixte">Mixte</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Taux</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.rate" placeholder="Ex: 1.5% ou 500 BIF" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Montant minimum (BIF)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.minAmount" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>Montant maximum (BIF)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.maxAmount" placeholder="0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Catégorie</label>
+            <select class="form-control" [(ngModel)]="formData.category">
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="saveCommission()">Sauvegarder</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ TOASTS ============ -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      <span class="toast__icon">{{ t.type === 'success' ? '✓' : t.type === 'danger' ? '✗' : t.type === 'warning' ? '⚠' : 'ℹ' }}</span>
+      {{ t.message }}
+      <button class="toast__close" (click)="dismissToast(t.id)">×</button>
+    </div>
+  </div>
+</div>

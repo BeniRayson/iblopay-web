@@ -1,0 +1,219 @@
+<div class="commission-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-header__title">Historique des Commissions</h1>
+      <p class="page-header__subtitle">Consultez et filtrez l'ensemble des commissions générées</p>
+    </div>
+    <div class="page-header__right">
+      <div class="view-toggle">
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'agent'" (click)="onViewChange('agent')">
+          <i class="bi bi-person"></i> Agent
+        </button>
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'super_agent'" (click)="onViewChange('super_agent')">
+          <i class="bi bi-people"></i> Super Agent
+        </button>
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'admin'" (click)="onViewChange('admin')">
+          <i class="bi bi-shield"></i> Admin
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="filter-bar__row">
+      <div class="filter-group">
+        <label class="filter-label">Date début</label>
+        <input type="date" class="filter-input" [(ngModel)]="filter.dateFrom" (change)="onFilterChange()" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Date fin</label>
+        <input type="date" class="filter-input" [(ngModel)]="filter.dateTo" (change)="onFilterChange()" />
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Agent</label>
+        <select class="filter-input" [(ngModel)]="filter.agentId" (change)="onFilterChange()">
+          <option [ngValue]="null">Tous</option>
+          <option *ngFor="let a of agents" [ngValue]="a.agentId">{{ a.agentName }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Super Agent</label>
+        <select class="filter-input" [(ngModel)]="filter.superAgentId" (change)="onFilterChange()">
+          <option [ngValue]="null">Tous</option>
+          <option *ngFor="let sa of superAgents" [ngValue]="sa.superAgentId">{{ sa.superAgentName }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Statut</label>
+        <select class="filter-input" [(ngModel)]="filter.status" (change)="onFilterChange()">
+          <option *ngFor="let s of statuses" [ngValue]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Type</label>
+        <select class="filter-input" [(ngModel)]="filter.commissionType" (change)="onFilterChange()">
+          <option *ngFor="let t of types" [ngValue]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-bar__row filter-bar__row--actions">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" class="search-input" placeholder="Rechercher agent, référence..." [(ngModel)]="filter.search" (keyup.enter)="onSearch()" />
+      </div>
+      <button class="btn-clear" (click)="clearFilters()">
+        <i class="bi bi-x-circle"></i> Effacer les filtres
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <span>Chargement des commissions...</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card" *ngIf="!isLoading">
+    <div class="table-header">
+      <span class="table-count">{{ total }} commission(s) trouvée(s)</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="sortable" (click)="onSort('createdAt')">
+              Date <i class="bi" [class]="getSortIcon('createdAt')"></i>
+            </th>
+            <th class="sortable" (click)="onSort('agentName')">
+              Agent <i class="bi" [class]="getSortIcon('agentName')"></i>
+            </th>
+            <th>Transaction</th>
+            <th class="sortable" (click)="onSort('amount')">
+              Montant <i class="bi" [class]="getSortIcon('amount')"></i>
+            </th>
+            <th class="sortable" (click)="onSort('rate')">
+              Taux <i class="bi" [class]="getSortIcon('rate')"></i>
+            </th>
+            <th class="sortable" (click)="onSort('commissionType')">
+              Type <i class="bi" [class]="getSortIcon('commissionType')"></i>
+            </th>
+            <th class="sortable" (click)="onSort('status')">
+              Statut <i class="bi" [class]="getSortIcon('status')"></i>
+            </th>
+            <th class="sortable" (click)="onSort('creditedAt')">
+              Crédité le <i class="bi" [class]="getSortIcon('creditedAt')"></i>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of commissions" class="data-row" (click)="onRowClick(c)">
+            <td class="cell-date">{{ formatDate(c.createdAt) }}</td>
+            <td>
+              <div class="cell-agent">
+                <span class="cell-agent__name">{{ c.agentName }}</span>
+                <span class="cell-agent__super">{{ c.superAgentName }}</span>
+              </div>
+            </td>
+            <td class="cell-ref">{{ c.transactionReference }}</td>
+            <td class="cell-amount">{{ formatBif(c.amount) }}</td>
+            <td class="cell-rate">{{ c.rate }}%</td>
+            <td><span class="badge badge-type">{{ typeLabel(c.commissionType) }}</span></td>
+            <td><span class="badge" [ngClass]="getStatusClass(c.status)">{{ statusLabel(c.status) }}</span></td>
+            <td class="cell-date">{{ formatDateShort(c.creditedAt) }}</td>
+          </tr>
+          <tr *ngIf="commissions.length === 0">
+            <td colspan="8" class="empty-state">Aucune commission trouvée</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" [disabled]="page === 1" (click)="onPageChange(page - 1)">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <button class="page-btn" *ngFor="let p of pages" [class.page-btn--active]="p === page" (click)="onPageChange(p)">{{ p }}</button>
+      <button class="page-btn" [disabled]="page === totalPages" (click)="onPageChange(page + 1)">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Detail Panel Overlay -->
+  <div class="detail-overlay" [class.detail-overlay--visible]="detailVisible" (click)="closeDetail()"></div>
+  <div class="detail-panel" [class.detail-panel--visible]="detailVisible">
+    <div class="detail-panel__header">
+      <h3 class="detail-panel__title">Détail Commission</h3>
+      <button class="detail-panel__close" (click)="closeDetail()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="detail-panel__body" *ngIf="selectedCommission">
+      <div class="detail-section">
+        <div class="detail-field">
+          <span class="detail-field__label">ID Commission</span>
+          <span class="detail-field__value">{{ selectedCommission.commissionId }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Transaction</span>
+          <span class="detail-field__value detail-field__value--link">{{ selectedCommission.transactionReference }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">ID Transaction</span>
+          <span class="detail-field__value text-muted">{{ selectedCommission.transactionId }}</span>
+        </div>
+      </div>
+      <div class="detail-divider"></div>
+      <div class="detail-section">
+        <div class="detail-field">
+          <span class="detail-field__label">Agent</span>
+          <span class="detail-field__value">{{ selectedCommission.agentName }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Super Agent</span>
+          <span class="detail-field__value">{{ selectedCommission.superAgentName }}</span>
+        </div>
+      </div>
+      <div class="detail-divider"></div>
+      <div class="detail-section">
+        <div class="detail-field">
+          <span class="detail-field__label">Montant Commission</span>
+          <span class="detail-field__value detail-field__value--highlight">{{ formatBif(selectedCommission.amount) }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Taux</span>
+          <span class="detail-field__value">{{ selectedCommission.rate }}%</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Type</span>
+          <span class="detail-field__value">{{ typeLabel(selectedCommission.commissionType) }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Statut</span>
+          <span class="badge" [ngClass]="getStatusClass(selectedCommission.status)">{{ statusLabel(selectedCommission.status) }}</span>
+        </div>
+      </div>
+      <div class="detail-divider"></div>
+      <div class="detail-section">
+        <div class="detail-field">
+          <span class="detail-field__label">Source</span>
+          <span class="detail-field__value">{{ selectedCommission.sourceType }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Mode de Paiement</span>
+          <span class="detail-field__value">{{ selectedCommission.paymentMode }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Créée le</span>
+          <span class="detail-field__value">{{ formatDate(selectedCommission.createdAt) }}</span>
+        </div>
+        <div class="detail-field">
+          <span class="detail-field__label">Créditée le</span>
+          <span class="detail-field__value">{{ formatDateShort(selectedCommission.creditedAt) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

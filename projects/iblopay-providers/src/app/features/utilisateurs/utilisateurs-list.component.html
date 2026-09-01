@@ -1,0 +1,305 @@
+<div class="page-header">
+  <div>
+    <h1>Utilisateurs</h1>
+    <p *ngIf="vueActive === 'CITOYENS'">Citoyens ayant sollicité vos services — historique complet des demandes et paiements</p>
+    <p *ngIf="vueActive === 'COMPTES'">Comptes internes créés via les workflows — rôle et droits de chaque agent</p>
+  </div>
+</div>
+
+<div class="vue-tabs">
+  <button class="vue-tab" [class.active]="vueActive === 'CITOYENS'" (click)="changerVue('CITOYENS')">
+    <i class="fa-solid fa-user-group"></i> Citoyens
+  </button>
+  <button class="vue-tab" [class.active]="vueActive === 'COMPTES'" (click)="changerVue('COMPTES')">
+    <i class="fa-solid fa-user-shield"></i> Comptes internes (staff)
+    <span class="vue-tab-count" *ngIf="comptes.length">{{ comptes.length }}</span>
+  </button>
+</div>
+
+<!-- ================================================================ -->
+<!-- VUE : CITOYENS                                                   -->
+<!-- ================================================================ -->
+<ng-container *ngIf="vueActive === 'CITOYENS'">
+
+<div class="toolbar">
+  <div class="search-box">
+    <i class="fa-solid fa-search"></i>
+    <input type="text" placeholder="Rechercher un nom, un téléphone..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
+  </div>
+  <div class="pagination-info" *ngIf="filtered.length > 0">
+    Affichage de <strong>{{ startIndex + 1 }}</strong> à <strong>{{ endIndex }}</strong> sur <strong>{{ filtered.length }}</strong> utilisateurs
+  </div>
+</div>
+
+<div class="card table-card" *ngIf="!isLoading">
+  <table class="data-table compact-table">
+    <thead>
+      <tr>
+        <th>Utilisateur</th>
+        <th>Téléphone</th>
+        <th>Demandes</th>
+        <th>Montant payé</th>
+        <th>En attente</th>
+        <th>Dernière demande</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of paginatedUtilisateurs">
+        <td class="user-cell">
+          <div class="user-avatar">{{ u.nom.charAt(0) }}</div>
+          <span class="user-name">{{ u.nom }}</span>
+        </td>
+        <td><span class="tel-text">{{ u.telephone }}</span></td>
+        <td><span class="count-badge">{{ u.nombreDemandes }}</span></td>
+        <td class="text-green font-bold">{{ u.montantTotalPaye | number }} BIF</td>
+        <td [class.text-orange]="u.montantEnAttente > 0" [class.font-bold]="u.montantEnAttente > 0">
+          {{ u.montantEnAttente | number }} BIF
+        </td>
+        <td class="date-text">{{ u.derniereDemande | date:'dd/MM/yyyy' }}</td>
+        <td class="text-right">
+          <button class="btn-action" (click)="ouvrirDetail(u)">
+            <i class="fa-solid fa-eye"></i> Détails
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PAGINATION CONTROLS -->
+  <div class="pagination-footer" *ngIf="totalPages > 1">
+    <button class="btn-page" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      <i class="fa-solid fa-chevron-left"></i> Précédent
+    </button>
+    <span class="page-indicator">Page {{ currentPage }} sur {{ totalPages }}</span>
+    <button class="btn-page" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+      Suivant <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </div>
+
+  <div class="empty-state" *ngIf="filtered.length === 0">Aucun utilisateur trouvé</div>
+</div>
+
+<!-- ============ PANNEAU DETAIL UTILISATEUR ============ -->
+<div class="detail-overlay" *ngIf="utilisateurSelectionne as u" (click)="fermerDetail()">
+  <div class="detail-panel" (click)="$event.stopPropagation()">
+    <div class="detail-header">
+      <div class="user-header">
+        <div class="user-avatar big">{{ u.nom.charAt(0) }}</div>
+        <div>
+          <div class="detail-nom">{{ u.nom }}</div>
+          <div class="detail-tel">{{ u.telephone }}</div>
+        </div>
+      </div>
+      <button class="btn-icon" (click)="fermerDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-value text-blue">{{ u.nombreDemandes }}</div>
+        <div class="summary-label">Demandes totales</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value text-green">{{ u.montantTotalPaye | number }}</div>
+        <div class="summary-label">BIF payés</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" [class.text-orange]="u.montantEnAttente > 0">{{ u.montantEnAttente | number }}</div>
+        <div class="summary-label">BIF en attente</div>
+      </div>
+    </div>
+
+    <div class="section-title">Historique des demandes</div>
+
+    <div class="demande-card" *ngFor="let d of u.demandes">
+      <div class="demande-card-head">
+        <div>
+          <div class="demande-ref">{{ d.numeroReference }}</div>
+          <div class="demande-service">{{ d.serviceNom }}</div>
+        </div>
+        <span class="badge" [ngClass]="statutClass(d.statut)">{{ statutLabel(d.statut) }}</span>
+      </div>
+
+      <div class="demande-meta">
+        <span><i class="fa-regular fa-calendar"></i> {{ d.dateSoumission | date:'dd/MM/yyyy' }}</span>
+        <span><i class="fa-solid fa-money-bill"></i> {{ d.montant | number }} BIF</span>
+        <span [class.text-green]="d.montantPaye" [class.text-red]="!d.montantPaye">
+          <i class="fa-solid" [class.fa-circle-check]="d.montantPaye" [class.fa-circle-exclamation]="!d.montantPaye"></i>
+          {{ d.montantPaye ? 'Payé' : 'Non payé' }}
+        </span>
+      </div>
+
+      <div class="demande-reponses" *ngIf="d.reponses && d.reponses.length > 0">
+        <div class="reponse-line" *ngFor="let r of d.reponses">
+          <span *ngIf="r.type !== 'FICHIER'">{{ r.label }} : <strong>{{ r.valeur }}</strong></span>
+          <span class="doc-chip" *ngIf="r.type === 'FICHIER'" (click)="voirDocument(r, d, u, $event)">
+            <i class="fa-solid fa-file-lines"></i> {{ r.label }} (Lettre administrative)
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VISIONNEUSE DE DOCUMENT ADMINISTRATIF ============ -->
+<div class="doc-viewer-overlay" *ngIf="documentActif" (click)="fermerDocument()">
+  <div class="doc-viewer admin-letter-container" (click)="$event.stopPropagation()">
+    <div class="doc-viewer-header">
+      <span><i class="fa-solid fa-file-shield text-blue"></i> Document Officiel / Pièce Administrative</span>
+      <button class="btn-icon" (click)="fermerDocument()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <div class="doc-viewer-body admin-letter">
+      <!-- En-tête de la lettre -->
+      <div class="letter-header">
+        <div class="republic-info">
+          <span>RÉPUBLIQUE DU BURUNDI</span>
+          <span>MINISTÈRE DES SERVICES PUBLICS</span>
+          <span class="sub-dept">DIRECTION GÉNÉRALE DES AFFAIRES CIVILES</span>
+        </div>
+        <div class="letter-badge-ref">
+          <strong>Réf :</strong> {{ documentActif.demande.numeroReference }}<br>
+          <strong>Date :</strong> {{ documentActif.demande.dateSoumission | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+
+      <div class="letter-title">
+        <h2>ATTESTATION DE SOUMISSION ADMINISTRATIVE</h2>
+        <p class="letter-subtitle">Certificat officiel de traitement de dossier</p>
+      </div>
+
+      <!-- Corps de la lettre -->
+      <div class="letter-body">
+        <p>Je soussigné, Directeur des Services Administratifs, certifie par la présente que le citoyen :</p>
+        
+        <div class="citizen-box">
+          <div><strong>Nom complet :</strong> {{ documentActif.utilisateur.nom }}</div>
+          <div><strong>Téléphone de contact :</strong> {{ documentActif.utilisateur.telephone }}</div>
+          <div><strong>Service sollicité :</strong> {{ documentActif.demande.serviceNom }}</div>
+          <div><strong>Montant associé :</strong> {{ documentActif.demande.montant | number }} BIF ({{ documentActif.demande.montantPaye ? 'Réglé en totalité' : 'En attente de paiement' }})</div>
+        </div>
+
+        <p>Le dossier référencé ci-dessus a été soumis et consigné dans nos registres officiels par le biais de la plateforme numérique sécurisée IBLOPAY POS.</p>
+        <p>La présente attestation est délivrée à l'intéressé(e) pour servir et valoir ce que de droit.</p>
+      </div>
+
+      <!-- Signature et cachet -->
+      <div class="letter-footer">
+        <div class="official-stamp">
+          <div class="stamp-circle">
+            <span>OFFICIEL</span>
+            <small>IBLOPAY VERIFIED</small>
+          </div>
+        </div>
+        <div class="signature-block">
+          <p>Fait à Bujumbura, le {{ '2026-08-20' | date:'dd/MM/yyyy' }}</p>
+          <p class="signataire">Le Responsable des Opérations</p>
+          <div class="signature-line"></div>
+        </div>
+      </div>
+
+      <app-iblopay-watermark></app-iblopay-watermark>
+    </div>
+  </div>
+</div>
+
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- VUE : COMPTES INTERNES (STAFF DES WORKFLOWS)                     -->
+<!-- ================================================================ -->
+<ng-container *ngIf="vueActive === 'COMPTES'">
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Rechercher un nom, un rôle, une étape..." [(ngModel)]="searchTermComptes" (ngModelChange)="applyFiltersComptes()" />
+    </div>
+    <div class="pagination-info" *ngIf="comptesFiltres.length > 0">
+      <strong>{{ comptesFiltres.length }}</strong> compte(s) — créés depuis la configuration des workflows
+    </div>
+  </div>
+
+  <div class="card table-card" *ngIf="!isLoadingComptes">
+    <table class="data-table compact-table">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Rôle</th>
+          <th>Étape assignée</th>
+          <th>Adresse</th>
+          <th>Téléphone</th>
+          <th>Droits</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of comptesFiltres" (click)="ouvrirDetailCompte(c)" class="clickable-row">
+          <td class="user-cell">
+            <div class="user-avatar">{{ c.prenom.charAt(0) }}{{ c.nom.charAt(0) }}</div>
+            <span class="user-name">{{ c.prenom }} {{ c.nom }}</span>
+          </td>
+          <td><span class="badge badge-purple">{{ c.role }}</span></td>
+          <td>{{ c.etapeNom || '-' }}</td>
+          <td class="text-muted-cell">{{ c.adresse }}</td>
+          <td><span class="tel-text">{{ c.telephone }}</span></td>
+          <td>
+            <span class="droit-mini" *ngFor="let d of c.droits.slice(0, 2)">{{ labelDroit(d) }}</span>
+            <span class="droit-mini droit-mini-plus" *ngIf="c.droits.length > 2">+{{ c.droits.length - 2 }}</span>
+          </td>
+          <td><span class="badge" [ngClass]="c.statut === 'ACTIF' ? 'badge-green' : 'badge-red'">{{ c.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span></td>
+          <td class="text-right" (click)="$event.stopPropagation()">
+            <button class="btn-action" (click)="toggleStatutCompte(c, $event)">
+              <i class="fa-solid fa-power-off"></i> {{ c.statut === 'ACTIF' ? 'Désactiver' : 'Activer' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="empty-state" *ngIf="comptesFiltres.length === 0">Aucun compte trouvé. Créez-en depuis la page Workflows.</div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoadingComptes">
+    <i class="fa-solid fa-spinner fa-spin"></i> Chargement des comptes...
+  </div>
+
+  <!-- ============ MODAL DÉTAIL D'UN COMPTE ============ -->
+  <div class="modal-overlay" *ngIf="compteSelectionne" (click)="fermerDetailCompte()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-wrapper">
+          <div class="user-avatar user-avatar-lg">{{ compteSelectionne.prenom.charAt(0) }}{{ compteSelectionne.nom.charAt(0) }}</div>
+          <div>
+            <h3>{{ compteSelectionne.prenom }} {{ compteSelectionne.nom }}</h3>
+            <span class="service-code">{{ compteSelectionne.role }} — {{ compteSelectionne.etapeNom }}</span>
+          </div>
+        </div>
+        <button class="btn-close" (click)="fermerDetailCompte()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Adresse</span><span class="detail-value">{{ compteSelectionne.adresse }}</span></div>
+          <div class="detail-item"><span class="detail-label">Téléphone</span><span class="detail-value">{{ compteSelectionne.telephone }}</span></div>
+          <div class="detail-item" *ngIf="compteSelectionne.email"><span class="detail-label">Email</span><span class="detail-value">{{ compteSelectionne.email }}</span></div>
+          <div class="detail-item"><span class="detail-label">Identifiant de connexion</span><span class="detail-value font-mono">{{ compteSelectionne.identifiantConnexion }}</span></div>
+          <div class="detail-item"><span class="detail-label">Statut</span><span class="badge" [ngClass]="compteSelectionne.statut === 'ACTIF' ? 'badge-green' : 'badge-red'">{{ compteSelectionne.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span></div>
+        </div>
+        <div class="droits-detail">
+          <div class="droits-detail-title">Ce que ce compte a le droit de voir / faire une fois connecté :</div>
+          <div class="droits-detail-list">
+            <span class="droit-chip" *ngFor="let d of compteSelectionne.droits">{{ labelDroit(d) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="reinitialiserMotDePasse(compteSelectionne)">
+          <i class="fa-solid fa-key"></i> Réinitialiser le mot de passe
+        </button>
+        <button class="btn-secondary" (click)="fermerDetailCompte()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+</ng-container>

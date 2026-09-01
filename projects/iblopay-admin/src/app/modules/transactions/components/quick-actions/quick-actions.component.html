@@ -1,0 +1,13 @@
+<div class="quick-actions">
+  <div class="quick-actions__label">Actions rapides</div>
+  <div class="quick-actions__row">
+    <button class="quick-actions__btn quick-actions__btn--primary"
+            *ngFor="let action of actions"
+            [class.quick-actions__btn--outline-green]="action.type === 'outline-green'"
+            [class.quick-actions__btn--plain]="action.type === 'plain'">
+      <span class="quick-actions__btn-label">{{ action.label }}</span>
+      <span class="quick-actions__btn-subtitle" *ngIf="action.subtitle">{{ action.subtitle }}</span>
+      <span class="quick-actions__badge" *ngIf="action.badge">{{ action.badge }}</span>
+    </button>
+  </div>
+</div>

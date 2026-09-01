@@ -1,0 +1,68 @@
+<div class="page-header">
+  <div>
+    <h1>Paramètres</h1>
+    <p>Profil de l'institution et préférences de notification</p>
+  </div>
+</div>
+
+<div class="notification" *ngIf="saved">
+  <i class="fa-solid fa-circle-check"></i> Paramètres enregistrés avec succès.
+</div>
+
+<div class="card">
+  <div class="card-title">Profil de l'institution</div>
+  <div class="form-grid">
+    <div class="field">
+      <label>Nom de l'institution</label>
+      <input type="text" [(ngModel)]="institution.nom" />
+    </div>
+    <div class="field">
+      <label>Code</label>
+      <input type="text" [(ngModel)]="institution.code" />
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="institution.email" />
+    </div>
+    <div class="field">
+      <label>Téléphone</label>
+      <input type="text" [(ngModel)]="institution.telephone" />
+    </div>
+    <div class="field field-full">
+      <label>Adresse</label>
+      <input type="text" [(ngModel)]="institution.adresse" />
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Notifications</div>
+
+  <label class="toggle-row">
+    <div>
+      <div class="toggle-label">Email à chaque nouvelle demande</div>
+      <div class="toggle-desc">Recevez un email dès qu'une nouvelle demande est soumise</div>
+    </div>
+    <input type="checkbox" [(ngModel)]="notifications.emailNouvelleDemande" />
+  </label>
+
+  <label class="toggle-row">
+    <div>
+      <div class="toggle-label">SMS au changement de statut</div>
+      <div class="toggle-desc">Alertez vos agents par SMS lors des changements d'étape</div>
+    </div>
+    <input type="checkbox" [(ngModel)]="notifications.smsChangementStatut" />
+  </label>
+
+  <label class="toggle-row">
+    <div>
+      <div class="toggle-label">Rapport hebdomadaire par email</div>
+      <div class="toggle-desc">Recevez un résumé des performances chaque semaine</div>
+    </div>
+    <input type="checkbox" [(ngModel)]="notifications.emailRapportHebdo" />
+  </label>
+</div>
+
+<div class="form-actions">
+  <button class="btn-primary" (click)="enregistrer()"><i class="fa-solid fa-check"></i> Enregistrer les modifications</button>
+</div>

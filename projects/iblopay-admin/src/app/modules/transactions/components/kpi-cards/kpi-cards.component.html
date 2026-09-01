@@ -1,0 +1,29 @@
+<div class="kpi-grid">
+  <div class="kpi-card" *ngFor="let card of cards">
+    <!-- Label -->
+    <div class="kpi-card__label">{{ card.label }}</div>
+
+    <!-- Valeur -->
+    <div class="kpi-card__value">{{ card.value }}</div>
+
+    <!-- Footer -->
+    <div class="kpi-card__footer">
+      <!-- Delta -->
+      <span class="kpi-card__delta" [class.kpi-card__delta--increase]="card.deltaType === 'increase'"
+        [class.kpi-card__delta--decrease]="card.deltaType === 'decrease'"
+        [class.kpi-card__delta--neutral]="card.deltaType === 'neutral'">
+        {{ card.delta }}
+      </span>
+
+      <!-- Extra -->
+      <span class="kpi-card__extra" *ngIf="card.extra">
+        {{ card.extra }}
+      </span>
+
+      <!-- Lien -->
+      <a class="kpi-card__link" *ngIf="card.link" href="#">
+        {{ card.link }}
+      </a>
+    </div>
+  </div>
+</div>

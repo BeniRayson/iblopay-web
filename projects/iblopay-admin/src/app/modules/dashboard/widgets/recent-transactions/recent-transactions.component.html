@@ -1,0 +1,40 @@
+<!-- src/app/modules/dashboard/widgets/recent-transactions/recent-transactions.component.html -->
+<div class="recent-transactions">
+    <div class="transactions-header">
+        <h3>Transactions récentes</h3>
+        <a href="#" class="view-all">Voir tout</a>
+    </div>
+
+    <div *ngIf="transactions.length === 0" class="empty-state">
+        <p>Aucune transaction récente</p>
+    </div>
+
+    <table *ngIf="transactions.length > 0" class="transactions-table">
+        <thead>
+            <tr>
+                <th>Référence</th>
+                <th>Agent</th>
+                <th>Montant</th>
+                <th>Type</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let transaction of transactions">
+                <td class="ref">{{ transaction.id }}</td>
+                <td>{{ transaction.agent }}</td>
+                <td class="amount">{{ formatCurrency(transaction.amount) }}</td>
+                <td>
+                    <span class="badge type-badge" [class]="transaction.type">
+                        {{ getTransactionTypeLabel(transaction.type) }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge status-badge" [class]="getStatusClass(transaction.status)">
+                        {{ getTransactionStatusLabel(transaction.status) }}
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

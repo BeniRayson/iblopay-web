@@ -1,0 +1,23 @@
+<!-- src/app/modules/dashboard/widgets/activity-feed/activity-feed.component.html -->
+<div class="activity-feed">
+    <div class="feed-header">
+        <h3>Activités récentes</h3>
+        <a href="#" class="view-all">Voir tout</a>
+    </div>
+
+    <div class="feed-list">
+        <div *ngIf="activities.length === 0" class="empty-state">
+            <p>Aucune activité récente</p>
+        </div>
+
+        <div *ngFor="let activity of activities" class="feed-item">
+            <div class="activity-icon" [class]="getActivityTypeClass(activity.type)">
+                <span>{{ getActivityIcon(activity.type) }}</span>
+            </div>
+            <div class="activity-content">
+                <p>{{ activity.message }}</p>
+                <span class="activity-time">{{ getTimeAgo(activity.date) }}</span>
+            </div>
+        </div>
+    </div>
+</div>

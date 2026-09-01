@@ -1,0 +1,96 @@
+@use '../../core/shared' as *;
+
+.page-header { @include page-header; }
+.btn-primary { @include btn-primary; text-decoration: none; }
+.btn-outline { @include btn-outline; text-decoration: none; }
+.header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.formulaires-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.formulaire-card {
+  @include card;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+  }
+
+  /* Formulaire publié : bien visible dans la grille */
+  &.est-publie {
+    border-left: 3px solid var(--accent-green);
+  }
+}
+
+.fc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  i {
+    font-size: 18px;
+    color: var(--accent-blue);
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  i { font-size: 10px; }
+}
+
+/* Statut PUBLIE : fond plein pour ressortir nettement de la liste */
+.badge-green {
+  background: var(--accent-green);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(var(--accent-green-rgb), 0.2);
+}
+.badge-orange { background: rgba(var(--accent-orange-rgb), 0.15); color: var(--accent-orange); }
+.badge-gray { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); }
+
+.fc-nom {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.fc-service {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.fc-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+
+  i { margin-right: 5px; color: var(--text-muted); }
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+
+  i { font-size: 32px; margin-bottom: 12px; display: block; }
+}

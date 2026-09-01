@@ -1,0 +1,439 @@
+<div class="settings-page">
+  <header class="page-header">
+  
+    <div class="page-header__title">
+      
+      <div>
+        <h1>Gestion des Wallets</h1>
+        <p>Wallet Client, Agent et Super Agent — Solde, transactions et historique.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Statistiques globales -->
+  <div class="stats-grid">
+    <div class="stat-card" (click)="setActiveTab('client')" [class.active]="activeTab === 'client'">
+      <span class="stat-card__icon">👤</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getTotalSolde('client') | number:'1.0-0' }} BIF</span>
+        <span class="stat-card__label">Clients</span>
+        <span class="stat-card__sub">{{ getWalletsByType('client').length }} wallets</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setActiveTab('agent')" [class.active]="activeTab === 'agent'">
+      <span class="stat-card__icon">🧑‍💼</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getTotalSolde('agent') | number:'1.0-0' }} BIF</span>
+        <span class="stat-card__label">Agents</span>
+        <span class="stat-card__sub">{{ getWalletsByType('agent').length }} wallets</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setActiveTab('super-agent')" [class.active]="activeTab === 'super-agent'">
+      <span class="stat-card__icon">👨‍💼</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getTotalSolde('super-agent') | number:'1.0-0' }} BIF</span>
+        <span class="stat-card__label">Super Agents</span>
+        <span class="stat-card__sub">{{ getWalletsByType('super-agent').length }} wallets</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--total">
+      <span class="stat-card__icon">🏦</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getTotalGeneral() | number:'1.0-0' }} BIF</span>
+        <span class="stat-card__label">Total Général</span>
+        <span class="stat-card__sub">Tous les wallets confondus</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <nav class="tabs">
+    <button type="button" class="tab" [class.active]="activeTab === 'client'" (click)="setActiveTab('client')">
+      <span class="tab__icon">👤</span>
+      Clients
+      <span class="tab__count">{{ getWalletsByType('client').length }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab === 'agent'" (click)="setActiveTab('agent')">
+      <span class="tab__icon">🧑‍💼</span>
+      Agents
+      <span class="tab__count">{{ getWalletsByType('agent').length }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab === 'super-agent'" (click)="setActiveTab('super-agent')">
+      <span class="tab__icon">👨‍💼</span>
+      Super Agents
+      <span class="tab__count">{{ getWalletsByType('super-agent').length }}</span>
+    </button>
+  </nav>
+
+  <!-- Liste des wallets -->
+  <div class="table-wrapper">
+    <!-- CLIENTS -->
+    <div *ngIf="activeTab === 'client'" class="table-container">
+      <div class="table-header">
+        <h3>Liste des Clients ({{ getWalletsByType('client').length }})</h3>
+        <div class="table-actions">
+          <button type="button" class="btn-sm" (click)="openGlobalAction('client', 'crediter')">➕ Créditer tous</button>
+          <button type="button" class="btn-sm btn-danger" (click)="openGlobalAction('client', 'debiter')">➖ Débiter tous</button>
+          <button type="button" class="btn-sm" (click)="openGlobalAction('client', 'historique')">📋 Historique</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="wallet-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>ID Wallet</th>
+              <th>Solde</th>
+              <th>KYC</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let w of getPaginatedWallets('client')">
+              <td>
+                <div class="cell-identity">
+                  <span class="avatar" [style.background]="getAvatarColor(w.userId)">{{ getInitials(w.userNom) }}</span>
+                  <div>
+                    <div class="cell-name">{{ w.userNom }}</div>
+                    <div class="cell-sub">{{ w.userId }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="cell-mono">{{ w.id }}</td>
+              <td>
+                <div class="solde-display-small">
+                  <span class="solde-display-small__value">{{ w.solde | number:'1.0-0' }} BIF</span>
+                </div>
+              </td>
+              <td><span class="kyc-badge">Niveau {{ getKycLevel(w.userId) }}</span></td>
+              <td><span class="statut-badge" [class]="'statut-' + w.statut">{{ getStatutLabel(w.statut) }}</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button type="button" class="btn-icon" title="Voir historique" (click)="openWalletHistory(w)">📋</button>
+                  <button type="button" class="btn-icon" title="Créditer" (click)="openWalletAction(w, 'crediter')">➕</button>
+                  <button type="button" class="btn-icon" title="Débiter" (click)="openWalletAction(w, 'debiter')">➖</button>
+                  <button type="button" class="btn-icon" [class.btn-icon--danger]="w.statut !== 'bloque'" title="Bloquer" (click)="openWalletAction(w, 'bloquer')">🔒</button>
+                  <button type="button" class="btn-icon" [class.btn-icon--success]="w.statut === 'bloque'" title="Débloquer" (click)="openWalletAction(w, 'debloquer')">🔓</button>
+                  <button type="button" class="btn-icon btn-icon--avatar" title="Voir solde" (click)="openWalletAction(w, 'solde')">👤</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination Clients -->
+      <div class="pagination" *ngIf="getTotalPages('client') > 1">
+        <div class="pagination__controls">
+          <button type="button" class="pagination__btn" (click)="previousPage('client')" [disabled]="getCurrentPage('client') === 1">‹</button>
+          <span class="pagination__info">Page {{ getCurrentPage('client') }} / {{ getTotalPages('client') }}</span>
+          <button type="button" class="pagination__btn" (click)="nextPage('client')" [disabled]="getCurrentPage('client') === getTotalPages('client')">›</button>
+        </div>
+        <span class="pagination__total">{{ getWalletsByType('client').length }} wallets</span>
+      </div>
+    </div>
+
+    <!-- AGENTS -->
+    <div *ngIf="activeTab === 'agent'" class="table-container">
+      <div class="table-header">
+        <h3>Liste des Agents ({{ getWalletsByType('agent').length }})</h3>
+        <div class="table-actions">
+          <button type="button" class="btn-sm" (click)="openGlobalAction('agent', 'crediter')">➕ Créditer tous</button>
+          <button type="button" class="btn-sm btn-danger" (click)="openGlobalAction('agent', 'debiter')">➖ Débiter tous</button>
+          <button type="button" class="btn-sm" (click)="openGlobalAction('agent', 'historique')">📋 Historique</button>
+          <button type="button" class="btn-sm" (click)="openGlobalAction('agent', 'reattribuer')">🔄 Réattribuer</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="wallet-table">
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>ID Wallet</th>
+              <th>e-Money</th>
+              <th>Cash</th>
+              <th>Total</th>
+              <th>Performance</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let w of getPaginatedWallets('agent')">
+              <td>
+                <div class="cell-identity">
+                  <span class="avatar" [style.background]="getAvatarColor(w.userId)">{{ getInitials(w.userNom) }}</span>
+                  <div>
+                    <div class="cell-name">{{ w.userNom }}</div>
+                    <div class="cell-sub">{{ w.userId }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="cell-mono">{{ w.id }}</td>
+              <td class="cell-mono">{{ w.soldeEMoney | number:'1.0-0' }} BIF</td>
+              <td class="cell-mono">{{ w.soldeCash | number:'1.0-0' }} BIF</td>
+              <td class="cell-mono"><strong>{{ w.solde | number:'1.0-0' }} BIF</strong></td>
+              <td>
+                <div class="perf-bar">
+                  <span [style.width.%]="getAgentPerformance(w.userId)"></span>
+                </div>
+                <span class="cell-sub">{{ getAgentPerformance(w.userId) }}%</span>
+              </td>
+              <td><span class="statut-badge" [class]="'statut-' + w.statut">{{ getStatutLabel(w.statut) }}</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button type="button" class="btn-icon" title="Voir historique" (click)="openWalletHistory(w)">📋</button>
+                  <button type="button" class="btn-icon" title="Créditer" (click)="openWalletAction(w, 'crediter')">➕</button>
+                  <button type="button" class="btn-icon" title="Débiter" (click)="openWalletAction(w, 'debiter')">➖</button>
+                  <button type="button" class="btn-icon" [class.btn-icon--danger]="w.statut !== 'bloque'" title="Bloquer" (click)="openWalletAction(w, 'bloquer')">🔒</button>
+                  <button type="button" class="btn-icon" [class.btn-icon--success]="w.statut === 'bloque'" title="Débloquer" (click)="openWalletAction(w, 'debloquer')">🔓</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination Agents -->
+      <div class="pagination" *ngIf="getTotalPages('agent') > 1">
+        <div class="pagination__controls">
+          <button type="button" class="pagination__btn" (click)="previousPage('agent')" [disabled]="getCurrentPage('agent') === 1">‹</button>
+          <span class="pagination__info">Page {{ getCurrentPage('agent') }} / {{ getTotalPages('agent') }}</span>
+          <button type="button" class="pagination__btn" (click)="nextPage('agent')" [disabled]="getCurrentPage('agent') === getTotalPages('agent')">›</button>
+        </div>
+        <span class="pagination__total">{{ getWalletsByType('agent').length }} wallets</span>
+      </div>
+    </div>
+
+    <!-- SUPER AGENTS -->
+    <div *ngIf="activeTab === 'super-agent'" class="table-container">
+      <div class="table-header">
+        <h3>Liste des Super Agents ({{ getWalletsByType('super-agent').length }})</h3>
+        <div class="table-actions">
+          <button type="button" class="btn-sm" (click)="openGlobalAction('super-agent', 'distribution')">📤 Distribuer</button>
+          <button type="button" class="btn-sm" (click)="openGlobalAction('super-agent', 'reception')">📥 Réception</button>
+          <button type="button" class="btn-sm" (click)="openGlobalAction('super-agent', 'historique')">📋 Historique</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="wallet-table">
+          <thead>
+            <tr>
+              <th>Super Agent</th>
+              <th>ID Wallet</th>
+              <th>Solde Distribution</th>
+              <th>Nb Agents</th>
+              <th>Performance</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let w of getPaginatedWallets('super-agent')">
+              <td>
+                <div class="cell-identity">
+                  <span class="avatar" [style.background]="getAvatarColor(w.userId)">{{ getInitials(w.userNom) }}</span>
+                  <div>
+                    <div class="cell-name">{{ w.userNom }}</div>
+                    <div class="cell-sub">{{ w.userId }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="cell-mono">{{ w.id }}</td>
+              <td class="cell-mono">{{ w.soldeDistribution | number:'1.0-0' }} BIF</td>
+              <td>{{ getNbAgentsForSuper(w.userId) }}</td>
+              <td>
+                <div class="perf-bar">
+                  <span [style.width.%]="getSuperPerformance(w.userId)"></span>
+                </div>
+                <span class="cell-sub">{{ getSuperPerformance(w.userId) }}%</span>
+              </td>
+              <td><span class="statut-badge" [class]="'statut-' + w.statut">{{ getStatutLabel(w.statut) }}</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button type="button" class="btn-icon" title="Voir historique" (click)="openWalletHistory(w)">📋</button>
+                  <button type="button" class="btn-icon" title="Distribuer" (click)="openWalletAction(w, 'distribution')">📤</button>
+                  <button type="button" class="btn-icon" title="Réception" (click)="openWalletAction(w, 'reception')">📥</button>
+                  <button type="button" class="btn-icon" [class.btn-icon--danger]="w.statut !== 'bloque'" title="Bloquer" (click)="openWalletAction(w, 'bloquer')">🔒</button>
+                  <button type="button" class="btn-icon" [class.btn-icon--success]="w.statut === 'bloque'" title="Débloquer" (click)="openWalletAction(w, 'debloquer')">🔓</button>
+                  <button type="button" class="btn-icon btn-icon--avatar" title="Voir solde" (click)="openWalletAction(w, 'solde')">👤</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Pagination Super Agents -->
+      <div class="pagination" *ngIf="getTotalPages('super-agent') > 1">
+        <div class="pagination__controls">
+          <button type="button" class="pagination__btn" (click)="previousPage('super-agent')" [disabled]="getCurrentPage('super-agent') === 1">‹</button>
+          <span class="pagination__info">Page {{ getCurrentPage('super-agent') }} / {{ getTotalPages('super-agent') }}</span>
+          <button type="button" class="pagination__btn" (click)="nextPage('super-agent')" [disabled]="getCurrentPage('super-agent') === getTotalPages('super-agent')">›</button>
+        </div>
+        <span class="pagination__total">{{ getWalletsByType('super-agent').length }} wallets</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE SOLDE AVEC AVATAR -->
+  <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
+  <div class="modal modal--solde" *ngIf="modalOpen && modalAction === 'solde'">
+    <div class="modal__header">
+      <h2>💰 Solde - {{ selectedWallet?.userNom }}</h2>
+      <button type="button" class="close-btn" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="solde-detail-card">
+        <div class="solde-detail-card__header">
+          <div class="solde-detail-card__avatar" [style.background]="getAvatarColor(selectedWallet?.userId || '')">
+            {{ getInitials(selectedWallet?.userNom || '') }}
+          </div>
+          <div class="solde-detail-card__info">
+            <div class="solde-detail-card__title">{{ selectedWallet?.userNom }}</div>
+            <div class="solde-detail-card__sub">{{ selectedWallet?.id }}</div>
+          </div>
+          <span class="statut-badge" [class]="'statut-' + selectedWallet?.statut">{{ getStatutLabel(selectedWallet?.statut || 'actif') }}</span>
+        </div>
+        <div class="solde-detail-card__body">
+          <div class="solde-detail-card__main">
+            <span class="solde-detail-card__label">Solde total</span>
+            <span class="solde-detail-card__value">{{ selectedWallet?.solde | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="solde-detail-card__details" *ngIf="selectedWallet?.type === 'agent'">
+            <div class="solde-detail-card__detail-item">
+              <span class="solde-detail-card__detail-label">💰 e-Money</span>
+              <span class="solde-detail-card__detail-value">{{ selectedWallet?.soldeEMoney | number:'1.0-0' }} BIF</span>
+            </div>
+            <div class="solde-detail-card__detail-item">
+              <span class="solde-detail-card__detail-label">💵 Cash</span>
+              <span class="solde-detail-card__detail-value">{{ selectedWallet?.soldeCash | number:'1.0-0' }} BIF</span>
+            </div>
+          </div>
+          <div class="solde-detail-card__details" *ngIf="selectedWallet?.type === 'super-agent'">
+            <div class="solde-detail-card__detail-item">
+              <span class="solde-detail-card__detail-label">📤 Distribution</span>
+              <span class="solde-detail-card__detail-value">{{ selectedWallet?.soldeDistribution | number:'1.0-0' }} BIF</span>
+            </div>
+          </div>
+          <div class="solde-detail-card__footer">
+            <span class="solde-detail-card__date">Créé le : {{ selectedWallet?.dateCreation }}</span>
+            <span class="solde-detail-card__date">Dernière activité : {{ selectedWallet?.derniereTransaction | date:'short' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn-primary" (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- MODALE ACTIONS -->
+  <div class="modal-overlay" *ngIf="modalOpen && modalAction !== 'solde'" (click)="closeModal()"></div>
+  <div class="modal" *ngIf="modalOpen && modalAction !== 'solde'">
+    <div class="modal__header">
+      <h2>{{ modalTitle }}</h2>
+      <button type="button" class="close-btn" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="wallet-info" *ngIf="selectedWallet">
+        <div class="wallet-info__item">
+          <span class="wallet-info__label">Wallet</span>
+          <span class="wallet-info__value">{{ selectedWallet.id }}</span>
+        </div>
+        <div class="wallet-info__item">
+          <span class="wallet-info__label">Utilisateur</span>
+          <span class="wallet-info__value">{{ selectedWallet.userNom }}</span>
+        </div>
+        <div class="wallet-info__item" *ngIf="modalAction !== 'historique' && modalAction !== 'bloquer' && modalAction !== 'debloquer'">
+          <span class="wallet-info__label">Solde actuel</span>
+          <span class="wallet-info__value">{{ selectedWallet.solde | number:'1.0-0' }} BIF</span>
+        </div>
+        <div class="wallet-info__item" *ngIf="modalAction === 'bloquer' || modalAction === 'debloquer'">
+          <span class="wallet-info__label">Statut actuel</span>
+          <span class="wallet-info__value"><span class="statut-badge" [class]="'statut-' + selectedWallet.statut">{{ getStatutLabel(selectedWallet.statut) }}</span></span>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="modalAction === 'historique' || modalAction === 'historique_global'">
+        <div class="history-preview" *ngIf="historiqueTransactions.length > 0; else noHistory">
+          <div class="history-item" *ngFor="let t of historiqueTransactions">
+            <span class="history-item__date">{{ t.date }}</span>
+            <span class="history-item__type" [class]="'type-' + t.type">{{ t.typeLabel }}</span>
+            <span class="history-item__montant" [class]="t.montant.startsWith('+') ? 'pos' : 'neg'">{{ t.montant }}</span>
+            <span class="history-item__desc">{{ t.description }}</span>
+          </div>
+        </div>
+        <ng-template #noHistory>
+          <p class="text-center cell-sub">Aucune transaction pour le moment.</p>
+        </ng-template>
+      </div>
+
+      <div class="form-group" *ngIf="modalAction === 'crediter' || modalAction === 'debiter'">
+        <label>Montant (BIF)</label>
+        <input type="number" [(ngModel)]="montant" class="form-control" placeholder="0" min="0" step="100" />
+      </div>
+      <div class="form-group" *ngIf="modalAction === 'crediter' || modalAction === 'debiter'">
+        <label>Description</label>
+        <input type="text" [(ngModel)]="descriptionTxt" class="form-control" placeholder="Motif de l'opération" />
+      </div>
+
+      <div class="form-group" *ngIf="modalAction === 'bloquer'">
+        <label>Motif du blocage</label>
+        <input type="text" [(ngModel)]="descriptionTxt" class="form-control" placeholder="Raison du blocage" />
+      </div>
+      <div class="form-group" *ngIf="modalAction === 'debloquer'">
+        <label>Motif du déblocage</label>
+        <input type="text" [(ngModel)]="descriptionTxt" class="form-control" placeholder="Raison du déblocage" />
+      </div>
+
+      <div class="form-group" *ngIf="modalAction === 'distribution'">
+        <label>Montant à distribuer (BIF)</label>
+        <input type="number" [(ngModel)]="montant" class="form-control" placeholder="0" min="0" step="100" />
+      </div>
+      <div class="form-group" *ngIf="modalAction === 'distribution'">
+        <label>Agent destinataire</label>
+        <select [(ngModel)]="agentDestinataire" class="form-control">
+          <option *ngFor="let a of agentsList" [value]="a.id">{{ a.nom }} - {{ a.telephone }}</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="modalAction === 'reception'">
+        <label>Montant reçu (BIF)</label>
+        <input type="number" [(ngModel)]="montant" class="form-control" placeholder="0" min="0" step="100" />
+      </div>
+      <div class="form-group" *ngIf="modalAction === 'reception'">
+        <label>Source</label>
+        <input type="text" [(ngModel)]="descriptionTxt" class="form-control" placeholder="Provenance des fonds" />
+      </div>
+
+      <div class="form-group" *ngIf="modalAction === 'reattribuer'">
+        <label>Montant à réattribuer (BIF)</label>
+        <input type="number" [(ngModel)]="montant" class="form-control" placeholder="0" min="0" step="100" />
+      </div>
+      <div class="form-group" *ngIf="modalAction === 'reattribuer'">
+        <label>Agent source</label>
+        <select [(ngModel)]="agentSource" class="form-control">
+          <option *ngFor="let a of agentsList" [value]="a.id">{{ a.nom }} - {{ a.telephone }}</option>
+        </select>
+      </div>
+      <div class="form-group" *ngIf="modalAction === 'reattribuer'">
+        <label>Agent destinataire</label>
+        <select [(ngModel)]="agentDestinataire" class="form-control">
+          <option *ngFor="let a of agentsList" [value]="a.id">{{ a.nom }} - {{ a.telephone }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn-secondary" (click)="closeModal()">Annuler</button>
+      <button type="button" class="btn-primary" *ngIf="modalAction !== 'historique' && modalAction !== 'historique_global'" (click)="confirmModal()">Confirmer</button>
+      <button type="button" class="btn-primary" *ngIf="modalAction === 'historique' || modalAction === 'historique_global'" (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      {{ t.message }}
+      <button type="button" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

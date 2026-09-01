@@ -1,0 +1,38 @@
+// src/app/modules/auth/two-factor-auth/two-factor-auth.component.scss
+@import '../forgot-password/forgot-password.component.scss';
+
+.resend-container {
+  text-align: center;
+  margin-top: 24px;
+  
+  p {
+    font-size: 13px;
+    color: $text-muted;
+    
+    strong {
+      color: $primary-light;
+    }
+  }
+}
+
+.btn-resend {
+  background: none;
+  border: none;
+  color: $primary-light;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+  font-family: inherit;
+  
+  &:hover {
+    color: $primary;
+    text-decoration: underline;
+  }
+  
+  &:disabled {
+    color: $text-muted;
+    cursor: not-allowed;
+  }
+}

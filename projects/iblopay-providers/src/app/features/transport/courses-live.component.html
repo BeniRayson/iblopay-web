@@ -1,0 +1,217 @@
+<div class="page-header">
+  <div>
+    <h1>Courses en temps réel</h1>
+    <p>Suivez les courses de bus et de taxis, assignez les véhicules disponibles</p>
+  </div>
+  <div class="live-indicator"><span class="live-dot"></span> Mise à jour en direct</div>
+</div>
+
+<div class="stats-inline">
+  <div class="stat-item">
+    <span class="stat-num text-purple">{{ enCoursCount }}</span>
+    <span class="stat-label">En cours</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num text-orange">{{ enAttenteCount }}</span>
+    <span class="stat-label">En attente</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num text-green">{{ termineesAujourdhui }}</span>
+    <span class="stat-label">Terminées</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num text-blue">{{ formatBIF(revenuTotalCourses) }}</span>
+    <span class="stat-label">Revenu encaissé</span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <select [(ngModel)]="filtreType" (ngModelChange)="onFiltreChange()">
+    <option value="">Tous les types</option>
+    <option value="BUS">Bus</option>
+    <option value="TAXI">Taxi</option>
+  </select>
+  <select [(ngModel)]="filtreStatut" (ngModelChange)="onFiltreChange()">
+    <option value="">Tous les statuts</option>
+    <option value="DEMANDE">Demande reçue</option>
+    <option value="ACCEPTEE">Véhicule assigné</option>
+    <option value="EN_COURS">En cours</option>
+    <option value="TERMINEE">Terminée</option>
+    <option value="ANNULEE">Annulée</option>
+  </select>
+  <span class="toolbar-count" *ngIf="filtered.length > 0">{{ filtered.length }} course(s)</span>
+</div>
+
+<div class="courses-grid" *ngIf="!isLoading">
+  <div class="course-card" *ngFor="let c of filteredPagines" (click)="ouvrirDetail(c)">
+    <div class="course-header">
+      <div class="course-type-icon" [ngClass]="c.type === 'BUS' ? 'icon-bus' : 'icon-taxi'">
+        <i class="fa-solid" [class.fa-bus]="c.type === 'BUS'" [class.fa-taxi]="c.type === 'TAXI'"></i>
+      </div>
+      <div class="course-ref">
+        <div class="ref-num">{{ c.numeroReference }}</div>
+        <div class="ref-time">Il y a {{ minutesEcoulees(c.dateDemande) }} min</div>
+      </div>
+      <span class="badge" [ngClass]="statutClass(c.statut)">{{ statutLabel(c.statut) }}</span>
+    </div>
+
+    <div class="course-trajet">
+      <div class="trajet-point"><i class="fa-solid fa-circle point-depart"></i> {{ c.depart }}</div>
+      <div class="trajet-line"></div>
+      <div class="trajet-point"><i class="fa-solid fa-location-dot point-arrivee"></i> {{ c.destination }}</div>
+    </div>
+
+    <div class="course-progress" *ngIf="c.statut === 'EN_COURS'">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="c.progression"></div>
+      </div>
+      <span class="progress-label">{{ c.progression }}%</span>
+    </div>
+
+    <div class="course-infos">
+      <div><i class="fa-solid fa-user"></i> {{ c.clientNom }}</div>
+      <div><i class="fa-solid fa-car"></i> {{ nomVehicule(c.vehiculeId) }}</div>
+      <div><i class="fa-solid fa-id-card"></i> {{ nomChauffeur(c.chauffeurId) }}</div>
+      <div class="montant-paye"><i class="fa-solid fa-money-bill-wave"></i> {{ c.prix | number }} BIF</div>
+    </div>
+
+    <div class="course-actions" (click)="$event.stopPropagation()">
+      <ng-container *ngIf="c.statut !== 'TERMINEE' && c.statut !== 'ANNULEE'">
+        <button class="btn-outline-sm" *ngIf="c.statut === 'DEMANDE'" (click)="ouvrirAssignation(c, $event)">
+          <i class="fa-solid fa-car-side"></i> Assigner un véhicule
+        </button>
+        <button class="btn-outline-sm" *ngIf="c.statut === 'ACCEPTEE'" (click)="demarrerCourse(c, $event)">
+          <i class="fa-solid fa-play"></i> Démarrer
+        </button>
+        <button class="btn-outline-sm btn-green-sm" *ngIf="c.statut === 'EN_COURS'" (click)="terminerCourse(c, $event)">
+          <i class="fa-solid fa-flag-checkered"></i> Terminer
+        </button>
+        <button class="btn-icon btn-red" (click)="annulerCourse(c, $event)" title="Annuler"><i class="fa-solid fa-xmark"></i></button>
+      </ng-container>
+      <button class="btn-outline-sm btn-voir-carte" (click)="ouvrirDetail(c)">
+        <i class="fa-solid fa-map-location-dot"></i> Voir sur la carte
+      </button>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filtered.length === 0">Aucune course trouvée</div>
+</div>
+
+<div class="pagination-container" *ngIf="!isLoading && filtered.length > 0">
+  <span class="pagination-info">
+    Affichage de {{ ((currentPage - 1) * pageSize) + 1 }} à {{ (currentPage * pageSize) > filtered.length ? filtered.length : (currentPage * pageSize) }} sur {{ filtered.length }} courses
+  </span>
+  <div class="pagination-buttons">
+    <button class="btn-page" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      <i class="fa-solid fa-chevron-left"></i> Précédent
+    </button>
+    <span class="page-indicator">Page {{ currentPage }} / {{ totalPages }}</span>
+    <button class="btn-page" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+      Suivant <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</div>
+
+<!-- ============ MODAL ASSIGNATION VÉHICULE ============ -->
+<div class="modal-overlay" *ngIf="showAssignationModal" (click)="fermerAssignation()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="courseAAssigner as c">
+    <div class="modal-header">
+      <h3>Assigner un véhicule — {{ c.numeroReference }}</h3>
+      <button class="btn-close" (click)="fermerAssignation()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">{{ c.depart }} → {{ c.destination }} ({{ c.distanceKm }} km)</p>
+      <div class="field">
+        <label>Véhicule disponible <span class="required">*</span></label>
+        <select [(ngModel)]="vehiculeChoisiId">
+          <option [ngValue]="null">Sélectionnez un véhicule...</option>
+          <option *ngFor="let v of vehiculesDisponibles(c.type)" [ngValue]="v.id">{{ v.matricule }} — {{ v.marqueModele }} ({{ nomChauffeur(v.chauffeurId) }})</option>
+        </select>
+        <p class="field-hint" *ngIf="vehiculesDisponibles(c.type).length === 0">Aucun véhicule disponible pour ce type actuellement.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerAssignation()">Annuler</button>
+      <button class="btn-primary" (click)="confirmerAssignation()"><i class="fa-solid fa-check"></i> Assigner</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DÉTAIL / SUIVI EN TEMPS RÉEL (design épuré) ============ -->
+<div class="modal-overlay" *ngIf="courseDetailAffichee" (click)="fermerDetail()">
+  <div class="modal-carte" (click)="$event.stopPropagation()" *ngIf="courseDetailAffichee as c">
+
+    <!-- En-tête -->
+    <div class="carte-header">
+      <div class="carte-header-left">
+        <div class="course-type-icon" [ngClass]="c.type === 'BUS' ? 'icon-bus' : 'icon-taxi'">
+          <i class="fa-solid" [class.fa-bus]="c.type === 'BUS'" [class.fa-taxi]="c.type === 'TAXI'"></i>
+        </div>
+        <div>
+          <div class="carte-ref">{{ c.numeroReference }}</div>
+          <div class="carte-sous-titre">{{ c.type === 'BUS' ? 'Bus' : 'Taxi' }}</div>
+        </div>
+      </div>
+      <span class="badge" [ngClass]="statutClass(c.statut)">{{ statutLabel(c.statut) }}</span>
+      <button class="btn-close" (click)="fermerDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Trajet avec suivi -->
+    <div class="carte-section">
+      <div class="route-visual">
+        <div class="route-point route-depart">
+          <div class="route-point-dot dot-depart"></div>
+          <div class="route-point-label">{{ c.depart }}</div>
+        </div>
+
+        <div class="route-track">
+          <div class="route-track-fill" [style.width.%]="c.progression"></div>
+          <div class="route-vehicule-marker" [style.left.%]="c.progression" *ngIf="c.statut === 'EN_COURS' || c.statut === 'TERMINEE'">
+            <i class="fa-solid" [class.fa-bus]="c.type === 'BUS'" [class.fa-taxi]="c.type === 'TAXI'"></i>
+          </div>
+        </div>
+
+        <div class="route-point route-arrivee">
+          <div class="route-point-dot dot-arrivee"></div>
+          <div class="route-point-label">{{ c.destination }}</div>
+        </div>
+      </div>
+
+      <div class="route-progress-info" *ngIf="c.statut === 'EN_COURS'">
+        <span><i class="fa-solid fa-gauge-high"></i> Progression : <strong>{{ c.progression }}%</strong></span>
+        <span><i class="fa-solid fa-clock"></i> Temps restant estimé : <strong>~{{ tempsRestantEstime(c) }} min</strong></span>
+      </div>
+      <div class="route-progress-info" *ngIf="c.statut === 'TERMINEE'">
+        <span class="text-green"><i class="fa-solid fa-circle-check"></i> Trajet terminé en <strong>{{ dureeTotale(c) }} min</strong></span>
+      </div>
+      <div class="route-progress-info" *ngIf="c.statut === 'DEMANDE' || c.statut === 'ACCEPTEE'">
+        <span class="text-muted"><i class="fa-solid fa-hourglass-half"></i> En attente du démarrage du trajet</span>
+      </div>
+    </div>
+
+    <!-- Montant -->
+    <div class="carte-montant">
+      <span><i class="fa-solid fa-money-bill-wave"></i> {{ c.statut === 'TERMINEE' ? 'Montant payé' : 'Montant à payer' }}</span>
+      <strong>{{ c.prix | number }} BIF</strong>
+    </div>
+
+    <!-- Détails, en lignes simples (pas de boîtes imbriquées) -->
+    <div class="carte-section">
+      <div class="detail-row"><span class="detail-key">Client</span><span class="detail-val">{{ c.clientNom }}</span></div>
+      <div class="detail-row"><span class="detail-key">Téléphone client</span><span class="detail-val">{{ c.clientTelephone }}</span></div>
+      <div class="detail-row"><span class="detail-key">Véhicule</span><span class="detail-val">{{ nomVehicule(c.vehiculeId) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Chauffeur</span><span class="detail-val">{{ nomChauffeur(c.chauffeurId) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Téléphone chauffeur</span><span class="detail-val">{{ telephoneChauffeur(c.chauffeurId) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Distance</span><span class="detail-val">{{ c.distanceKm }} km</span></div>
+      <div class="detail-row"><span class="detail-key">Demandée le</span><span class="detail-val">{{ c.dateDemande | date:'dd/MM/yyyy HH:mm' }}</span></div>
+      <div class="detail-row" *ngIf="c.dateDebut"><span class="detail-key">Démarrée le</span><span class="detail-val">{{ c.dateDebut | date:'dd/MM/yyyy HH:mm' }}</span></div>
+      <div class="detail-row" *ngIf="c.dateFin"><span class="detail-key">Terminée le</span><span class="detail-val">{{ c.dateFin | date:'dd/MM/yyyy HH:mm' }}</span></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetail()">Fermer</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,450 @@
+<div class="settings-page">
+  <!-- HEADER -->
+  <header class="page-header">
+    
+    <div class="page-header__title">
+      <span class="icon">📈</span>
+      <div>
+        <h1>Rapports & Business Intelligence</h1>
+        <p>Dashboard, rapports périodiques, exports et graphiques.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let kpi of kpiData">
+      <div class="kpi-card__icon" [style.background-color]="kpi.color">
+        {{ kpi.icon }}
+      </div>
+      <div class="kpi-card__content">
+        <span class="kpi-card__value">{{ kpi.value }}</span>
+        <span class="kpi-card__label">{{ kpi.label }}</span>
+        <span class="kpi-card__trend" [class]="kpi.trend">
+          {{ kpi.trend === 'up' ? '↑' : kpi.trend === 'down' ? '↓' : '→' }}
+          {{ kpi.change > 0 ? '+' : '' }}{{ kpi.change }}%
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-bar">
+    <div class="filters-bar__left">
+      <div class="filter-group">
+        <label>Période</label>
+        <select [(ngModel)]="filters.period" class="filter-select">
+          <option value="daily">Quotidien</option>
+          <option value="weekly">Hebdomadaire</option>
+          <option value="monthly">Mensuel</option>
+          <option value="yearly">Annuel</option>
+          <option value="custom">Personnalisé</option>
+        </select>
+      </div>
+      <div class="filter-group" *ngIf="filters.period === 'custom'">
+        <label>Du</label>
+        <input type="date" [(ngModel)]="filters.dateStart" class="filter-input" />
+      </div>
+      <div class="filter-group" *ngIf="filters.period === 'custom'">
+        <label>Au</label>
+        <input type="date" [(ngModel)]="filters.dateEnd" class="filter-input" />
+      </div>
+      <div class="filter-group">
+        <label>Catégorie</label>
+        <select [(ngModel)]="filters.category" class="filter-select">
+          <option value="all">Toutes</option>
+          <option value="Communications">Communications</option>
+          <option value="Mines">Mines</option>
+          <option value="Environnement">Environnement</option>
+          <option value="Éducation">Éducation</option>
+          <option value="Licences">Licences</option>
+          <option value="Transport">Transport</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Statut</label>
+        <select [(ngModel)]="filters.status" class="filter-select">
+          <option value="all">Tous</option>
+          <option value="collecte">Collectée</option>
+          <option value="transfert">En transfert</option>
+          <option value="valide">Validée</option>
+        </select>
+      </div>
+    </div>
+    <div class="filters-bar__right">
+      <button class="btn btn--primary" (click)="applyFilters()">🔍 Appliquer</button>
+      <button class="btn btn--secondary" (click)="resetFilters()">↺ Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  <div class="sections-grid">
+    <div class="section-card" *ngFor="let section of sections">
+      <div class="section-card__header" (click)="section.open = !section.open">
+        <span class="section-card__icon">{{ section.icon }}</span>
+        <span class="section-card__title">{{ section.title }}</span>
+        <span class="section-card__chevron" [class.open]="section.open">⌄</span>
+      </div>
+      <div class="section-card__body" *ngIf="section.open !== false">
+        <p class="section-card__desc" *ngIf="section.description">{{ section.description }}</p>
+        <div class="actions-grid">
+          <button
+            type="button"
+            class="action-chip"
+            [class.action-chip--danger]="action.danger"
+            *ngFor="let action of section.actions"
+            (click)="onAction(section, action)"
+          >
+            <span *ngIf="action.icon">{{ action.icon }}</span>
+            {{ action.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DERNIÈRES TRANSACTIONS -->
+  <div class="recent-transactions">
+    <div class="recent-transactions__header">
+      <h3>📋 Dernières transactions</h3>
+      <span class="badge">{{ recentTransactions.length }} transactions</span>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Service</th>
+            <th>Catégorie</th>
+            <th>Montant</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of recentTransactions">
+            <td>{{ tx.date }}</td>
+            <td><strong>{{ tx.clientName }}</strong></td>
+            <td>{{ tx.service }}</td>
+            <td><span class="badge">{{ tx.category }}</span></td>
+            <td class="amount amount--success">{{ tx.amount | number:'1.0-0' }} BIF</td>
+            <td>
+              <span class="status-badge" [class]="getStatusColor(tx.status)">
+                {{ getStatusLabel(tx.status) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL RAPPORT -->
+  <div class="modal-overlay" *ngIf="showReportModal" (click)="closeReportModal()"></div>
+  <div class="modal modal--animated" *ngIf="showReportModal">
+    <div class="modal__header">
+      <h2 class="modal__title">📄 Génération du rapport</h2>
+      <button class="modal__close" (click)="closeReportModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__icon">⏳</div>
+      <p class="modal__subtitle">Génération en cours...</p>
+      <div class="progress-bar">
+        <div class="progress-bar__fill" style="width: 75%;"></div>
+      </div>
+      <p class="modal__info">Veuillez patienter, le rapport est en cours de génération.</p>
+    </div>
+  </div>
+
+  <!-- MODAL DÉTAIL / ANALYSE / GRAPHIQUE / ALERTE -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal modal--animated modal--large" *ngIf="showModal">
+    <div class="modal__header">
+      <h2 class="modal__title">{{ modalTitle }}</h2>
+      <button class="modal__close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal__body modal__body--large">
+      
+      <!-- Détail du rapport -->
+      <div *ngIf="modalType === 'report_detail'">
+        <div class="modal__icon">{{ modalData.icon }}</div>
+        <div class="report-info" *ngIf="modalData.reportInfo">
+          <div class="report-info__item">
+            <span class="report-info__label">ID Rapport</span>
+            <span class="report-info__value">{{ modalData.reportInfo.id }}</span>
+          </div>
+          <div class="report-info__item">
+            <span class="report-info__label">Date génération</span>
+            <span class="report-info__value">{{ modalData.reportInfo.date }}</span>
+          </div>
+          <div class="report-info__item">
+            <span class="report-info__label">Statut</span>
+            <span class="report-info__value"><span class="status-badge status-badge--valide">✅ Généré</span></span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Montant</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tx of modalData.data">
+                <td>{{ tx.date }}</td>
+                <td>{{ tx.clientName }}</td>
+                <td>{{ tx.service }}</td>
+                <td class="amount amount--success">{{ tx.amount | number:'1.0-0' }} BIF</td>
+                <td>
+                  <span class="status-badge" [class]="getStatusColor(tx.status)">
+                    {{ getStatusLabel(tx.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--primary" (click)="exportReport('PDF')">📄 Exporter PDF</button>
+          <button class="btn btn--primary" (click)="exportReport('Excel')">📊 Exporter Excel</button>
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- Analyse -->
+      <div *ngIf="modalType === 'analysis'">
+        <div class="modal__icon">📊</div>
+        <h3 class="analysis-title">{{ modalData.title }}</h3>
+        <p class="analysis-desc">{{ modalData.description }}</p>
+        <div class="table-wrap">
+          <table class="table table--small">
+            <thead>
+              <tr>
+                <th *ngFor="let key of getObjectKeys(modalData.data[0])">{{ key | titlecase }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of modalData.data">
+                <td *ngFor="let key of getObjectKeys(item)">{{ item[key] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--primary" (click)="exportReport('PDF')">📄 Exporter</button>
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- Détail Graphique -->
+      <div *ngIf="modalType === 'chart_detail'">
+        <div class="modal__icon">📊</div>
+        <h3 class="analysis-title">{{ modalData.chart.name }}</h3>
+        <p class="analysis-desc">{{ modalData.description }}</p>
+        
+        <div class="chart-type-badge">
+          <span class="badge">{{ getChartTypeLabel(modalData.chart.type) }}</span>
+          <span class="badge">{{ getChartIcon(modalData.chart.type) }}</span>
+        </div>
+        
+        <div class="chart-container">
+          <!-- Graphique à barres -->
+          <div *ngIf="modalData.chart.type === 'bar'" class="chart-placeholder">
+            <div class="bar-chart">
+              <div class="bar-item" *ngFor="let d of modalData.chart.data.datasets[0].data; let i = index">
+                <div class="bar" 
+                     [style.height]="(d / 900000 * 100) + '%'" 
+                     [style.background-color]="modalData.chart.data.datasets[0].backgroundColor[i]">
+                  <span class="bar-tooltip">{{ d | number:'1.0-0' }} BIF</span>
+                </div>
+                <span class="bar-label">{{ modalData.chart.data.labels[i] }}</span>
+                <span class="bar-value">{{ d | number:'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Graphique en ligne -->
+          <div *ngIf="modalData.chart.type === 'line'" class="chart-placeholder">
+            <div class="line-chart">
+              <svg viewBox="0 0 600 200" class="line-svg">
+                <polyline 
+                  [attr.points]="getLinePoints(modalData.chart.data.datasets[0].data, 600, 200)"
+                  fill="none" 
+                  stroke="#0F6E5B" 
+                  stroke-width="3"
+                />
+                <circle *ngFor="let point of getLinePointsArray(modalData.chart.data.datasets[0].data, 600, 200)" 
+                        [attr.cx]="point.x" 
+                        [attr.cy]="point.y" 
+                        r="5" 
+                        fill="#0F6E5B" />
+              </svg>
+              <div class="line-labels">
+                <span *ngFor="let label of modalData.chart.data.labels">{{ label }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Graphique en camembert simplifié -->
+          <div *ngIf="modalData.chart.type === 'pie'" class="chart-placeholder">
+            <div class="pie-chart-simple">
+              <div class="pie-legend-simple">
+                <span class="legend-item" *ngFor="let label of modalData.chart.data.labels; let i = index">
+                  <span class="legend-color" [style.background-color]="modalData.chart.data.datasets[0].backgroundColor[i]"></span>
+                  {{ label }} ({{ modalData.chart.data.datasets[0].data[i] }}%)
+                </span>
+              </div>
+              <div class="pie-stats">
+                <div class="pie-stat" *ngFor="let label of modalData.chart.data.labels; let i = index">
+                  <span class="pie-stat__color" [style.background-color]="modalData.chart.data.datasets[0].backgroundColor[i]"></span>
+                  <span class="pie-stat__label">{{ label }}</span>
+                  <span class="pie-stat__value">{{ modalData.chart.data.datasets[0].data[i] }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-stats">
+          <div class="chart-stat">
+            <span class="chart-stat__label">Total</span>
+            <span class="chart-stat__value">{{ getChartTotal(modalData.chart) }} BIF</span>
+          </div>
+          <div class="chart-stat">
+            <span class="chart-stat__label">Catégories</span>
+            <span class="chart-stat__value">{{ modalData.chart.data.labels.length }}</span>
+          </div>
+          <div class="chart-stat">
+            <span class="chart-stat__label">Moyenne</span>
+            <span class="chart-stat__value">{{ getChartAverage(modalData.chart) }} BIF</span>
+          </div>
+        </div>
+        
+        <div class="modal__footer">
+          <button class="btn btn--primary" (click)="exportReport('PDF')">📄 Exporter PDF</button>
+          <button class="btn btn--primary" (click)="exportReport('Excel')">📊 Exporter Excel</button>
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- Configuration Alertes -->
+      <div *ngIf="modalType === 'alert_config'">
+        <div class="modal__icon">🔔</div>
+        
+        <div class="alert-header">
+          <h3 class="alert-header__title">{{ modalTitle }}</h3>
+          <button class="btn btn--primary btn--sm" (click)="addAlert()">➕ Ajouter une alerte</button>
+        </div>
+        
+        <div class="alert-summary" *ngIf="modalData.alerts">
+          <div class="alert-summary__item">
+            <span class="alert-summary__label">Total alertes</span>
+            <span class="alert-summary__value">{{ getAlertTotal(modalData.alerts) }}</span>
+          </div>
+          <div class="alert-summary__item">
+            <span class="alert-summary__label">Alertes actives</span>
+            <span class="alert-summary__value alert-summary__value--success">{{ getAlertActiveCount(modalData.alerts) }}</span>
+          </div>
+          <div class="alert-summary__item">
+            <span class="alert-summary__label">Alertes inactives</span>
+            <span class="alert-summary__value alert-summary__value--danger">{{ getAlertInactiveCount(modalData.alerts) }}</span>
+          </div>
+        </div>
+        
+        <div class="alert-config-list">
+          <div class="alert-config-item" *ngFor="let alert of modalData.alerts">
+            <div class="alert-config-item__header">
+              <div class="alert-config-item__info">
+                <span class="alert-config-item__name">{{ alert.name }}</span>
+                <span class="alert-config-item__type">{{ getAlertTypeLabel(alert.type) }}</span>
+                <span class="alert-config-item__status" [class.active]="alert.active">
+                  {{ getAlertStatusLabel(alert.active) }}
+                </span>
+              </div>
+              <div class="alert-config-item__actions">
+                <button class="action-btn action-btn--view" (click)="toggleAlert(alert)" [title]="alert.active ? 'Désactiver' : 'Activer'">
+                  {{ alert.active ? '⏹️' : '▶️' }}
+                </button>
+                <button class="action-btn action-btn--danger" (click)="deleteAlert(alert)" title="Supprimer">
+                  🗑️
+                </button>
+              </div>
+            </div>
+            
+            <div class="alert-config-item__details">
+              <span *ngIf="alert.threshold" class="alert-detail">
+                <span class="alert-detail__label">Seuil:</span>
+                <span class="alert-detail__value">{{ alert.threshold | number:'1.0-0' }} BIF</span>
+              </span>
+              <span *ngIf="alert.frequency" class="alert-detail">
+                <span class="alert-detail__label">Fréquence:</span>
+                <span class="alert-detail__value">{{ alert.frequency }}</span>
+              </span>
+              <span *ngIf="alert.recipients && alert.recipients.length" class="alert-detail">
+                <span class="alert-detail__label">Destinataires:</span>
+                <span class="alert-detail__value">{{ alert.recipients.join(', ') }}</span>
+              </span>
+              <span *ngIf="alert.lastTriggered" class="alert-detail">
+                <span class="alert-detail__label">Dernier déclenchement:</span>
+                <span class="alert-detail__value">{{ alert.lastTriggered }}</span>
+              </span>
+            </div>
+            
+            <div *ngIf="alert.description" class="alert-config-item__description">
+              {{ alert.description }}
+            </div>
+          </div>
+        </div>
+        
+        <div class="alert-empty" *ngIf="!modalData.alerts || modalData.alerts.length === 0">
+          <span class="alert-empty__icon">🔔</span>
+          <p>Aucune alerte configurée dans cette catégorie.</p>
+          <button class="btn btn--primary" (click)="addAlert()">➕ Ajouter une alerte</button>
+        </div>
+        
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL PIN -->
+  <div class="modal-overlay" *ngIf="showPinModal" (click)="closePinModal()"></div>
+  <div class="modal modal--animated modal--pin" *ngIf="showPinModal">
+    <div class="modal__header">
+      <h2 class="modal__title">{{ modalTitle }}</h2>
+      <button class="modal__close" (click)="closePinModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__icon">🔐</div>
+      <p class="modal__subtitle">Veuillez entrer votre code PIN pour valider</p>
+      <div class="pin-input-group">
+        <input type="password" class="pin-input" [(ngModel)]="pinCode" maxlength="4" placeholder="• • • •" autofocus>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" *ngFor="let key of [1,2,3,4,5,6,7,8,9]" (click)="addPinDigit(key)">{{ key }}</button>
+        <button class="pin-key pin-key--clear" (click)="clearPin()">⌫</button>
+        <button class="pin-key pin-key--zero" (click)="addPinDigit(0)">0</button>
+        <button class="pin-key pin-key--confirm" (click)="confirmPin()">✓</button>
+      </div>
+      <div class="pin-error" *ngIf="pinCode.length === 4 && pinCode !== '1234'">
+        ⚠️ Code PIN incorrect (Code: 1234)
+      </div>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>
+      {{ t.message }}
+      <button class="toast__close" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

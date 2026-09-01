@@ -1,0 +1,153 @@
+<div class="page-header">
+  <div class="header-left">
+    <div>
+      <h1>Workflows & Comptes</h1>
+      <p>Créez le circuit de validation de chaque service et les comptes des agents impliqués</p>
+    </div>
+
+    <div class="stats-inline">
+      <div class="stat-item">
+        <span class="stat-num">{{ stats.total }}</span>
+        <span class="stat-label">Workflows</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num text-green">{{ stats.actifs }}</span>
+        <span class="stat-label">Actifs</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num text-blue">{{ stats.comptes }}</span>
+        <span class="stat-label">Comptes actifs</span>
+      </div>
+    </div>
+  </div>
+
+  <a class="btn-primary" routerLink="/workflows/nouveau">
+    <i class="fa-solid fa-plus"></i> Nouveau workflow
+  </a>
+</div>
+
+<div class="info-banner" *ngIf="servicesSansWorkflow.length > 0">
+  <i class="fa-solid fa-circle-info"></i>
+  <span><strong>{{ servicesSansWorkflow.length }}</strong> service(s) n'ont pas encore de workflow configuré : {{ servicesSansWorkflow.length ? '' : '' }}
+    <strong *ngFor="let s of servicesSansWorkflow; let last = last">{{ s.nom }}{{ last ? '' : ', ' }}</strong>
+  </span>
+  <a class="btn-outline-sm" routerLink="/workflows/nouveau"><i class="fa-solid fa-plus"></i> Configurer</a>
+</div>
+
+<!-- ============ TOOLBAR ============ -->
+<div class="toolbar">
+  <div class="search-box">
+    <i class="fa-solid fa-search"></i>
+    <input type="text" placeholder="Rechercher un workflow ou un service..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" />
+  </div>
+  <select [(ngModel)]="selectedStatut" (ngModelChange)="applyFilters()">
+    <option value="">Tous les statuts</option>
+    <option value="ACTIF">Actif</option>
+    <option value="INACTIF">Inactif</option>
+  </select>
+</div>
+
+<div class="card table-card" *ngIf="!isLoading">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Workflow</th>
+        <th>Étapes</th>
+        <th>Comptes rattachés</th>
+        <th>Statut</th>
+        <th class="actions-col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let w of filtered" (click)="ouvrirDetail(w)" class="clickable-row">
+        <td><strong>{{ w.serviceNom }}</strong></td>
+        <td>
+          <div class="workflow-cell">
+            <div class="workflow-icon"><i class="fa-solid fa-sitemap"></i></div>
+            <span>{{ w.nom }}</span>
+          </div>
+        </td>
+        <td>{{ w.etapes.length }} étape(s)</td>
+        <td>
+          <span class="badge badge-blue"><i class="fa-solid fa-users"></i> {{ w.nombreComptes }}</span>
+        </td>
+        <td><span class="badge" [ngClass]="statutClass(w.statut)">{{ w.statut }}</span></td>
+        <td class="actions-col" (click)="$event.stopPropagation()">
+          <div class="row-actions">
+            <button class="btn-icon btn-indigo" title="Modifier le workflow" (click)="modifier(w)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon" [ngClass]="w.statut === 'ACTIF' ? 'btn-green-active' : 'btn-gray-inactive'" title="Activer/désactiver" (click)="toggleStatut(w, $event)">
+              <i class="fa-solid fa-power-off"></i>
+            </button>
+            <button class="btn-icon btn-red" title="Supprimer" (click)="supprimer(w, $event)">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="empty-state" *ngIf="filtered.length === 0">
+    <i class="fa-solid fa-sitemap"></i>
+    <p>Aucun workflow trouvé</p>
+    <p class="empty-hint">Créez un workflow pour définir les étapes de validation d'un service</p>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading">
+  <i class="fa-solid fa-spinner fa-spin"></i>
+  <p>Chargement des workflows...</p>
+</div>
+
+<!-- ============ MODAL DE DÉTAIL ============ -->
+<div class="modal-overlay" *ngIf="workflowSelectionne" (click)="fermerDetail()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="workflow-icon"><i class="fa-solid fa-sitemap"></i></div>
+        <div>
+          <h3>{{ workflowSelectionne.nom }}</h3>
+          <span class="service-code">{{ workflowSelectionne.serviceNom }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="workflow-desc" *ngIf="workflowSelectionne.description">{{ workflowSelectionne.description }}</p>
+
+      <div class="etapes-timeline">
+        <div class="etape-timeline-item" *ngFor="let e of workflowSelectionne.etapes; let i = index">
+          <div class="etape-timeline-marker">{{ i + 1 }}</div>
+          <div class="etape-timeline-content">
+            <div class="etape-timeline-header">
+              <strong>{{ e.nom }}</strong>
+              <span class="text-muted">Délai : {{ e.delaiHeures }}h</span>
+            </div>
+            <p class="etape-valide" *ngIf="e.ceQuIlValide">
+              <i class="fa-solid fa-clipboard-check"></i> {{ e.ceQuIlValide }}
+            </p>
+            <div class="comptes-mini-list">
+              <span class="compte-chip" *ngFor="let c of comptesPourEtape(e.id)">
+                <i class="fa-solid fa-user"></i> {{ c.prenom }} {{ c.nom }} — {{ c.role }}
+              </span>
+              <span class="text-muted" *ngIf="comptesPourEtape(e.id).length === 0">Aucun compte assigné</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetail()">Fermer</button>
+      <button class="btn-primary" (click)="modifier(workflowSelectionne)">
+        <i class="fa-solid fa-pen"></i> Modifier le workflow
+      </button>
+    </div>
+  </div>
+</div>

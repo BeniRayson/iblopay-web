@@ -1,0 +1,59 @@
+/* ==========================================================
+   IBLOPAY PROVIDERS — Thème clair (Light Mode)
+   ========================================================== */
+
+:root {
+    /* ─── FOND GLOBAL & PAREMENTS ─── */
+    --bg-darkest: #f4f6fb;
+    --bg-dark: #eef1f7;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f5f7fb;
+    --bg-sidebar: #ffffff;
+
+    /* ─── BORDURES & SÉPARATEURS ─── */
+    --border-color: #e6e9f0;
+    --border-light: #d7dce6;
+
+    /* ─── TYPOGRAPHIE & HIÉRARCHIE ─── */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    /* ─── COULEURS D'ACCENTS ET BADGES ─── */
+    --accent-blue: #2563eb;
+    --accent-blue-rgb: 37, 99, 235;
+
+    --accent-green: #16a34a;
+    --accent-green-rgb: 22, 163, 74;
+
+    --accent-purple: #7c3aed;
+    --accent-purple-rgb: 124, 58, 237;
+
+    --accent-orange: #ea580c;
+    --accent-orange-rgb: 234, 88, 12;
+
+    --accent-yellow: #ca8a04;
+    --accent-yellow-rgb: 202, 138, 4;
+
+    --accent-red: #dc2626;
+    --accent-red-rgb: 220, 38, 38;
+
+    --accent-cyan: #0891b2;
+    --accent-cyan-rgb: 8, 145, 178;
+
+    --accent-pink: #db2777;
+    --accent-pink-rgb: 219, 39, 119;
+
+    --shadow-color: rgba(15, 23, 42, 0.06);
+}
+
+body {
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}

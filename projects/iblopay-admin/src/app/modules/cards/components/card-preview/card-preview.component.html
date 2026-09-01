@@ -1,0 +1,24 @@
+<div class="card-preview" [class.dimmed]="isDimmed">
+  <!-- En-tête -->
+  <div class="card-preview__top">
+    <span class="card-preview__brand">IBLOPAY</span>
+    <app-card-type-badge [type]="card.cardType"></app-card-type-badge>
+  </div>
+
+  <!-- Numéro de carte -->
+  <div class="card-preview__pan">
+    {{ card.cardUid }}
+  </div>
+
+  <!-- Solde -->
+  <div class="card-preview__balance" *ngIf="card.balance !== undefined">
+    <span class="card-preview__balance-label">Solde</span>
+    <span class="card-preview__balance-value">{{ card.balance | number }} BIF</span>
+  </div>
+
+  <!-- Pied de carte -->
+  <div class="card-preview__bottom">
+    <span class="card-preview__holder">{{ card.holderName || 'Cardholder' }}</span>
+    <app-card-status [status]="card.status"></app-card-status>
+  </div>
+</div>

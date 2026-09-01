@@ -1,0 +1,91 @@
+// ============================================================
+// IBLOPay — Transaction Hub Page
+// Style back-office professionnel (same as commission)
+// ============================================================
+
+$font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+$font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+$white: #ffffff;
+$gray-50: #f8fafc;
+$gray-100: #f1f5f9;
+$gray-200: #e2e8f0;
+$gray-300: #cbd5e1;
+$gray-400: #94a3b8;
+$gray-500: #64748b;
+$gray-600: #475569;
+$gray-700: #334155;
+$gray-800: #1e293b;
+$gray-900: #0f172a;
+
+.hub-page {
+  padding: 24px 28px;
+  min-height: 100vh;
+  background: $gray-50;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  &__title-block {
+    flex: 1;
+  }
+
+  &__title {
+    font-family: $font-body;
+    font-size: 24px;
+    font-weight: 800;
+    color: $gray-900;
+    margin: 0 0 4px;
+    letter-spacing: -0.3px;
+  }
+
+  &__subtitle {
+    font-size: 13px;
+    color: $gray-500;
+    margin: 0;
+    font-weight: 400;
+  }
+
+  // ─── Full-width Table ───────────────────────────────────
+  &__table-area {
+    margin-bottom: 24px;
+  }
+
+  // ─── Analytics Grid ─────────────────────────────────────
+  &__analytics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+
+    &-item {
+      min-width: 0;
+      background: $white;
+      border: 1px solid $gray-200;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      transition: all 0.25s ease;
+
+      &:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      }
+
+      &--wide {
+        grid-column: 1 / -1;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}

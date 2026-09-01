@@ -1,0 +1,90 @@
+<div class="formulaire-publie-container">
+  <div class="formulaire-statut-ruban" *ngIf="formulaire.statut === 'PUBLIE'">
+    <i class="fa-solid fa-circle-check"></i> Formulaire publié — disponible en ligne
+  </div>
+  <div class="formulaire-header">
+    <div class="formulaire-header-icon">
+      <i class="fa-solid fa-file-lines"></i>
+    </div>
+    <h2>{{ formulaire.nom }}</h2>
+    <p class="formulaire-description">{{ formulaire.description || 'Remplissez ce formulaire' }}</p>
+    <div class="formulaire-divider"></div>
+  </div>
+
+  <div class="formulaire-body">
+    <!-- Affiche le nombre de colonnes pour le debug (optionnel, à supprimer en prod) -->
+    <div class="disposition-info" *ngIf="false">
+      <span class="disposition-badge">{{ nbColonnes }} colonne(s)</span>
+    </div>
+
+    <div class="champs-grid" 
+         [class.col-1]="nbColonnes === 1" 
+         [class.col-2]="nbColonnes === 2" 
+         [class.col-3]="nbColonnes === 3" 
+         [class.col-4]="nbColonnes === 4">
+      
+      <div class="champ-field" *ngFor="let champ of formulaire.champs">
+        <label>
+          {{ champ.label }}
+          <span class="required-mark" *ngIf="champ.obligatoire">*</span>
+        </label>
+
+        <!-- CHAMP TEXTE -->
+        <input *ngIf="champ.typeChamp === 'TEXTE'" 
+               type="text" 
+               [placeholder]="champ.configuration?.aide || 'Saisir du texte...'" />
+
+        <!-- CHAMP ADRESSE -->
+        <input *ngIf="champ.typeChamp === 'ADRESSE'" 
+               type="text" 
+               [placeholder]="champ.configuration?.aide || 'Saisir une adresse...'" />
+
+        <!-- CHAMP NOMBRE -->
+        <input *ngIf="champ.typeChamp === 'NOMBRE'" 
+               type="number" 
+               [placeholder]="champ.configuration?.aide || 'Saisir un nombre...'" />
+
+        <!-- CHAMP EMAIL -->
+        <input *ngIf="champ.typeChamp === 'EMAIL'" 
+               type="email" 
+               [placeholder]="champ.configuration?.aide || 'nom@exemple.com'" />
+
+        <!-- CHAMP TELEPHONE -->
+        <input *ngIf="champ.typeChamp === 'TELEPHONE'" 
+               type="tel" 
+               [placeholder]="champ.configuration?.aide || '+257 00 00 00 00'" />
+
+        <!-- CHAMP DATE -->
+        <input *ngIf="champ.typeChamp === 'DATE'" type="date" />
+
+        <!-- CHAMP SELECT -->
+        <select *ngIf="champ.typeChamp === 'SELECT'">
+          <option value="" disabled selected>-- Sélectionner une option --</option>
+          <option *ngFor="let opt of champ.configuration?.options" [value]="opt">{{ opt }}</option>
+        </select>
+
+        <!-- CHAMP CHECKBOX -->
+        <label class="checkbox-field" *ngIf="champ.typeChamp === 'CHECKBOX'">
+          <input type="checkbox" /> {{ champ.configuration?.aide || 'Cocher pour confirmer' }}
+        </label>
+
+        <!-- CHAMP FICHIER -->
+        <div class="file-field" *ngIf="champ.typeChamp === 'FICHIER'">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>{{ champ.configuration?.aide || 'Cliquer ou déposer un fichier' }}</span>
+        </div>
+
+        <!-- TEXTE D'AIDE -->
+        <div class="champ-aide" *ngIf="champ.configuration?.aide && champ.typeChamp !== 'CHECKBOX' && champ.typeChamp !== 'FICHIER'">
+          {{ champ.configuration?.aide }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="formulaire-footer">
+    <button class="btn-submit" type="submit">
+      <i class="fa-solid fa-paper-plane"></i> Soumettre la demande
+    </button>
+  </div>
+</div>

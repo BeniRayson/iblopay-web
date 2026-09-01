@@ -1,0 +1,249 @@
+<div class="commission-page">
+  <!-- ═══ PAGE HEADER ═══ -->
+  <header class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-header__title">Suivi des Commissions</h1>
+      <p class="page-header__subtitle">Tableau de bord — Agents & Super-Agents · IBLOPay Service Wallet</p>
+    </div>
+    <div class="page-header__right">
+      <div class="search-bar">
+        <i class="fas fa-search search-bar__icon"></i>
+        <input
+          class="search-bar__input"
+          type="text"
+          placeholder="Rechercher par nom, wallet ou contact…"
+          [(ngModel)]="searchQuery"
+          (input)="onSearch()"
+        />
+        <button *ngIf="searchQuery" class="search-bar__clear" (click)="searchQuery = ''; onSearch()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ KPI CARDS ═══ -->
+  <section class="kpi-grid">
+    <div class="kpi-card kpi-card--etat">
+      <div class="kpi-card__icon"><i class="fas fa-landmark"></i></div>
+      <div class="kpi-card__body">
+        <span class="kpi-card__label">Commission État</span>
+        <span class="kpi-card__value">{{ formatBif(totalCommissionEtat) }}</span>
+        <span class="kpi-card__pct">{{ percentageEtatGlobale | number:'1.1-1':'fr-FR' }} %</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-card--iblopay">
+      <div class="kpi-card__icon"><i class="fas fa-building"></i></div>
+      <div class="kpi-card__body">
+        <span class="kpi-card__label">Commission IBLOPay</span>
+        <span class="kpi-card__value">{{ formatBif(totalCommissionIblopay) }}</span>
+        <span class="kpi-card__pct">{{ percentageIblopayGlobale | number:'1.1-1':'fr-FR' }} %</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-card--tierce">
+      <div class="kpi-card__icon"><i class="fas fa-handshake"></i></div>
+      <div class="kpi-card__body">
+        <span class="kpi-card__label" *ngIf="activeTab === 'agent'">Commission Super-Agent</span>
+        <span class="kpi-card__label" *ngIf="activeTab === 'super_agent'">Commission Réseau</span>
+        <span class="kpi-card__value">{{ formatBif(totalCommissionTierce) }}</span>
+        <span class="kpi-card__pct">{{ percentageTierceGlobale | number:'1.1-1':'fr-FR' }} %</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-card--personnelle">
+      <div class="kpi-card__icon"><i class="fas fa-wallet"></i></div>
+      <div class="kpi-card__body">
+        <span class="kpi-card__label">Commission Personnelle</span>
+        <span class="kpi-card__value">{{ formatBif(totalCommissionPersonnelle) }}</span>
+        <span class="kpi-card__pct">{{ percentagePersonnelleGlobale | number:'1.1-1':'fr-FR' }} %</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-card--total">
+      <div class="kpi-card__icon"><i class="fas fa-calculator"></i></div>
+      <div class="kpi-card__body">
+        <span class="kpi-card__label">Total Toutes Commissions</span>
+        <span class="kpi-card__value kpi-card__value--xl">{{ formatBif(totalToutesCommissions) }}</span>
+        <span class="kpi-card__pct">100 %</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TABS ═══ -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.tab-btn--active]="activeTab === 'agent'" (click)="switchTab('agent')">
+      <i class="fas fa-user-tie"></i> Agents
+      <span class="tab-btn__count">{{ agentRows.length }}</span>
+    </button>
+    <button class="tab-btn" [class.tab-btn--active]="activeTab === 'super_agent'" (click)="switchTab('super_agent')">
+      <i class="fas fa-users"></i> Super-Agents
+      <span class="tab-btn__count">{{ superAgentRows.length }}</span>
+    </button>
+  </div>
+
+  <!-- ═══ TABLEAU ═══ -->
+  <div class="table-card">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-avatar"></th>
+            <th class="col-name">Nom & Prénom</th>
+            <th class="col-wallet">N° Wallet</th>
+            <th class="col-contact">Contact</th>
+            <th class="col-commission">Comm. État</th>
+            <th class="col-commission">Comm. IBLOPay</th>
+            <th class="col-commission" *ngIf="activeTab === 'agent'">Comm. Super-Agent</th>
+            <th class="col-commission" *ngIf="activeTab === 'super_agent'">Comm. Réseau</th>
+            <th class="col-commission">Comm. Personnelle</th>
+            <th class="col-minibar"></th>
+            <th class="col-action">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Totals row -->
+          <tr class="data-row data-row--totals">
+            <td class="col-avatar"></td>
+            <td class="col-name" colspan="2"><strong>TOTAUX GÉNÉRAUX</strong></td>
+            <td class="col-contact"></td>
+            <td class="col-commission"><span class="amount amount--etat">{{ formatBif(totalsEtat) }}</span></td>
+            <td class="col-commission"><span class="amount amount--iblopay">{{ formatBif(totalsIblopay) }}</span></td>
+            <td class="col-commission"><span class="amount amount--tierce">{{ formatBif(totalsTierce) }}</span></td>
+            <td class="col-commission"><span class="amount amount--personnelle">{{ formatBif(totalsPersonnelle) }}</span></td>
+            <td class="col-minibar"></td>
+            <td class="col-action"></td>
+          </tr>
+
+          <!-- Data rows -->
+          <tr class="data-row" *ngFor="let row of currentRows">
+            <td class="col-avatar">
+              <span class="avatar" [style.background-color]="getAvatarColor(row.initials)">{{ row.initials }}</span>
+            </td>
+            <td class="col-name">
+              <span class="person-name">{{ row.person.prenom }} {{ row.person.nom }}</span>
+              <span class="person-sub" *ngIf="row.person.superAgentNom">{{ row.person.superAgentNom }}</span>
+            </td>
+            <td class="col-wallet"><code class="wallet-code">{{ row.person.wallet }}</code></td>
+            <td class="col-contact">{{ row.person.contact }}</td>
+            <td class="col-commission"><span class="amount amount--etat">{{ formatBif(row.totalCommissionEtat) }}</span></td>
+            <td class="col-commission"><span class="amount amount--iblopay">{{ formatBif(row.totalCommissionIblopay) }}</span></td>
+            <td class="col-commission"><span class="amount amount--tierce">{{ formatBif(row.totalCommissionTierce) }}</span></td>
+            <td class="col-commission"><span class="amount amount--personnelle">{{ formatBif(row.totalCommissionPersonnelle) }}</span></td>
+            <td class="col-minibar">
+              <div class="mini-bar" [title]="getMiniBarTitle(getBarPercentagesFromTotals(row))">
+                <span class="mini-bar__seg mini-bar__seg--etat" [style.width.%]="getBarPercentagesFromTotals(row).etat"></span>
+                <span class="mini-bar__seg mini-bar__seg--iblopay" [style.width.%]="getBarPercentagesFromTotals(row).iblopay"></span>
+                <span class="mini-bar__seg mini-bar__seg--tierce" [style.width.%]="getBarPercentagesFromTotals(row).tierce"></span>
+                <span class="mini-bar__seg mini-bar__seg--personnelle" [style.width.%]="getBarPercentagesFromTotals(row).personnelle"></span>
+              </div>
+            </td>
+            <td class="col-action">
+              <button class="btn-detail" (click)="openDetail(row.person)">
+                <i class="fas fa-eye"></i> Détails
+              </button>
+            </td>
+          </tr>
+
+          <!-- Empty -->
+          <tr *ngIf="currentRows.length === 0">
+            <td colspan="11" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <span>Aucun résultat trouvé</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODALE DE DÉTAIL
+     ═══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" [class.modal-overlay--open]="isModalOpen" (click)="closeModal()"></div>
+<div class="modal" [class.modal--open]="isModalOpen" *ngIf="selectedPerson">
+  <!-- 1. EN-TÊTE : Avatar + Identité + Rôle + Wallet + Nb transactions -->
+  <div class="modal__header">
+    <div class="modal__header-left">
+      <span class="avatar avatar--lg" [style.background-color]="getAvatarColor(getInitials(selectedPerson.nom, selectedPerson.prenom))">
+        {{ getInitials(selectedPerson.nom, selectedPerson.prenom) }}
+      </span>
+      <div>
+        <h2 class="modal__title">{{ selectedPerson.prenom }} {{ selectedPerson.nom }}</h2>
+        <div class="modal__meta">
+          <span class="modal__role-badge">{{ selectedPersonRoleLabel }}</span>
+          <span class="modal__meta-sep">·</span>
+          <code class="modal__wallet">{{ selectedPerson.wallet }}</code>
+          <span class="modal__meta-sep">·</span>
+          <span class="modal__tx-count">{{ selectedPersonTransactionCount }} transaction{{ selectedPersonTransactionCount > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal__header-right">
+      <button class="modal__close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="modal__body">
+    <!-- 2. BANDEAU DE TOTAUX -->
+    <div class="modal__summary">
+      <div class="summary-chip summary-chip--etat">
+        <span class="summary-chip__label">Commission État</span>
+        <span class="summary-chip__value">{{ formatBif(modalTotalEtat) }}</span>
+      </div>
+      <div class="summary-chip summary-chip--iblopay">
+        <span class="summary-chip__label">Commission IBLOPay</span>
+        <span class="summary-chip__value">{{ formatBif(modalTotalIblopay) }}</span>
+      </div>
+      <div class="summary-chip summary-chip--tierce">
+        <span class="summary-chip__label">Commission {{ selectedPersonThirdCommissionLabel }}</span>
+        <span class="summary-chip__value">{{ formatBif(modalTotalTierce) }}</span>
+      </div>
+      <div class="summary-chip summary-chip--personnelle">
+        <span class="summary-chip__label">Commission Personnelle</span>
+        <span class="summary-chip__value">{{ formatBif(modalTotalPersonnelle) }}</span>
+      </div>
+    </div>
+
+    <!-- 3. LISTE DÉTAILLÉE DES TRANSACTIONS -->
+    <div class="modal__table-wrapper">
+      <table class="modal-table">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Montant</th>
+            <th>Comm. État</th>
+            <th>Comm. IBLOPay</th>
+            <th>Comm. {{ selectedPersonThirdCommissionLabel }}</th>
+            <th>Comm. Personnelle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of selectedPerson.transactions">
+            <td><code class="ref-code">{{ tx.reference }}</code></td>
+            <td class="td-date">{{ formatDateShort(tx.date) }}</td>
+            <td><span class="type-badge" [ngClass]="getTransactionTypeClass(tx.type)">{{ transactionTypeLabel(tx.type) }}</span></td>
+            <td class="td-amount">{{ formatBif(tx.montant) }}</td>
+            <td class="td-amount td-amount--etat">{{ formatBif(tx.commissions.etat) }}</td>
+            <td class="td-amount td-amount--iblopay">{{ formatBif(tx.commissions.iblopay) }}</td>
+            <td class="td-amount td-amount--tierce">{{ formatBif(tx.commissions.tierce) }}</td>
+            <td class="td-amount td-amount--personnelle">{{ formatBif(tx.commissions.personnelle) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. PIED : Total mouvementé + Bouton Télécharger CSV -->
+  <div class="modal__footer">
+    <div class="modal__footer-left">
+      <span class="modal__footer-label">Total mouvementé</span>
+      <span class="modal__footer-total">{{ formatBif(modalTotalMontant) }}</span>
+    </div>
+    <button class="btn-download" (click)="downloadCsv()">
+      <i class="fas fa-download"></i> Télécharger (CSV)
+    </button>
+  </div>
+</div>

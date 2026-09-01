@@ -1,0 +1,386 @@
+<div class="settings-page">
+  <!-- HEADER -->
+  <header class="page-header">
+    
+    <div class="page-header__title">
+      <span class="icon">⚙️</span>
+      <div>
+        <h1>Configuration Générale</h1>
+        <p>Frais, limites, notifications et paramètres système.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabs-nav">
+    <button class="tab-btn" *ngFor="let tab of tabs"
+            [class.active]="activeTab === tab.key"
+            (click)="setActiveTab(tab.key)">
+      <span class="tab-btn__icon">{{ tab.icon }}</span>
+      {{ tab.label }}
+      <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
+    </button>
+  </nav>
+
+  <!-- ============ FRAIS ============ -->
+  <div *ngIf="activeTab === 'frais'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">💲 Frais et Commissions</h3>
+      <span class="panel__badge">{{ getActiveFeesCount() }} frais actifs</span>
+    </div>
+
+    <div class="settings-grid">
+      <div class="settings-card" *ngFor="let fee of fees">
+        <div class="settings-card__header">
+          <span class="settings-card__icon">{{ fee.icon }}</span>
+          <h4>{{ fee.name }}</h4>
+          <span class="status-badge" [class]="fee.active ? 'status-badge--success' : 'status-badge--danger'">
+            {{ fee.active ? '✅ Actif' : '❌ Inactif' }}
+          </span>
+        </div>
+        <div class="settings-card__body">
+          <div class="settings-card__row">
+            <span class="settings-card__label">Type</span>
+            <span class="settings-card__value">{{ fee.type }}</span>
+          </div>
+          <div class="settings-card__row">
+            <span class="settings-card__label">Taux</span>
+            <span class="settings-card__value settings-card__value--highlight">{{ fee.rate }}</span>
+          </div>
+          <div class="settings-card__row" *ngIf="fee.minAmount">
+            <span class="settings-card__label">Montant min</span>
+            <span class="settings-card__value">{{ fee.minAmount | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="settings-card__row" *ngIf="fee.maxAmount">
+            <span class="settings-card__label">Montant max</span>
+            <span class="settings-card__value">{{ fee.maxAmount | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="settings-card__row" *ngIf="fee.appliesTo">
+            <span class="settings-card__label">Appliqué à</span>
+            <span class="settings-card__value">{{ fee.appliesTo }}</span>
+          </div>
+        </div>
+        <div class="settings-card__footer">
+          <button class="btn btn--primary btn--sm" (click)="configureFee(fee)">✏️ Modifier</button>
+          <button class="btn btn--sm" [class.btn--success]="!fee.active" [class.btn--danger]="fee.active" (click)="toggleFee(fee)">
+            {{ fee.active ? '⏹️ Désactiver' : '▶️ Activer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LIMITES ============ -->
+  <div *ngIf="activeTab === 'limites'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">📏 Limites et Seuils</h3>
+      <span class="panel__badge">{{ getActiveLimitsCount() }} limites configurées</span>
+    </div>
+
+    <div class="settings-grid settings-grid--limits">
+      <div class="settings-card settings-card--limit" *ngFor="let limit of limits">
+        <div class="settings-card__header">
+          <span class="settings-card__icon">{{ limit.icon }}</span>
+          <h4>{{ limit.name }}</h4>
+          <span class="status-badge" [class]="limit.active ? 'status-badge--success' : 'status-badge--danger'">
+            {{ limit.active ? '✅ Actif' : '❌ Inactif' }}
+          </span>
+        </div>
+        <div class="settings-card__body">
+          <div class="settings-card__row">
+            <span class="settings-card__label">Valeur</span>
+            <span class="settings-card__value settings-card__value--highlight">{{ limit.value | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="settings-card__row" *ngIf="limit.period">
+            <span class="settings-card__label">Période</span>
+            <span class="settings-card__value">{{ limit.period }}</span>
+          </div>
+          <div class="settings-card__row" *ngIf="limit.currentUsage !== undefined">
+            <span class="settings-card__label">Utilisation</span>
+            <div class="settings-card__progress">
+              <div class="settings-card__progress-bar" [style.width]="(limit.currentUsage / limit.value) * 100 + '%'"></div>
+              <span class="settings-card__progress-label">{{ limit.currentUsage | number:'1.0-0' }} / {{ limit.value | number:'1.0-0' }} BIF</span>
+            </div>
+          </div>
+          <div class="settings-card__row" *ngIf="limit.description">
+            <span class="settings-card__label">Description</span>
+            <span class="settings-card__value settings-card__value--muted">{{ limit.description }}</span>
+          </div>
+        </div>
+        <div class="settings-card__footer">
+          <button class="btn btn--primary btn--sm" (click)="configureLimit(limit)">✏️ Modifier</button>
+          <button class="btn btn--sm" [class.btn--success]="!limit.active" [class.btn--danger]="limit.active" (click)="toggleLimit(limit)">
+            {{ limit.active ? '⏹️ Désactiver' : '▶️ Activer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Limites globales -->
+    <div class="panel__sub">
+      <h4>📊 Résumé des limites</h4>
+      <div class="limits-summary">
+        <div class="limits-summary__item" *ngFor="let summary of getLimitsSummary()">
+          <span class="limits-summary__label">{{ summary.label }}</span>
+          <div class="limits-summary__bar">
+            <div class="limits-summary__bar-fill" [style.width]="summary.percentage + '%'" [style.background]="summary.color"></div>
+          </div>
+          <span class="limits-summary__value">{{ summary.current | number:'1.0-0' }} / {{ summary.max | number:'1.0-0' }} BIF</span>
+          <span class="limits-summary__percent">{{ summary.percentage }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NOTIFICATIONS ============ -->
+  <div *ngIf="activeTab === 'notifications'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">🔔 Notifications</h3>
+      <span class="panel__badge">{{ getActiveNotificationsCount() }} canaux actifs</span>
+    </div>
+
+    <div class="settings-grid settings-grid--notifications">
+      <div class="settings-card settings-card--notification" *ngFor="let notification of notifications">
+        <div class="settings-card__header">
+          <span class="settings-card__icon">{{ notification.icon }}</span>
+          <h4>{{ notification.name }}</h4>
+          <span class="status-badge" [class]="notification.active ? 'status-badge--success' : 'status-badge--danger'">
+            {{ notification.active ? '✅ Actif' : '❌ Inactif' }}
+          </span>
+        </div>
+        <div class="settings-card__body">
+          <div class="settings-card__row">
+            <span class="settings-card__label">Canal</span>
+            <span class="settings-card__value">{{ notification.channel }}</span>
+          </div>
+          <div class="settings-card__row" *ngIf="notification.config">
+            <span class="settings-card__label">Configuration</span>
+            <span class="settings-card__value settings-card__value--muted">{{ notification.config }}</span>
+          </div>
+          <div class="settings-card__row">
+            <span class="settings-card__label">Événements</span>
+            <div class="settings-card__tags">
+              <span class="settings-card__tag" *ngFor="let event of notification.events">{{ event }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-card__footer">
+          <button class="btn btn--primary btn--sm" (click)="configureNotification(notification)">✏️ Modifier</button>
+          <button class="btn btn--sm" [class.btn--success]="!notification.active" [class.btn--danger]="notification.active" (click)="toggleNotification(notification)">
+            {{ notification.active ? '⏹️ Désactiver' : '▶️ Activer' }}
+          </button>
+          <button class="btn btn--secondary btn--sm" (click)="testNotification(notification)">📨 Tester</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PARAMÈTRES SYSTÈME ============ -->
+  <div *ngIf="activeTab === 'parametres'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">🧩 Paramètres Système</h3>
+      <span class="panel__badge">{{ getActiveParamsCount() }} paramètres</span>
+    </div>
+
+    <div class="settings-grid settings-grid--params">
+      <div class="settings-card settings-card--param" *ngFor="let param of systemParams">
+        <div class="settings-card__header">
+          <span class="settings-card__icon">{{ param.icon }}</span>
+          <h4>{{ param.name }}</h4>
+          <span class="status-badge" [class]="param.active ? 'status-badge--success' : 'status-badge--danger'">
+            {{ param.active ? '✅ Actif' : '❌ Inactif' }}
+          </span>
+        </div>
+        <div class="settings-card__body">
+          <div class="settings-card__row">
+            <span class="settings-card__label">Valeur</span>
+            <span class="settings-card__value settings-card__value--highlight">{{ param.value }}</span>
+          </div>
+          <div class="settings-card__row" *ngIf="param.description">
+            <span class="settings-card__label">Description</span>
+            <span class="settings-card__value settings-card__value--muted">{{ param.description }}</span>
+          </div>
+          <div class="settings-card__row" *ngIf="param.options">
+            <span class="settings-card__label">Options</span>
+            <div class="settings-card__tags">
+              <span class="settings-card__tag" *ngFor="let option of param.options">{{ option }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-card__footer">
+          <button class="btn btn--primary btn--sm" (click)="configureParam(param)">✏️ Modifier</button>
+          <button class="btn btn--sm" [class.btn--success]="!param.active" [class.btn--danger]="param.active" (click)="toggleParam(param)">
+            {{ param.active ? '⏹️ Désactiver' : '▶️ Activer' }}
+          </button>
+          <button class="btn btn--danger btn--sm" *ngIf="param.danger" (click)="resetParam(param)">🔄 Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions système -->
+    <div class="panel__sub panel__sub--danger">
+      <h4>⚠️ Actions Système</h4>
+      <div class="actions-grid">
+        <button class="btn btn--warning" (click)="clearCache()">🗑️ Vider le cache</button>
+        <button class="btn btn--warning" (click)="rebuildIndex()">🔄 Reconstruire les index</button>
+        <button class="btn btn--danger" (click)="resetAll()">⚠️ Réinitialiser tout</button>
+        <button class="btn btn--danger" (click)="exportData()">📤 Exporter les données</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODALES ============ -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal modal--animated" *ngIf="showModal">
+    <div class="modal__header">
+      <h2 class="modal__title">{{ modalTitle }}</h2>
+      <button class="modal__close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <!-- Configuration Frais -->
+      <div *ngIf="modalType === 'fee_config'">
+        <div class="modal__icon">💲</div>
+        <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Type de frais</label>
+            <select class="form-control" [(ngModel)]="formData.type">
+              <option value="fixe">Fixe</option>
+              <option value="pourcentage">Pourcentage</option>
+              <option value="mixte">Mixte</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Taux</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.rate" placeholder="Ex: 1.5% ou 500 BIF" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Montant minimum (BIF)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.minAmount" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>Montant maximum (BIF)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.maxAmount" placeholder="0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Appliqué à</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.appliesTo" placeholder="Ex: Tous les utilisateurs" />
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="saveFee()">💾 Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- Configuration Limite -->
+      <div *ngIf="modalType === 'limit_config'">
+        <div class="modal__icon">📏</div>
+        <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Valeur limite (BIF)</label>
+            <input type="number" class="form-control" [(ngModel)]="formData.value" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label>Période</label>
+            <select class="form-control" [(ngModel)]="formData.period">
+              <option value="jour">Journalière</option>
+              <option value="semaine">Hebdomadaire</option>
+              <option value="mois">Mensuelle</option>
+              <option value="an">Annuelle</option>
+              <option value="illimite">Illimitée</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.description" placeholder="Description de la limite" />
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="saveLimit()">💾 Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- Configuration Notification -->
+      <div *ngIf="modalType === 'notification_config'">
+        <div class="modal__icon">🔔</div>
+        <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Canal</label>
+            <select class="form-control" [(ngModel)]="formData.channel">
+              <option value="sms">SMS</option>
+              <option value="email">Email</option>
+              <option value="push">Push</option>
+              <option value="webhook">Webhook</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="formData.channel === 'email'">
+            <label>Adresse email</label>
+            <input type="email" class="form-control" [(ngModel)]="formData.config" placeholder="notifications@iblopay.bi" />
+          </div>
+          <div class="form-group" *ngIf="formData.channel === 'sms'">
+            <label>Numéro de téléphone</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.config" placeholder="+257 79 123 456" />
+          </div>
+          <div class="form-group" *ngIf="formData.channel === 'webhook'">
+            <label>URL Webhook</label>
+            <input type="url" class="form-control" [(ngModel)]="formData.config" placeholder="https://api.iblopay.bi/webhook" />
+          </div>
+          <div class="form-group">
+            <label>Événements</label>
+            <div class="form-check-group">
+              <label class="checkbox-label" *ngFor="let event of availableEvents">
+                <input type="checkbox" [checked]="isEventSelected(event)" (change)="toggleEventSelection(event)" />
+                <span>{{ event }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="saveNotification()">💾 Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- Configuration Paramètre -->
+      <div *ngIf="modalType === 'param_config'">
+        <div class="modal__icon">🧩</div>
+        <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
+        <div class="config-form">
+          <div class="form-group">
+            <label>Valeur</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.value" placeholder="Nouvelle valeur" />
+          </div>
+          <div class="form-group" *ngIf="formData.options">
+            <label>Options disponibles</label>
+            <div class="settings-card__tags">
+              <span class="settings-card__tag" *ngFor="let option of formData.options">{{ option }}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.description" placeholder="Description du paramètre" />
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="saveParam()">💾 Sauvegarder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TOASTS ============ -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>
+      {{ t.message }}
+      <button class="toast__close" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

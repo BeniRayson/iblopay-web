@@ -1,0 +1,59 @@
+.card-list-page {
+  padding: 24px 32px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+}
+
+.status-filter {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d7dae0;
+  background: #fff;
+  font-size: 14px;
+}
+
+.state-message {
+  color: #6f737c;
+  padding: 40px 0;
+  text-align: center;
+
+  &--error {
+    color: #e14b4b;
+  }
+
+  button {
+    margin-left: 12px;
+    border: none;
+    background: #1c1e26;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+
+  &__item {
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}

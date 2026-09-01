@@ -1,0 +1,83 @@
+<div class="commission-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-header__title">Classement des Commissions</h1>
+      <p class="page-header__subtitle">Top agents et super agents générant le plus de commissions</p>
+    </div>
+    <div class="page-header__right">
+      <div class="view-toggle">
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'agent'" (click)="onViewChange('agent')"><i class="bi bi-person"></i> Agent</button>
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'super_agent'" (click)="onViewChange('super_agent')"><i class="bi bi-people"></i> Super Agent</button>
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'admin'" (click)="onViewChange('admin')"><i class="bi bi-shield"></i> Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.tab-btn--active]="activeTab === 'agents'" (click)="onTabChange('agents')">
+      <i class="bi bi-person-badge"></i> Agents
+    </button>
+    <button class="tab-btn" [class.tab-btn--active]="activeTab === 'super_agents'" (click)="onTabChange('super_agents')">
+      <i class="bi bi-person-lines-fill"></i> Super Agents
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <span>Chargement du classement...</span>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="leaderboard" *ngIf="!isLoading && entries.length > 0">
+    <div class="leaderboard__card leaderboard__card--top" *ngFor="let entry of entries.slice(0, 3); let i = index">
+      <div class="leaderboard__rank">
+        <span class="leaderboard__rank-badge" [class]="getRankClass(entry.rank)">{{ entry.rank }}</span>
+      </div>
+      <div class="leaderboard__avatar">
+        <span class="leaderboard__avatar-text">{{ entry.agentName.charAt(0) }}{{ entry.agentName.split(' ')[1]?.charAt(0) || '' }}</span>
+      </div>
+      <div class="leaderboard__info">
+        <span class="leaderboard__name">{{ entry.agentName }}</span>
+        <span class="leaderboard__stats">{{ entry.transactionCount }} transactions · Taux moy. {{ entry.averageRate }}%</span>
+      </div>
+      <div class="leaderboard__amount">
+        <span class="leaderboard__value">{{ formatBif(entry.totalCommissions) }}</span>
+        <span class="leaderboard__trend" [style.color]="getTrendColor(entry.trend)">
+          <i class="bi" [class]="getTrendIcon(entry.trend)"></i>
+          {{ entry.trend === 'up' ? '+' : '' }}{{ entry.trend === 'stable' ? '' : math.round((entry.totalCommissions - entry.previousPeriodTotal) / (entry.previousPeriodTotal || 1) * 100) }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- Remaining entries table -->
+    <div class="leaderboard__table" *ngIf="entries.length > 3">
+      <div class="leaderboard__table-header">
+        <span class="leaderboard__col-rank">Rang</span>
+        <span class="leaderboard__col-name">Nom</span>
+        <span class="leaderboard__col-txns">Transactions</span>
+        <span class="leaderboard__col-rate">Taux Moy.</span>
+        <span class="leaderboard__col-amount">Total Commissions</span>
+        <span class="leaderboard__col-trend">Tendance</span>
+      </div>
+      <div class="leaderboard__row" *ngFor="let entry of entries.slice(3)">
+        <span class="leaderboard__col-rank">{{ entry.rank }}</span>
+        <span class="leaderboard__col-name leaderboard__row-name">{{ entry.agentName }}</span>
+        <span class="leaderboard__col-txns">{{ entry.transactionCount }}</span>
+        <span class="leaderboard__col-rate">{{ entry.averageRate }}%</span>
+        <span class="leaderboard__col-amount">{{ formatBif(entry.totalCommissions) }}</span>
+        <span class="leaderboard__col-trend">
+          <i class="bi" [class]="getTrendIcon(entry.trend)" [style.color]="getTrendColor(entry.trend)"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!isLoading && entries.length === 0">
+    <i class="bi bi-trophy"></i>
+    <p>Aucune donnée de classement disponible</p>
+  </div>
+</div>

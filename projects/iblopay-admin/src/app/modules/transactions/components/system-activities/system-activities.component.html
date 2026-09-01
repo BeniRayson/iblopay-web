@@ -1,0 +1,17 @@
+<div class="activities-card">
+  <div class="activities-card__header">
+    <span class="activities-card__title">Dernières activités du système</span>
+    <a class="activities-card__view-all" href="#">Voir tout →</a>
+  </div>
+
+  <div class="activities-card__list">
+    <div class="activity-chip" *ngFor="let act of activities">
+      <span class="activity-chip__icon">{{ act.icon }}</span>
+      <div class="activity-chip__content">
+        <span class="activity-chip__action">{{ act.action }}</span>
+        <span class="activity-chip__actor">— {{ act.actor }}</span>
+      </div>
+      <span class="activity-chip__time">{{ act.time }}</span>
+    </div>
+  </div>
+</div>

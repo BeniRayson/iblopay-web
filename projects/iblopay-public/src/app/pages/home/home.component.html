@@ -1,0 +1,31 @@
+<div class="public-shell">
+  <header class="public-header">
+    <div class="logo"><div class="logo-icon">IB</div> IBLOPAY</div>
+    <nav>
+      <a href="#services">Services</a>
+      <a href="#suivi">Suivre une demande</a>
+      <button class="btn-login">Se connecter</button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Vos démarches administratives, simplifiées</h1>
+    <p>Soumettez vos demandes en ligne auprès de vos institutions et suivez leur traitement en temps réel.</p>
+  </section>
+
+  <section class="services-section" id="services">
+    <h2>Services disponibles</h2>
+    <div class="services-grid">
+      <div class="service-tile" *ngFor="let s of services">
+        <div class="service-icon"><i [class]="s.icon"></i></div>
+        <div class="service-nom">{{ s.nom }}</div>
+        <div class="service-delai">Délai : {{ s.delai }}</div>
+        <button class="btn-service">Faire ma demande</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="public-footer">
+    © 2026 IBLOPAY — Plateforme citoyenne
+  </footer>
+</div>

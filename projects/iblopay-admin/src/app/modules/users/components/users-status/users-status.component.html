@@ -1,0 +1,225 @@
+<!-- src/app/modules/users/components/users-status/users-status.component.html -->
+<div class="status-modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="status-modal-container" (click)="$event.stopPropagation()">
+    <div class="status-modal-header">
+      <div class="status-modal-icon" [class.verified]="otpVerified">
+        <i class="fas" [class.fa-shield-alt]="!otpVerified" [class.fa-check-circle]="otpVerified"></i>
+      </div>
+      <button class="status-modal-close" (click)="onClose()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="status-modal-body">
+      
+      <!-- ================================================================
+           ÉTAPE 1: OTP
+           ================================================================ -->
+      <div *ngIf="showOtpStep">
+        <h2>🔐 Vérification OTP</h2>
+        <p class="status-modal-subtitle">
+          Pour des raisons de sécurité, veuillez saisir le code OTP envoyé à votre adresse email.
+        </p>
+
+        <!-- Informations de l'utilisateur -->
+        <div class="status-user-info" *ngIf="user">
+          <div class="status-avatar-wrapper">
+            <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="status-avatar-img" />
+            <div *ngIf="!user.photoUrl" class="status-avatar-initials" [style.background]="getAvatarColor(user.id)">
+              {{ getInitials(user.firstName, user.lastName) }}
+            </div>
+          </div>
+          <div class="status-user-text">
+            <h4>{{ user.firstName }} {{ user.lastName }}</h4>
+            <span class="status-user-role">{{ getRoleLabel(user.role) }}</span>
+            <span class="status-user-id">ID: {{ user.id }}</span>
+          </div>
+        </div>
+
+        <!-- Messages OTP -->
+        <div class="status-alert status-success" *ngIf="success && !otpVerified">
+          <i class="fas fa-check-circle"></i> {{ success }}
+        </div>
+        <div class="status-alert status-error" *ngIf="otpError">
+          <i class="fas fa-exclamation-circle"></i> {{ otpError }}
+        </div>
+
+        <!-- Champ OTP avec chrono intégré -->
+        <div class="status-form-group">
+          <div class="status-otp-header">
+            <label for="status-otpCode">
+              Code OTP <span class="required">*</span>
+              <span class="otp-hint">(Simulation: 123456)</span>
+            </label>
+            <!-- Petit chrono circulaire -->
+            <div class="status-otp-timer" [class.expired]="otpTimer <= 0">
+              <svg viewBox="0 0 36 36" class="status-otp-timer-svg">
+                <circle 
+                  cx="18" 
+                  cy="18" 
+                  r="14" 
+                  class="status-otp-timer-bg"
+                />
+                <circle 
+                  cx="18" 
+                  cy="18" 
+                  r="14" 
+                  class="status-otp-timer-progress"
+                  [style.stroke-dasharray]="87.96"
+                  [style.stroke-dashoffset]="87.96 - (87.96 * otpTimer / 60)"
+                  [style.stroke]="otpTimer > 15 ? '#4f46e5' : '#ef4444'"
+                />
+              </svg>
+              <span class="status-otp-timer-text">{{ otpTimer }}</span>
+            </div>
+          </div>
+          
+          <div class="status-otp-input-group">
+            <input 
+              id="status-otpCode"
+              type="text" 
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              [(ngModel)]="otpCode"
+              placeholder="••••••"
+              class="status-input status-otp-input"
+              [disabled]="isLoading || isOtpLocked || otpTimer <= 0"
+              (keyup.enter)="verifyOtp()"
+            />
+            <button 
+              type="button" 
+              class="status-otp-resend"
+              (click)="resendOtp()"
+              [disabled]="isOtpLocked || isLoading"
+              title="Renvoyer le code"
+            >
+              <i class="fas fa-redo"></i>
+            </button>
+          </div>
+          
+          <div class="status-otp-footer">
+            <small class="otp-help" *ngIf="isOtpLocked">
+              🔒 Verrouillé pour {{ getLockRemainingTime() }}
+            </small>
+            <small class="otp-help" *ngIf="!isOtpLocked && otpTimer > 0">
+              ⏱️ Code valable {{ getOtpRemainingTime() }}
+            </small>
+            <small class="otp-help" *ngIf="!isOtpLocked && otpTimer <= 0">
+              ⏳ Le code a expiré
+            </small>
+            <span class="status-otp-attempts" *ngIf="otpAttempts > 0 && !isOtpLocked">
+              Tentative {{ otpAttempts }}/{{ maxOtpAttempts }}
+              <span class="attempts-dots">
+                <span class="attempt-dot" [class.filled]="i < otpAttempts" *ngFor="let i of [].constructor(maxOtpAttempts); let idx = index"></span>
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Bouton Vérifier -->
+        <button 
+          type="button" 
+          class="status-btn-verify"
+          (click)="verifyOtp()"
+          [disabled]="!otpCode || otpCode.length < 4 || isOtpLocked || isLoading || otpTimer <= 0"
+        >
+          <i class="fas fa-check"></i> Vérifier le code
+        </button>
+      </div>
+
+      <!-- ================================================================
+           ÉTAPE 2: CHANGEMENT DE STATUT
+           ================================================================ -->
+      <div *ngIf="showStatusStep">
+        <div class="status-verified-badge">
+          <i class="fas fa-check-circle"></i>
+          <span>✅ OTP vérifié avec succès</span>
+        </div>
+
+        <h2><i class="fas fa-exchange-alt"></i> Changer le statut</h2>
+        <p class="status-modal-subtitle">
+          Sélectionnez le nouveau statut pour cet utilisateur.
+        </p>
+
+        <!-- Informations de l'utilisateur -->
+        <div class="status-user-info" *ngIf="user">
+          <div class="status-avatar-wrapper">
+            <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="status-avatar-img" />
+            <div *ngIf="!user.photoUrl" class="status-avatar-initials" [style.background]="getAvatarColor(user.id)">
+              {{ getInitials(user.firstName, user.lastName) }}
+            </div>
+          </div>
+          <div class="status-user-text">
+            <h4>{{ user.firstName }} {{ user.lastName }}</h4>
+            <span class="status-user-role">{{ getRoleLabel(user.role) }}</span>
+            <span class="status-user-id">ID: {{ user.id }}</span>
+          </div>
+        </div>
+
+        <!-- Statut actuel -->
+        <div class="status-current" *ngIf="user">
+          <span class="status-current-label">Statut actuel</span>
+          <span class="status-badge" [class]="getStatusClass(currentStatus)">
+            <span class="status-dot"></span>
+            {{ getStatusLabel(currentStatus) }}
+          </span>
+        </div>
+
+        <!-- Messages -->
+        <div class="status-alert status-success" *ngIf="success">
+          <i class="fas fa-check-circle"></i> {{ success }}
+        </div>
+        <div class="status-alert status-error" *ngIf="error">
+          <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+
+        <!-- Sélection du nouveau statut -->
+        <div class="status-select-section">
+          <label>Nouveau statut</label>
+          <div class="status-options-grid">
+            <div 
+              class="status-option" 
+              *ngFor="let option of statusOptions"
+              [class.selected]="selectedStatus === option.value"
+              [class.disabled]="option.value === currentStatus"
+              (click)="!isLoading && option.value !== currentStatus && onSelectStatus(option.value)"
+            >
+              <div class="status-option-icon" [style.background]="option.color">
+                <i class="fas" [class]="option.icon"></i>
+              </div>
+              <div class="status-option-info">
+                <span class="status-option-label">{{ option.label }}</span>
+                <span class="status-option-current" *ngIf="option.value === currentStatus">(actuel)</span>
+              </div>
+              <div class="status-option-check" *ngIf="selectedStatus === option.value">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="status-modal-footer">
+          <button type="button" class="status-btn-secondary" (click)="goBackToOtp()" [disabled]="isLoading">
+            <i class="fas fa-arrow-left"></i> Retour
+          </button>
+          <button 
+            type="button" 
+            class="status-btn-primary" 
+            [disabled]="selectedStatus === currentStatus || isLoading"
+            (click)="onConfirm()"
+          >
+            <span *ngIf="!isLoading">
+              <i class="fas fa-save"></i> Confirmer le changement
+            </span>
+            <span *ngIf="isLoading" class="status-btn-loader">
+              <span class="status-spinner-small"></span> Traitement...
+            </span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

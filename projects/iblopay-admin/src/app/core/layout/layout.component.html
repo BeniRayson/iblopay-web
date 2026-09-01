@@ -1,0 +1,173 @@
+<!-- src/app/core/layout/layout.component.html -->
+<div class="layout-container">
+
+    <!-- Overlay -->
+    <div class="overlay" [class.show]="isSidebarOpen" (click)="closeSidebar()"></div>
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar" [class.open]="isSidebarOpen">
+        <div class="sidebar-logo">
+            <div class="sun-arc" style="right:auto; left:-40px; top:-40px;"></div>
+            <div class="logo-icon">IB</div>
+            <div class="logo-text">
+                <div class="logo-text-main">IBLOPAY</div>
+                <div class="logo-text-sub">Super Admin Dashboard</div>
+            </div>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item" *ngFor="let item of menuItems">
+                <a class="nav-link" [routerLink]="item.link" routerLinkActive="active"><!--(click)="closeSidebar()" sur menu-->
+                    <i class="nav-icon {{ item.icon }}"></i>
+                    <span class="nav-label">{{ item.label }}</span>
+                    <span class="nav-badge" *ngIf="item.badge">{{ item.badge }}</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="logout-card">
+                <button class="logout-btn" (click)="logout()"><i class="fa-solid fa-sign-out-alt"></i> Se
+                    déconnecter</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ================= MAIN ================= -->
+    <div class="main-content" [class.sidebar-open]="isSidebarOpen">
+        <header class="topbar">
+            <div class="sun-arc"></div>
+            <div class="topbar-left">
+                <button class="menu-toggle" [class.active]="isSidebarOpen" (click)="toggleSidebar()"
+                    title="Afficher/masquer le menu">
+                    <i [class]="menuToggleIcon"></i>
+                </button>
+                <div class="topbar-logo">IBLOPAY<span>.</span></div>
+
+                <div class="topbar-title">
+                    IBLOPAY — Administration<span class="topbar-title-module" *ngIf="moduleTitle"> — {{ moduleTitle
+                        }}</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+
+                <!-- ============ RECHERCHE ============ -->
+                <div class="search-box">
+                    <i class="fa-solid fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Rechercher (Ctrl + K)"
+                        [(ngModel)]="searchQuery" (input)="onSearchInput()" (focus)="onSearchFocus()" />
+
+                    <div class="search-results" *ngIf="isSearchOpen && searchQuery.trim().length > 0">
+                        <ng-container *ngIf="(searchResults$ | async) as results; else searchEmpty">
+                            <a class="search-result-item" *ngFor="let r of results" (click)="selectSearchResult(r)">
+                                <i [class]="r.icon || 'fa-solid fa-circle-dot'"></i>
+                                <div>
+                                    <div>{{ r.label }}</div>
+                                    <span class="search-result-sub" *ngIf="r.sublabel">{{ r.sublabel }}</span>
+                                </div>
+                            </a>
+                            <div class="search-results-empty" *ngIf="results.length === 0">
+                                Aucun résultat dans ce module.
+                            </div>
+                        </ng-container>
+                        <ng-template #searchEmpty>
+                            <div class="search-results-empty">Aucun résultat dans ce module.</div>
+                        </ng-template>
+                    </div>
+                </div>
+
+                <!-- ============ NOTIFICATIONS ============ -->
+<div class="icon-btn-wrap">
+    <button class="icon-btn" [class.active]="isNotifOpen" title="Notifications"
+        (click)="toggleNotifications()">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" *ngIf="(unreadCount$ | async) as count">{{ count }}</span>
+    </button>
+
+    <div class="notif-backdrop" *ngIf="isNotifOpen" (click)="toggleNotifications()"></div>
+
+    <div class="notif-panel" *ngIf="isNotifOpen">
+        <div class="notif-panel-header">
+            <span>Notifications</span>
+            <div class="notif-panel-actions">
+                <button class="notif-panel-mark-all" (click)="markAllNotificationsRead($event)">
+                    <i class="fa-solid fa-check-double"></i> Tout marquer comme lu
+                </button>
+                <button class="notif-panel-clear" (click)="clearAllNotifications($event)">
+                    <i class="fa-solid fa-trash"></i> Tout supprimer
+                </button>
+            </div>
+        </div>
+
+        <div class="notif-panel-body">
+            <ng-container *ngIf="(notifications$ | async) as notifs">
+                <!-- Afficher le compteur -->
+                <div class="notif-count" *ngIf="notifs.length > 0">
+                    {{ notifs.length }} notification{{ notifs.length > 1 ? 's' : '' }}
+                    <span class="notif-unread-count" *ngIf="(unreadCount$ | async) as unreadCount">
+                        ({{ unreadCount }} non lue{{ unreadCount > 1 ? 's' : '' }})
+                    </span>
+                </div>
+                
+                <!-- Liste des notifications -->
+                <div class="notif-item" [class.unread]="!n.read" *ngFor="let n of notifs"
+                    (click)="openNotification(n)">
+                    <div class="notif-icon" [class]="n.type">
+                        <i [class]="n.icon || 'fa-solid fa-bell'"></i>
+                    </div>
+                    <div class="notif-body">
+                        <div class="notif-title">
+                            {{ n.title }}
+                            <span class="notif-priority" [class]="n.priority" *ngIf="n.priority">
+                                <span class="priority-badge" [class]="n.priority">
+                                    {{ n.priority === 'high' ? 'Haute' : n.priority === 'medium' ? 'Moyenne' : 'Basse' }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="notif-message">{{ n.message }}</div>
+                        <div class="notif-time">
+                            <span class="notif-date">{{ n.date | date:'dd/MM/yyyy' }}</span>
+                            <span class="notif-hour">{{ n.date | date:'HH:mm' }}</span>
+                            <span class="notif-status" *ngIf="n.read">✓ Lu</span>
+                            <span class="notif-status unread" *ngIf="!n.read">● Non lu</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Message vide -->
+                <div class="notif-empty" *ngIf="notifs.length === 0">
+                    <i class="fa-solid fa-bell-slash"></i>
+                    <span>Aucune notification</span>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>
+
+                <div class="lang-select"><i class="fa-solid fa-globe"></i> FR <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <button class="theme-toggle" title="Changer de thème" (click)="toggleTheme()">
+                    <i [class]="themeToggleIcon"></i>
+                </button>
+                <div class="profile-box">
+                    <div class="profile-avatar">SA</div>
+                    <div class="profile-info">
+                        <div class="profile-name">Super Admin</div>
+                        <div class="profile-role">Administrateur Principal</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <router-outlet></router-outlet>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-copyright">© 2026 IBLOPAY — Tous droits réservés</div>
+            <div class="footer-tagline">
+                <i class="fa-solid fa-earth-africa"></i>
+                Plateforme de paiement et services numériques du Burundi
+            </div>
+        </footer>
+    </div>
+</div>

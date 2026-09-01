@@ -1,0 +1,318 @@
+<!-- ================================================================
+     NOTIFICATION TOAST
+   ================================================================ -->
+<div class="notification-toast" *ngIf="showNotification" [class.notification-success]="notificationType === 'success'"
+    [class.notification-error]="notificationType === 'error'" [class.notification-info]="notificationType === 'info'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path *ngIf="notificationType === 'success'" d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+        <polyline *ngIf="notificationType === 'success'" points="22 4 12 14.01 9 11.01" />
+        <circle *ngIf="notificationType === 'error'" cx="12" cy="12" r="10" />
+        <line *ngIf="notificationType === 'error'" x1="15" y1="9" x2="9" y2="15" />
+        <line *ngIf="notificationType === 'error'" x1="9" y1="9" x2="15" y2="15" />
+        <circle *ngIf="notificationType === 'info'" cx="12" cy="12" r="10" />
+        <line *ngIf="notificationType === 'info'" x1="12" y1="16" x2="12" y2="12" />
+        <line *ngIf="notificationType === 'info'" x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+    <span>{{ notificationMessage }}</span>
+</div>
+
+<!-- ================================================================
+     CONTENEUR PRINCIPAL
+   ================================================================ -->
+<div class="services-container" [class.loading]="isLoading">
+
+    <!-- LOADER -->
+    <div class="services-loader" *ngIf="isLoading">
+        <div class="loader-spinner"></div>
+        <span>Chargement des services publics...</span>
+    </div>
+
+    <!-- STATISTIQUES -->
+    <div class="stats-grid" *ngIf="!isLoading">
+        <div class="stat-card">
+            <div class="stat-icon total">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M8 12h8" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.total }}</span>
+                <span class="stat-label">Total</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon interne">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9-4-18-3 9H2" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.interne }}</span>
+                <span class="stat-label">Internes</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon externe">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.externe }}</span>
+                <span class="stat-label">Externes</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon actif">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.actifs }}</span>
+                <span class="stat-label">Actifs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <div class="header-left">
+            <h1>Services Publics Digitalisés</h1>
+            <p class="subtitle">Gestion des systèmes informatiques internes et externes de l'OBR</p>
+        </div>
+        <div class="header-right">
+            <button class="btn-export" (click)="exportData()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Exporter
+            </button>
+        </div>
+    </div>
+
+    <!-- FILTRES -->
+    <div class="filters-panel" *ngIf="!isLoading">
+        <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()"
+                placeholder="Rechercher un service..." />
+        </div>
+        <div class="filters-right">
+            <div class="filter-group">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" />
+                    <line x1="8" y1="2" x2="8" y2="22" />
+                    <line x1="16" y1="2" x2="16" y2="22" />
+                    <line x1="2" y1="8" x2="22" y2="8" />
+                    <line x1="2" y1="16" x2="22" y2="16" />
+                </svg>
+                <select [(ngModel)]="selectedType" (change)="onFilterChange()">
+                    <option value="">Tous les types</option>
+                    <option value="INTERNE">Internes</option>
+                    <option value="EXTERNE">Externes</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v8M8 12h8" />
+                </svg>
+                <select [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+                    <option value="">Tous les statuts</option>
+                    <option value="ACTIF">Actifs</option>
+                    <option value="INACTIF">Inactifs</option>
+                </select>
+            </div>
+            <button class="btn-clear" (click)="clearFilters()" title="Réinitialiser">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- TABLEAU -->
+    <div class="table-wrapper">
+        <div class="table-header">
+            <span class="table-title">
+                Services Publics
+                <span class="count-badge">{{ filteredServices.length }}</span>
+            </span>
+            <span class="table-subtitle">
+                {{ paginatedServices.length }} affichés sur {{ filteredServices.length }}
+            </span>
+        </div>
+
+        <div class="table-toolbar" *ngIf="filteredServices.length > 0">
+            <div class="bulk-actions" *ngIf="selectedServices.size > 0">
+                <span>{{ selectedServices.size }} sélectionné(s)</span>
+                <button class="btn-bulk-activate" (click)="bulkActivate()">Activer</button>
+                <button class="btn-bulk-deactivate" (click)="bulkDeactivate()">Désactiver</button>
+                <button class="btn-bulk-delete" (click)="bulkDelete()">Supprimer</button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-scroll" *ngIf="!isLoading && filteredServices.length > 0">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th class="col-checkbox">
+                            <input type="checkbox" [checked]="selectAll" (change)="toggleSelectAll()" />
+                        </th>
+                        <th class="col-number">#</th>
+                        <th class="col-abreviation">Abréviation / Système</th>
+                        <th class="col-description">Description</th>
+                        <th class="col-type">Type</th>
+                        <th class="col-status">Statut</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let service of paginatedServices; let i = index; trackBy: trackById">
+                        <td class="col-checkbox">
+                            <input type="checkbox" [checked]="selectedServices.has(service.id)"
+                                (change)="toggleSelect(service.id)" />
+                        </td>
+                        <td class="col-number">
+                            <span class="row-number">
+                                {{ (currentPage - 1) * itemsPerPage + i + 1 }}
+                            </span>
+                        </td>
+                        <td class="col-abreviation">
+                            <div class="service-cell">
+                                <div class="service-icon" [style.background]="getServiceColor(service.abreviation)">
+                                    {{ service.abreviation.charAt(0) }}
+                                </div>
+                                <div class="service-info">
+                                    <span class="service-name">{{ service.abreviation }}</span>
+                                    <span class="service-id">ID: {{ service.id }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="col-description">
+                            <span class="description-text">{{ service.description }}</span>
+                        </td>
+                        <td class="col-type">
+                            <span class="type-badge"
+                                [class]="service.type === 'INTERNE' ? 'type-interne' : 'type-externe'">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path *ngIf="service.type === 'INTERNE'" d="M22 12h-4l-3 9-4-18-3 9H2" />
+                                    <circle *ngIf="service.type === 'EXTERNE'" cx="12" cy="12" r="10" />
+                                    <line *ngIf="service.type === 'EXTERNE'" x1="2" y1="12" x2="22" y2="12" />
+                                    <path *ngIf="service.type === 'EXTERNE'"
+                                        d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                                </svg>
+                                {{ service.type }}
+                            </span>
+                        </td>
+                        <td class="col-status">
+                            <span class="status-badge" [class]="getStatusClass(service.actif)">
+                                <span class="status-dot"></span>
+                                {{ getStatusLabel(service.actif) }}
+                            </span>
+                        </td>
+                        <td class="col-actions">
+                            <div class="actions-cell">
+                                <button class="action-btn view" (click)="onViewService(service)" title="Voir">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+                                <button class="action-btn edit" (click)="onEditService(service)" title="Modifier">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                </button>
+                                <button class="action-btn toggle" (click)="onToggleStatus(service)"
+                                    [title]="service.actif ? 'Désactiver' : 'Activer'">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="2" />
+                                        <circle cx="12" cy="12" r="4" />
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" (click)="onDeleteService(service)" title="Supprimer">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-state" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Chargement des services...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!isLoading && filteredServices.length === 0">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            <h3>Aucun service</h3>
+            <p>Aucun service public ne correspond à vos critères.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="table-footer" *ngIf="filteredServices.length > 0">
+            <span class="pagination-info">
+                {{ (currentPage - 1) * itemsPerPage + 1 }} -
+                {{ Math.min(currentPage * itemsPerPage, filteredServices.length) }}
+                / {{ filteredServices.length }}
+            </span>
+            <div class="pagination-controls">
+                <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+                <button *ngFor="let page of getPaginationPages()" (click)="changePage(page)"
+                    [class.active]="currentPage === page">
+                    {{ page }}
+                </button>
+                <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

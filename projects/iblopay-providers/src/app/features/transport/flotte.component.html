@@ -1,0 +1,368 @@
+<div class="page-header">
+  <div>
+    <h1>Flotte & Chauffeurs</h1>
+    <p>Gérez vos bus, vos taxis et les chauffeurs qui les conduisent</p>
+  </div>
+  <button class="btn-primary" *ngIf="vueActive === 'VEHICULES'" (click)="ouvrirNouveauVehicule()">
+    <i class="fa-solid fa-plus"></i> Nouveau véhicule
+  </button>
+  <button class="btn-primary" *ngIf="vueActive === 'CHAUFFEURS'" (click)="ouvrirNouveauChauffeur()">
+    <i class="fa-solid fa-user-plus"></i> Nouveau chauffeur
+  </button>
+</div>
+
+<div class="vue-tabs">
+  <button class="vue-tab" [class.active]="vueActive === 'VEHICULES'" (click)="changerVue('VEHICULES')">
+    <i class="fa-solid fa-car"></i> Véhicules <span class="tab-count">{{ vehicules.length }}</span>
+  </button>
+  <button class="vue-tab" [class.active]="vueActive === 'CHAUFFEURS'" (click)="changerVue('CHAUFFEURS')">
+    <i class="fa-solid fa-id-card"></i> Chauffeurs <span class="tab-count">{{ chauffeurs.length }}</span>
+  </button>
+</div>
+
+<!-- ============ VUE VÉHICULES ============ -->
+<ng-container *ngIf="vueActive === 'VEHICULES'">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Rechercher un matricule, un modèle..." [(ngModel)]="recherche" (ngModelChange)="onFiltreChange()" />
+    </div>
+    <select [(ngModel)]="filtreType" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les types</option>
+      <option value="BUS">Bus</option>
+      <option value="TAXI">Taxi</option>
+    </select>
+    <select [(ngModel)]="filtreStatutVehicule" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les statuts</option>
+      <option value="EN_SERVICE">En service</option>
+      <option value="DISPONIBLE">Disponible</option>
+      <option value="EN_COURSE">En course</option>
+      <option value="AU_DEPOT">Au dépôt</option>
+      <option value="EN_PANNE">En panne</option>
+      <option value="EN_MAINTENANCE">En maintenance</option>
+      <option value="HORS_SERVICE">Hors service</option>
+    </select>
+  </div>
+
+  <div class="card table-card" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Véhicule</th>
+          <th>Type</th>
+          <th>Chauffeur</th>
+          <th>Trajet / Zone</th>
+          <th>Kilométrage</th>
+          <th>Consommation</th>
+          <th>Statut</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let v of vehiculesFiltres" class="clickable-row" (click)="voirDetailVehicule(v)">
+          <td>
+            <div class="vehicule-cell">
+              <div class="vehicule-icon" [ngClass]="v.type === 'BUS' ? 'icon-bus' : 'icon-taxi'">
+                <i class="fa-solid" [class.fa-bus]="v.type === 'BUS'" [class.fa-taxi]="v.type === 'TAXI'"></i>
+              </div>
+              <div>
+                <div class="vehicule-matricule">{{ v.matricule }}</div>
+                <div class="vehicule-modele">{{ v.marqueModele }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge" [ngClass]="v.type === 'BUS' ? 'badge-blue' : 'badge-purple'">{{ v.type === 'BUS' ? 'Bus' : 'Taxi' }}</span></td>
+          <td>{{ nomChauffeur(v.chauffeurId) }}</td>
+          <td>{{ nomLigneOuZone(v) }}</td>
+          <td>{{ v.kilometrage | number }} km</td>
+          <td>
+            <span class="conso-cell" [ngClass]="v.motorisation === 'ELECTRIQUE' ? 'conso-electrique' : 'conso-thermique'">
+              <i class="fa-solid" [class.fa-bolt]="v.motorisation === 'ELECTRIQUE'" [class.fa-gas-pump]="v.motorisation !== 'ELECTRIQUE'"></i>
+              {{ consommationFormatee(v) }}
+            </span>
+          </td>
+          <td><span class="badge" [ngClass]="statutVehiculeClass(v.statut)">{{ statutVehiculeLabel(v.statut) }}</span></td>
+          <td class="actions-col" (click)="$event.stopPropagation()">
+            <div class="row-actions">
+              <button class="btn-icon btn-indigo" title="Modifier" (click)="modifierVehicule(v)"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-icon btn-red" title="Retirer" (click)="supprimerVehicule(v)"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="vehiculesFiltres.length === 0">Aucun véhicule trouvé</div>
+  </div>
+</ng-container>
+
+<!-- ============ VUE CHAUFFEURS ============ -->
+<ng-container *ngIf="vueActive === 'CHAUFFEURS'">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Rechercher un nom, un n° de permis..." [(ngModel)]="recherche" (ngModelChange)="onFiltreChange()" />
+    </div>
+    <select [(ngModel)]="filtreStatutChauffeur" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les statuts</option>
+      <option value="ACTIF">Actif</option>
+      <option value="INACTIF">Inactif</option>
+    </select>
+  </div>
+
+  <div class="card table-card" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Chauffeur</th>
+          <th>Téléphone</th>
+          <th>Permis</th>
+          <th>Véhicule assigné</th>
+          <th>Note</th>
+          <th>Statut</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of chauffeursFiltres" class="clickable-row" (click)="voirDetailChauffeur(c)">
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar">{{ c.prenom.charAt(0) }}{{ c.nom.charAt(0) }}</div>
+              <span>{{ c.prenom }} {{ c.nom }}</span>
+            </div>
+          </td>
+          <td class="tel-text">{{ c.telephone }}</td>
+          <td>
+            <div class="font-mono">{{ c.numeroPermis }}</div>
+            <div class="permis-validite" [class.text-red]="permisExpireBientot(c.permisValidite)">
+              Valide jusqu'au {{ c.permisValidite | date:'dd/MM/yyyy' }}
+              <i class="fa-solid fa-triangle-exclamation" *ngIf="permisExpireBientot(c.permisValidite)" title="Expire bientôt"></i>
+            </div>
+          </td>
+          <td>{{ vehiculeAssigne(c.id)?.matricule || 'Aucun' }}</td>
+          <td><i class="fa-solid fa-star star-icon"></i> {{ c.note || '-' }}</td>
+          <td><span class="badge" [ngClass]="c.statut === 'ACTIF' ? 'badge-green' : 'badge-gray'">{{ c.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span></td>
+          <td class="actions-col" (click)="$event.stopPropagation()">
+            <div class="row-actions">
+              <button class="btn-icon btn-indigo" title="Modifier" (click)="modifierChauffeur(c)"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-icon" [ngClass]="c.statut === 'ACTIF' ? 'btn-green-active' : 'btn-gray-inactive'" title="Activer/désactiver" (click)="toggleStatutChauffeur(c, $event)"><i class="fa-solid fa-power-off"></i></button>
+              <button class="btn-icon btn-red" title="Supprimer" (click)="supprimerChauffeur(c)"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="chauffeursFiltres.length === 0">Aucun chauffeur trouvé</div>
+  </div>
+</ng-container>
+
+<div class="loading-state" *ngIf="isLoading">
+  <i class="fa-solid fa-spinner fa-spin"></i>
+  <p>Chargement...</p>
+</div>
+
+<!-- ============ MODAL VÉHICULE ============ -->
+<div class="modal-overlay" *ngIf="showVehiculeModal" (click)="fermerVehiculeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="vehiculeForm as f">
+    <div class="modal-header">
+      <h3>{{ f.id ? 'Modifier le véhicule' : 'Nouveau véhicule' }}</h3>
+      <button class="btn-close" (click)="fermerVehiculeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field">
+          <label>Type <span class="required">*</span></label>
+          <select [(ngModel)]="f.type" (ngModelChange)="onChangerTypeVehicule()">
+            <option value="BUS">Bus</option>
+            <option value="TAXI">Taxi</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Matricule <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.matricule" placeholder="Ex: BJ-2201-A" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Marque / Modèle <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.marqueModele" placeholder="Ex: Toyota Coaster" />
+        </div>
+        <div class="field" *ngIf="f.type === 'BUS'">
+          <label>Capacité (places)</label>
+          <input type="number" min="1" [(ngModel)]="f.capacite" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Statut</label>
+          <select [(ngModel)]="f.statut">
+            <option *ngFor="let s of statutsDisponibles(f.type)" [value]="s">{{ statutVehiculeLabel(s) }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Kilométrage actuel</label>
+          <input type="number" min="0" [(ngModel)]="f.kilometrage" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Motorisation</label>
+          <select [(ngModel)]="f.motorisation">
+            <option value="ESSENCE">Essence</option>
+            <option value="DIESEL">Diesel</option>
+            <option value="ELECTRIQUE">Électrique</option>
+            <option value="HYBRIDE">Hybride</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Consommation moy. / 100 km ({{ f.motorisation === 'ELECTRIQUE' ? 'kWh' : 'L' }})</label>
+          <input type="number" min="0" step="0.1" [(ngModel)]="f.consommationMoyenne100km" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Chauffeur assigné</label>
+        <select [(ngModel)]="f.chauffeurId">
+          <option [ngValue]="null">Aucun</option>
+          <option *ngFor="let c of chauffeurs" [ngValue]="c.id">{{ c.prenom }} {{ c.nom }}</option>
+        </select>
+      </div>
+      <div class="field" *ngIf="f.type === 'BUS'">
+        <label>Trajet assigné</label>
+        <select [(ngModel)]="f.ligneId">
+          <option [ngValue]="null">Aucune</option>
+          <option *ngFor="let l of lignes" [ngValue]="l.id">{{ l.nom }}</option>
+        </select>
+      </div>
+      <div class="field" *ngIf="f.type === 'TAXI'">
+        <label>Zone de service</label>
+        <select [(ngModel)]="f.zoneId">
+          <option [ngValue]="null">Aucune</option>
+          <option *ngFor="let z of zones" [ngValue]="z.id">{{ z.nom }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerVehiculeModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrerVehicule()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL CHAUFFEUR ============ -->
+<div class="modal-overlay" *ngIf="showChauffeurModal" (click)="fermerChauffeurModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="chauffeurForm as f">
+    <div class="modal-header">
+      <h3>{{ f.id ? 'Modifier le chauffeur' : 'Nouveau chauffeur' }}</h3>
+      <button class="btn-close" (click)="fermerChauffeurModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field">
+          <label>Nom <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.nom" />
+        </div>
+        <div class="field">
+          <label>Prénom <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.prenom" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Adresse</label>
+        <input type="text" [(ngModel)]="f.adresse" />
+      </div>
+      <div class="field">
+        <label>Téléphone <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="f.telephone" placeholder="+257 79 000 000" />
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>N° de permis <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.numeroPermis" />
+        </div>
+        <div class="field">
+          <label>Validité du permis <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="f.permisValidite" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Véhicule assigné</label>
+        <select [(ngModel)]="f.vehiculeId">
+          <option [ngValue]="null">Aucun</option>
+          <option *ngFor="let v of vehicules" [ngValue]="v.id">{{ v.matricule }} — {{ v.marqueModele }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerChauffeurModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrerChauffeur()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DÉTAIL VÉHICULE ============ -->
+<div class="modal-overlay" *ngIf="vehiculeDetailAffiche" (click)="fermerDetailVehicule()">
+  <div class="modal-card modal-detail" (click)="$event.stopPropagation()" *ngIf="vehiculeDetailAffiche as v">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="vehicule-icon" [ngClass]="v.type === 'BUS' ? 'icon-bus' : 'icon-taxi'">
+          <i class="fa-solid" [class.fa-bus]="v.type === 'BUS'" [class.fa-taxi]="v.type === 'TAXI'"></i>
+        </div>
+        <div>
+          <h3>{{ v.matricule }}</h3>
+          <span class="service-code">{{ v.marqueModele }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerDetailVehicule()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row"><span class="detail-key">Type</span><span class="detail-val">{{ v.type === 'BUS' ? 'Bus' : 'Taxi' }}</span></div>
+      <div class="detail-row"><span class="detail-key">Statut</span><span class="badge" [ngClass]="statutVehiculeClass(v.statut)">{{ statutVehiculeLabel(v.statut) }}</span></div>
+      <div class="detail-row" *ngIf="v.capacite"><span class="detail-key">Capacité</span><span class="detail-val">{{ v.capacite }} places</span></div>
+      <div class="detail-row"><span class="detail-key">Chauffeur assigné</span><span class="detail-val">{{ nomChauffeur(v.chauffeurId) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Trajet / Zone</span><span class="detail-val">{{ nomLigneOuZone(v) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Kilométrage</span><span class="detail-val">{{ v.kilometrage | number }} km</span></div>
+      <div class="detail-row"><span class="detail-key">Motorisation</span><span class="detail-val">{{ motorisationLabel(v.motorisation) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Consommation totale</span><span class="detail-val">{{ consommationFormatee(v) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Consommation moyenne</span><span class="detail-val">{{ v.consommationMoyenne100km }} {{ v.motorisation === 'ELECTRIQUE' ? 'kWh' : 'L' }} / 100 km</span></div>
+      <div class="detail-row" *ngIf="v.dateDerniereMaintenance"><span class="detail-key">Dernière maintenance</span><span class="detail-val">{{ v.dateDerniereMaintenance | date:'dd/MM/yyyy' }}</span></div>
+      <div class="detail-row" *ngIf="v.prochaineMaintenanceKm"><span class="detail-key">Prochaine maintenance</span><span class="detail-val">à {{ v.prochaineMaintenanceKm | number }} km</span></div>
+      <div class="detail-row"><span class="detail-key">Mise en service</span><span class="detail-val">{{ v.dateMiseEnService | date:'dd/MM/yyyy' }}</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetailVehicule()">Fermer</button>
+      <button class="btn-primary" (click)="modifierVehicule(v); fermerDetailVehicule()"><i class="fa-solid fa-pen"></i> Modifier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DÉTAIL CHAUFFEUR ============ -->
+<div class="modal-overlay" *ngIf="chauffeurDetailAffiche" (click)="fermerDetailChauffeur()">
+  <div class="modal-card modal-detail" (click)="$event.stopPropagation()" *ngIf="chauffeurDetailAffiche as c">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="user-avatar user-avatar-lg">{{ c.prenom.charAt(0) }}{{ c.nom.charAt(0) }}</div>
+        <div>
+          <h3>{{ c.prenom }} {{ c.nom }}</h3>
+          <span class="service-code">{{ c.numeroPermis }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerDetailChauffeur()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row"><span class="detail-key">Statut</span><span class="badge" [ngClass]="c.statut === 'ACTIF' ? 'badge-green' : 'badge-gray'">{{ c.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span></div>
+      <div class="detail-row"><span class="detail-key">Adresse</span><span class="detail-val">{{ c.adresse }}</span></div>
+      <div class="detail-row"><span class="detail-key">Téléphone</span><span class="detail-val">{{ c.telephone }}</span></div>
+      <div class="detail-row"><span class="detail-key">N° de permis</span><span class="detail-val">{{ c.numeroPermis }}</span></div>
+      <div class="detail-row" [class.text-red]="permisExpireBientot(c.permisValidite)"><span class="detail-key">Validité du permis</span><span class="detail-val">{{ c.permisValidite | date:'dd/MM/yyyy' }}</span></div>
+      <div class="detail-row"><span class="detail-key">Véhicule assigné</span><span class="detail-val">{{ vehiculeAssigne(c.id)?.matricule || 'Aucun' }}</span></div>
+      <div class="detail-row"><span class="detail-key">Nombre de trajets</span><span class="detail-val">{{ c.nombreCourses || 0 | number }}</span></div>
+      <div class="detail-row"><span class="detail-key">Revenu total généré</span><span class="detail-val">{{ (c.revenuTotal || 0) | number }} BIF</span></div>
+      <div class="detail-row"><span class="detail-key">Note moyenne</span><span class="detail-val"><i class="fa-solid fa-star star-icon"></i> {{ c.note || '-' }}</span></div>
+      <div class="detail-row"><span class="detail-key">Date d'embauche</span><span class="detail-val">{{ c.dateEmbauche | date:'dd/MM/yyyy' }}</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetailChauffeur()">Fermer</button>
+      <button class="btn-primary" (click)="modifierChauffeur(c); fermerDetailChauffeur()"><i class="fa-solid fa-pen"></i> Modifier</button>
+    </div>
+  </div>
+</div>
+

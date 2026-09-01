@@ -1,0 +1,357 @@
+<div class="page-header">
+  <div>
+    <h1>Tableau de bord Transport</h1>
+    <p>Vue d'ensemble de votre flotte de bus et de taxis</p>
+  </div>
+  <div class="header-right">
+    <span class="header-date">
+      <i class="fa-regular fa-calendar"></i>
+      {{ today | date:'EEEE d MMMM yyyy' }}
+    </span>
+    <a class="btn-primary" routerLink="/transport/flotte">
+      <i class="fa-solid fa-plus"></i> Nouveau véhicule
+    </a>
+  </div>
+</div>
+
+<!-- ================ ALERTES ================ -->
+<div class="alert-banner" *ngIf="incidentsOuverts.length > 0">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <span>
+    <strong>{{ incidentsOuverts.length }} incident(s)</strong> ouvert(s) sur la flotte
+  </span>
+  <a routerLink="/transport/flotte" class="alert-link">Voir la flotte <i class="fa-solid fa-arrow-right"></i></a>
+</div>
+
+<!-- ================ APERÇU PAR MODULE ================ -->
+<div class="modules-grid">
+  <a routerLink="/transport/flotte" class="module-card">
+    <div class="module-icon icon-blue">
+      <i class="fa-solid fa-bus"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ vehicules.length }}</div>
+      <div class="module-label">Véhicules</div>
+      <div class="module-sub">{{ repartitionBus }} bus · {{ repartitionTaxi }} taxis</div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+
+  <a routerLink="/transport/flotte" class="module-card">
+    <div class="module-icon icon-purple">
+      <i class="fa-solid fa-id-card"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ chauffeurs.length }}</div>
+      <div class="module-label">Chauffeurs</div>
+      <div class="module-sub">{{ chauffeursActifs }} actifs</div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+
+  <a routerLink="/transport/courses" class="module-card">
+    <div class="module-icon icon-orange">
+      <i class="fa-solid fa-route"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ coursesEnCours }}</div>
+      <div class="module-label">Courses en cours</div>
+      <div class="module-sub" *ngIf="incidentsOuverts.length > 0">
+        <span class="urgent-dot"></span> {{ incidentsOuverts.length }} incidents
+      </div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+
+  <a routerLink="/transport/lignes-tarifs" class="module-card">
+    <div class="module-icon icon-green">
+      <i class="fa-solid fa-map-location-dot"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ statsParLigneOuZone.length }}</div>
+      <div class="module-label">Lignes & zones</div>
+      <div class="module-sub">{{ courses.length }} courses au total</div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+</div>
+
+<!-- ================ STATS PRINCIPALES ================ -->
+<div class="stats-grid" *ngIf="stats as s">
+  <div class="stat-card">
+    <div class="stat-icon icon-blue">
+      <i class="fa-solid fa-car"></i>
+    </div>
+    <div>
+      <div class="stat-value">{{ s.vehiculesActifs }}</div>
+      <div class="stat-label">Véhicules actifs</div>
+      <div class="stat-trend" *ngIf="vehicules.length > s.vehiculesActifs">
+        <i class="fa-solid fa-minus"></i> {{ vehicules.length - s.vehiculesActifs }} indisponibles
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon icon-purple">
+      <i class="fa-solid fa-route"></i>
+    </div>
+    <div>
+      <div class="stat-value">{{ s.coursesAujourdhui }}</div>
+      <div class="stat-label">Courses aujourd'hui</div>
+      <div class="stat-trend">
+        <i class="fa-solid fa-arrow-up" style="color: var(--accent-green);"></i>
+        {{ coursesTermineesCount }} terminées
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-card-highlight">
+    <div class="stat-icon icon-green">
+      <i class="fa-solid fa-gauge-high"></i>
+    </div>
+    <div>
+      <div class="stat-value">{{ s.tauxOccupationMoyen }}%</div>
+      <div class="stat-label">Taux d'occupation moyen</div>
+      <div class="stat-progress">
+        <div class="mini-progress">
+          <div class="mini-progress-fill" [style.width.%]="s.tauxOccupationMoyen"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon icon-orange">
+      <i class="fa-solid fa-coins"></i>
+    </div>
+    <div>
+      <div class="stat-value stat-value-revenue">{{ formatBIFComplet(s.revenuAujourdhui) }}</div>
+      <div class="stat-label">Revenu du jour</div>
+      <div class="stat-trend">
+        <i class="fa-solid fa-arrow-up" style="color: var(--accent-green);"></i>
+        {{ s.distanceTotaleKm | number }} km cumulés
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================ CONTENU PRINCIPAL ================ -->
+<div class="content-grid">
+  <!-- RENDEMENT GLOBAL -->
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-chart-simple"></i> Rendement de la flotte
+      </div>
+      <span class="period-badge">Aujourd'hui</span>
+    </div>
+
+    <div class="rendement-rows" *ngIf="stats as s">
+      <!-- Vue d'ensemble des stats -->
+      <div class="rendement-summary">
+        <div class="rendement-summary-item">
+          <span class="summary-label">Courses totales</span>
+          <span class="summary-value">{{ courses.length }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">En cours</span>
+          <span class="summary-value success">{{ coursesEnCours }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">Terminées</span>
+          <span class="summary-value success">{{ coursesTermineesCount }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">Annulées</span>
+          <span class="summary-value danger">{{ coursesAnnuleesCount }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">Revenu du jour</span>
+          <span class="summary-value revenue">{{ formatBIFComplet(s.revenuAujourdhui) }}</span>
+        </div>
+      </div>
+
+      <!-- Barres de progression -->
+      <div class="rendement-row">
+        <div class="rendement-label">
+          <span class="color-dot dot-green"></span>
+          Courses terminées
+        </div>
+        <div class="rendement-value">
+          <strong>{{ coursesTermineesCount }}</strong>
+          <span class="rendement-percent">{{ (courses.length ? coursesTermineesCount / courses.length * 100 : 0) | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill fill-green" [style.width.%]="courses.length ? coursesTermineesCount / courses.length * 100 : 0"></div>
+      </div>
+
+      <div class="rendement-row">
+        <div class="rendement-label">
+          <span class="color-dot dot-orange"></span>
+          En cours
+        </div>
+        <div class="rendement-value">
+          <strong>{{ coursesEnCours }}</strong>
+          <span class="rendement-percent">{{ (courses.length ? coursesEnCours / courses.length * 100 : 0) | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill fill-orange" [style.width.%]="courses.length ? coursesEnCours / courses.length * 100 : 0"></div>
+      </div>
+
+      <div class="rendement-row">
+        <div class="rendement-label">
+          <span class="color-dot dot-red"></span>
+          Annulées
+        </div>
+        <div class="rendement-value">
+          <strong>{{ coursesAnnuleesCount }}</strong>
+          <span class="rendement-percent">{{ (courses.length ? coursesAnnuleesCount / courses.length * 100 : 0) | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill fill-red" [style.width.%]="courses.length ? coursesAnnuleesCount / courses.length * 100 : 0"></div>
+      </div>
+
+      <!-- Footer avec indicateurs -->
+      <div class="rendement-footer">
+        <div class="rendement-stat">
+          <span class="footer-label">🚌 Distance cumulée</span>
+          <span class="footer-value">{{ s.distanceTotaleKm | number }} km</span>
+        </div>
+        <div class="rendement-stat">
+          <span class="footer-label">Taux d'occupation</span>
+          <span class="footer-value">{{ s.tauxOccupationMoyen }}%</span>
+        </div>
+        <div class="rendement-stat">
+          <span class="footer-label">Revenu du jour</span>
+          <span class="footer-value revenue">{{ formatBIFComplet(s.revenuAujourdhui) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DERNIÈRES COURSES -->
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-clock-rotate-left"></i> Dernières courses
+      </div>
+      <a routerLink="/transport/courses" class="link-see-all">
+        Voir tout <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="demande-list">
+      <div class="demande-item" *ngFor="let c of dernieresCourses">
+        <div class="demande-info">
+          <div class="demande-ref">{{ c.numeroReference }}</div>
+          <div class="demande-service">
+            <span class="service-name">{{ c.type === 'BUS' ? 'Bus' : 'Taxi' }} — {{ nomVehicule(c.vehiculeId) }}</span>
+            <span class="demande-user">— {{ c.clientNom }}</span>
+          </div>
+        </div>
+        <div class="demande-status">
+          <span class="badge" [ngClass]="statutCourseClass(c.statut)">{{ statutCourseLabel(c.statut) }}</span>
+          <span class="demande-date">{{ c.dateDemande | date:'HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && dernieresCourses.length === 0">
+        <i class="fa-regular fa-face-smile"></i>
+        <p>Aucune course pour le moment</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================ RENDEMENT PAR LIGNE/ZONE + MEILLEURS CHAUFFEURS ================ -->
+<div class="double-grid">
+  <!-- RENDEMENT PAR LIGNE / ZONE -->
+  <div class="card table-card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-table-cells"></i> Rendement par ligne (bus) & zone (taxi)
+      </div>
+      <span class="period-badge">{{ statsParLigneOuZone.length }} lignes/zones</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Trajet / Zone</th>
+            <th class="text-center">Type</th>
+            <th class="text-center">Courses</th>
+            <th class="text-center">Occupation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of statsParLigneOuZone">
+            <td>
+              <div class="service-cell">
+                <span class="service-dot" [style.background]="getLigneOuZoneColor(l.nom)"></span>
+                {{ l.nom }}
+              </div>
+            </td>
+            <td class="text-center">{{ l.type === 'BUS' ? 'Bus' : 'Taxi' }}</td>
+            <td class="text-center">{{ l.courses }}</td>
+            <td class="text-center">
+              <span class="status-badge success" *ngIf="l.tauxOccupation >= 60; else lowOccup">{{ l.tauxOccupation }}%</span>
+              <ng-template #lowOccup><span class="status-badge warning">{{ l.tauxOccupation }}%</span></ng-template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer" *ngIf="statsParLigneOuZone.length === 0">
+      <i class="fa-regular fa-circle-info"></i>
+      Aucune donnée de rendement disponible
+    </div>
+  </div>
+
+  <!-- MEILLEURS CHAUFFEURS (trajets & revenus) -->
+  <div class="card table-card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-id-card"></i> Meilleurs chauffeurs (trajets & revenus)
+      </div>
+      <span class="period-badge">Top {{ meilleursChauffeurs.length }}</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Chauffeur</th>
+            <th>Véhicule</th>
+            <th class="text-center">Trajets</th>
+            <th class="text-center">Revenu généré</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of meilleursChauffeurs">
+            <td>
+              <div class="user-cell">
+                <span class="user-avatar">{{ c.prenom.charAt(0) }}</span>
+                {{ c.prenom }} {{ c.nom }}
+              </div>
+            </td>
+            <td>{{ nomVehicule(c.vehiculeId) }}</td>
+            <td class="text-center">{{ c.nombreCourses || 0 | number }}</td>
+            <td class="text-center">
+              <span class="amount-badge">{{ formatBIFComplet(c.revenuTotal || 0) }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="meilleursChauffeurs.length === 0">
+            <td colspan="4" class="text-center empty-cell">
+              <i class="fa-regular fa-circle-info"></i> Aucun chauffeur enregistré
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

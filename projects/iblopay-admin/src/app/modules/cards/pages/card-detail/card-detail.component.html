@@ -1,0 +1,86 @@
+<div class="card-detail-page">
+  <div *ngIf="isLoading" class="state-message">Loading card…</div>
+  <div *ngIf="errorMessage" class="state-message state-message--error">{{ errorMessage }}</div>
+
+  <ng-container *ngIf="card && !isLoading">
+    <div class="card-detail-page__hero">
+      <app-card-preview [card]="card"></app-card-preview>
+
+      <div class="card-actions">
+        <button
+          *ngIf="card.status !== CardStatus.ACTIVE"
+          class="btn btn--primary"
+          (click)="activateCard()"
+        >
+          Activate
+        </button>
+        <button
+          *ngIf="card.status === CardStatus.ACTIVE"
+          class="btn btn--danger"
+          (click)="blockCard()"
+        >
+          Block
+        </button>
+      </div>
+    </div>
+
+    <section class="card-info">
+      <h2>Card details</h2>
+      <dl class="card-info__grid">
+        <dt>Card UID</dt>
+        <dd>{{ card.cardUid }}</dd>
+
+        <dt>Status</dt>
+        <dd><app-card-status [status]="card.status"></app-card-status></dd>
+
+        <dt>Wallet</dt>
+        <dd>{{ card.walletId || '—' }}</dd>
+
+        <dt>Transaction count</dt>
+        <dd>{{ card.transactionCounter }}</dd>
+
+        <dt>Activated at</dt>
+        <dd>{{ card.activatedAt || '—' }}</dd>
+
+        <dt>Blocked at</dt>
+        <dd>{{ card.blockedAt || '—' }}</dd>
+
+        <dt>Replaced at</dt>
+        <dd>{{ card.replacedAt || '—' }}</dd>
+
+        <dt>Previous card</dt>
+        <dd>{{ card.oldCardId || '—' }}</dd>
+      </dl>
+    </section>
+
+    <!-- Transactions: fetched via CardService.getCardTransactions
+         (assumes the backend resolves card -> wallet -> transactions). -->
+    <section class="card-transactions">
+      <h2>Transactions</h2>
+
+      <div *ngIf="isLoadingTransactions" class="state-message">Loading transactions…</div>
+
+      <div *ngIf="!isLoadingTransactions && transactions.length === 0" class="empty-state">
+        <p>No transactions to show yet.</p>
+        <p class="empty-state__hint">This card's transaction history will appear here once the transactions feature ships.</p>
+      </div>
+
+      <table class="transactions-table" *ngIf="!isLoadingTransactions && transactions.length > 0">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of transactions">
+            <td>{{ tx.createdAt }}</td>
+            <td>{{ tx.amount }} {{ tx.currency }}</td>
+            <td>{{ tx.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </ng-container>
+</div>

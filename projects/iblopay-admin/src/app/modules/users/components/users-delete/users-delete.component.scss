@@ -1,0 +1,834 @@
+// src/app/modules/users/components/users-delete/users-delete.component.scss
+
+/* ================================================================
+   THEME VARIABLES
+   ================================================================ */
+:host {
+  --delete-bg-overlay: rgba(0, 0, 0, 0.6);
+  --delete-bg-card: #ffffff;
+  --delete-bg-header: #fef2f2;
+  --delete-bg-hover: #f1f5f9;
+  --delete-text-primary: #0f172a;
+  --delete-text-secondary: #475569;
+  --delete-text-muted: #94a3b8;
+  --delete-border-color: #e2e8f0;
+  --delete-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  --delete-radius: 16px;
+  --delete-danger: #dc2626;
+  --delete-danger-light: rgba(220, 38, 38, 0.08);
+  --delete-success: #10b981;
+  --delete-success-light: rgba(16, 185, 129, 0.1);
+  --delete-info: #3b82f6;
+  --delete-warning: #f59e0b;
+}
+
+.dark-mode :host {
+  --delete-bg-card: #1e293b;
+  --delete-bg-header: #2d1a1a;
+  --delete-bg-hover: #334155;
+  --delete-text-primary: #f1f5f9;
+  --delete-text-secondary: #94a3b8;
+  --delete-text-muted: #64748b;
+  --delete-border-color: #334155;
+  --delete-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* ================================================================
+   OVERLAY
+   ================================================================ */
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--delete-bg-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: deleteFadeIn 0.25s ease;
+}
+
+@keyframes deleteFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ================================================================
+   MODAL CARD
+   ================================================================ */
+.delete-modal-container {
+  background: var(--delete-bg-card);
+  border-radius: var(--delete-radius);
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--delete-shadow);
+  border: 1px solid var(--delete-border-color);
+  animation: deleteSlideUp 0.35s ease;
+}
+
+.delete-modal-container::-webkit-scrollbar {
+  width: 4px;
+}
+.delete-modal-container::-webkit-scrollbar-track {
+  background: var(--delete-bg-hover);
+  border-radius: 4px;
+}
+.delete-modal-container::-webkit-scrollbar-thumb {
+  background: var(--delete-danger);
+  border-radius: 4px;
+}
+
+@keyframes deleteSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+.delete-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--delete-border-color);
+  background: var(--delete-bg-header);
+  border-radius: var(--delete-radius) var(--delete-radius) 0 0;
+}
+
+.delete-modal-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--delete-danger-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.delete-modal-icon i {
+  font-size: 22px;
+  color: var(--delete-danger);
+}
+
+.delete-modal-icon.verified {
+  background: var(--delete-success-light);
+}
+
+.delete-modal-icon.verified i {
+  color: var(--delete-success);
+}
+
+.delete-modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--delete-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.delete-modal-close:hover {
+  background: var(--delete-bg-hover);
+  color: var(--delete-danger);
+  transform: rotate(90deg);
+}
+
+/* ================================================================
+   BODY
+   ================================================================ */
+.delete-modal-body {
+  padding: 24px;
+}
+
+.delete-modal-body h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--delete-text-primary);
+  margin: 0 0 6px 0;
+  text-align: center;
+}
+
+.delete-modal-subtitle {
+  font-size: 14px;
+  color: var(--delete-text-secondary);
+  text-align: center;
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+}
+
+.delete-modal-subtitle strong {
+  color: var(--delete-danger);
+}
+
+/* ================================================================
+   USER CARD
+   ================================================================ */
+.delete-user-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--delete-bg-hover);
+  border-radius: 12px;
+  border: 1px solid var(--delete-border-color);
+  margin-bottom: 18px;
+}
+
+.delete-user-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.delete-user-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--delete-border-color);
+}
+
+.delete-user-initials {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  border: 2px solid var(--delete-border-color);
+}
+
+.delete-user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.delete-user-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--delete-text-primary);
+}
+
+.delete-user-role {
+  font-size: 12px;
+  color: var(--delete-text-secondary);
+}
+
+.delete-user-id {
+  font-size: 11px;
+  color: var(--delete-text-muted);
+}
+
+.delete-user-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 12px;
+  width: fit-content;
+  margin-top: 2px;
+}
+
+.delete-user-status .delete-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.delete-user-status.status-active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.delete-user-status.status-active .delete-status-dot { background: #16a34a; }
+
+.delete-user-status.status-suspended {
+  background: #fef3c7;
+  color: #d97706;
+}
+.delete-user-status.status-suspended .delete-status-dot { background: #d97706; }
+
+.delete-user-status.status-frozen {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.delete-user-status.status-frozen .delete-status-dot { background: #2563eb; }
+
+.delete-user-status.status-closed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.delete-user-status.status-closed .delete-status-dot { background: #dc2626; }
+
+/* ================================================================
+   OTP HEADER AVEC CHRONO
+   ================================================================ */
+.delete-otp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.delete-otp-header label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--delete-text-secondary);
+  margin-bottom: 0;
+}
+
+.delete-otp-header label .required {
+  color: var(--delete-danger);
+  font-weight: 700;
+}
+
+.delete-otp-header label .otp-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--delete-text-muted);
+  margin-left: 8px;
+}
+
+/* Petit chrono circulaire */
+.delete-otp-timer {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.delete-otp-timer-svg {
+  transform: rotate(-90deg);
+  width: 36px;
+  height: 36px;
+}
+
+.delete-otp-timer-bg {
+  fill: none;
+  stroke: var(--delete-border-color);
+  stroke-width: 3;
+}
+
+.delete-otp-timer-progress {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+}
+
+.delete-otp-timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--delete-text-primary);
+  line-height: 1;
+}
+
+.delete-otp-timer .expired .delete-otp-timer-text {
+  color: var(--delete-danger);
+}
+
+/* ================================================================
+   OTP INPUT GROUP
+   ================================================================ */
+.delete-otp-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.delete-otp-input {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 8px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  padding: 10px 16px;
+}
+
+.delete-otp-input::placeholder {
+  letter-spacing: normal;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.delete-otp-resend {
+  padding: 10px 14px;
+  background: var(--delete-bg-hover);
+  border: 2px solid var(--delete-border-color);
+  border-radius: 10px;
+  color: var(--delete-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+}
+
+.delete-otp-resend:hover:not(:disabled) {
+  border-color: var(--delete-danger);
+  color: var(--delete-danger);
+}
+
+.delete-otp-resend:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   OTP FOOTER
+   ================================================================ */
+.delete-otp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.delete-otp-footer .otp-help {
+  margin-top: 0;
+  font-size: 11px;
+  color: var(--delete-text-muted);
+}
+
+.delete-otp-attempts {
+  font-size: 11px;
+  color: var(--delete-text-secondary);
+  font-weight: 500;
+}
+
+.delete-otp-attempts .attempts-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+
+.delete-otp-attempts .attempt-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--delete-border-color);
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.delete-otp-attempts .attempt-dot.filled {
+  background: var(--delete-danger);
+}
+
+.delete-otp-attempts .attempt-dot.active {
+  background: var(--delete-warning);
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+/* ================================================================
+   DELETE DETAILS
+   ================================================================ */
+.delete-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--delete-bg-hover);
+  border-radius: 10px;
+  border: 1px solid var(--delete-border-color);
+  margin-bottom: 18px;
+}
+
+.delete-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--delete-text-secondary);
+  padding: 4px 0;
+}
+
+.delete-detail-item i {
+  font-size: 14px;
+  color: var(--delete-danger);
+  width: 20px;
+  text-align: center;
+}
+
+/* ================================================================
+   VERIFIED BADGE
+   ================================================================ */
+.delete-verified-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--delete-success-light);
+  border: 1px solid var(--delete-success);
+  border-radius: 8px;
+  color: var(--delete-success);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.delete-verified-badge i {
+  font-size: 18px;
+}
+
+/* ================================================================
+   FORM GROUP
+   ================================================================ */
+.delete-form-group {
+  margin-bottom: 14px;
+}
+
+.delete-form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--delete-text-secondary);
+  margin-bottom: 6px;
+}
+
+.delete-form-group label .required {
+  color: var(--delete-danger);
+  font-weight: 700;
+}
+
+.delete-form-group label .otp-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--delete-text-muted);
+  margin-left: 8px;
+}
+
+.delete-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--delete-border-color);
+  border-radius: 10px;
+  background: var(--delete-bg-hover);
+  color: var(--delete-text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.delete-input:focus {
+  border-color: var(--delete-danger);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+.delete-input::placeholder {
+  color: var(--delete-text-muted);
+}
+
+.delete-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   ALERTS
+   ================================================================ */
+.delete-alert {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.delete-success {
+  background: var(--delete-success-light);
+  border: 1px solid var(--delete-success);
+  color: var(--delete-success);
+}
+
+.delete-error {
+  background: var(--delete-danger-light);
+  border: 1px solid var(--delete-danger);
+  color: var(--delete-danger);
+}
+
+/* ================================================================
+   BOUTONS
+   ================================================================ */
+.delete-btn-verify {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.delete-btn-verify:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(79, 70, 229, 0.35);
+}
+
+.delete-btn-verify:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+.delete-modal-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.delete-modal-footer button {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.delete-btn-secondary {
+  background: var(--delete-bg-hover);
+  color: var(--delete-text-secondary);
+  border: 1px solid var(--delete-border-color);
+}
+
+.delete-btn-secondary:hover:not(:disabled) {
+  background: var(--delete-bg-hover);
+  border-color: var(--delete-text-muted);
+}
+
+.delete-btn-primary {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.delete-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+}
+
+.delete-btn-primary:disabled,
+.delete-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.delete-btn-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.delete-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: deleteSpin 0.7s linear infinite;
+}
+
+@keyframes deleteSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 640px) {
+  .delete-modal-container {
+    max-width: 100%;
+    margin: 10px;
+    max-height: 95vh;
+  }
+  
+  .delete-modal-header {
+    padding: 14px 18px;
+  }
+  
+  .delete-modal-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .delete-modal-icon i {
+    font-size: 18px;
+  }
+  
+  .delete-modal-body {
+    padding: 18px;
+  }
+  
+  .delete-modal-body h2 {
+    font-size: 18px;
+  }
+  
+  .delete-modal-footer {
+    flex-direction: column;
+  }
+  
+  .delete-modal-footer button {
+    width: 100%;
+    padding: 14px;
+  }
+  
+  .delete-user-card {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+  
+  .delete-user-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .delete-user-img,
+  .delete-user-initials {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
+  
+  .delete-otp-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .delete-otp-timer {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .delete-otp-timer-svg {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .delete-otp-timer-text {
+    font-size: 9px;
+  }
+  
+  .delete-otp-input {
+    font-size: 16px;
+    letter-spacing: 6px;
+  }
+  
+  .delete-otp-resend {
+    min-width: 40px;
+    height: 40px;
+  }
+  
+  .delete-otp-footer {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 380px) {
+  .delete-modal-body {
+    padding: 14px;
+  }
+  
+  .delete-modal-header {
+    padding: 12px 14px;
+  }
+  
+  .delete-user-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .delete-user-status {
+    align-self: center;
+  }
+  
+  .delete-otp-timer {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .delete-otp-timer-svg {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .delete-otp-timer-text {
+    font-size: 8px;
+  }
+  
+  .delete-otp-input {
+    font-size: 14px;
+    letter-spacing: 4px;
+  }
+}

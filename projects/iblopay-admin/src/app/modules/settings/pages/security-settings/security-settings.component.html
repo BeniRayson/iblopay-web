@@ -1,0 +1,458 @@
+<div class="settings-page">
+  <!-- HEADER -->
+  <header class="page-header">
+    
+    <div class="page-header__title">
+      <span class="icon">🔐</span>
+      <div>
+        <h1>Sécurité & Conformité</h1>
+        <p>Audit complet, détection de fraude, KYC et AML</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabs-nav">
+    <button class="tab-btn" *ngFor="let tab of tabs"
+            [class.active]="activeTab === tab.key"
+            (click)="setActiveTab(tab.key)">
+      <span class="tab-btn__icon">{{ tab.icon }}</span>
+      {{ tab.label }}
+      <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
+    </button>
+  </nav>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div *ngIf="activeTab === 'dashboard'" class="panel">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" *ngFor="let kpi of kpiData">
+        <div class="kpi-card__icon" [style.background-color]="kpi.color">
+          {{ kpi.icon }}
+        </div>
+        <div class="kpi-card__content">
+          <span class="kpi-card__value">{{ kpi.value }}</span>
+          <span class="kpi-card__label">{{ kpi.label }}</span>
+          <span class="kpi-card__trend" [class]="kpi.trend">
+            {{ kpi.trend === 'up' ? '↑' : kpi.trend === 'down' ? '↓' : '→' }}
+            {{ kpi.change }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dernières activités -->
+    <div class="activity-section">
+      <div class="activity-section__header">
+        <h3>📋 Dernières activités</h3>
+        <span class="badge">{{ recentActivities.length }} activités</span>
+      </div>
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let act of recentActivities">
+          <span class="activity-item__status">{{ getActivityIcon(act.status) }}</span>
+          <span class="activity-item__time">{{ act.time }}</span>
+          <span class="activity-item__user">{{ act.user }}</span>
+          <span class="activity-item__action">{{ act.action }}</span>
+          <span class="activity-item__desc" *ngIf="act.description">{{ act.description }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ AUDIT COMPLET ============ -->
+  <div *ngIf="activeTab === 'audit'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">📋 Audit Complet</h3>
+      <div class="panel__actions">
+        <span class="panel__badge">{{ filteredAuditLogs.length }} entrées</span>
+        <button class="btn" (click)="toast('Export en cours', 'info')">📊 Exporter</button>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="audit-filters">
+      <input type="text" class="filter-input" placeholder="🔍 Rechercher..." [(ngModel)]="auditSearchTerm" (input)="applyAuditFilters()" />
+      <select class="filter-select" [(ngModel)]="auditTypeFilter" (change)="applyAuditFilters()">
+        <option value="">Tous les types</option>
+        <option value="connexion">Connexion</option>
+        <option value="transaction">Transaction</option>
+        <option value="commission">Commission</option>
+        <option value="taxe">Taxe</option>
+        <option value="transfert">Transfert</option>
+        <option value="systeme">Système</option>
+      </select>
+      <input type="date" class="filter-input" [(ngModel)]="auditDateFrom" (change)="applyAuditFilters()" />
+      <input type="date" class="filter-input" [(ngModel)]="auditDateTo" (change)="applyAuditFilters()" />
+      <select class="filter-select" [(ngModel)]="auditStatusFilter" (change)="applyAuditFilters()">
+        <option value="">Tous les statuts</option>
+        <option value="success">Succès</option>
+        <option value="warning">Attention</option>
+        <option value="danger">Danger</option>
+      </select>
+      <button class="btn btn--primary" (click)="applyAuditFilters()">🔍 Filtrer</button>
+      <button class="btn btn--secondary" (click)="resetAuditFilters()">↺ Réinitialiser</button>
+    </div>
+
+    <!-- Alerte transaction > 1 million -->
+    <div *ngIf="getHighValueTransactions().length > 0" class="alert-banner alert-banner--danger">
+      <span class="alert-banner__icon">🚨</span>
+      <span class="alert-banner__message">
+        <strong>{{ getHighValueTransactions().length }} transaction(s)</strong> dépassant 1 000 000 BIF détectée(s) !
+        <span *ngFor="let txn of getHighValueTransactions(); let i = index">
+          {{ txn.user }} - {{ txn.amount | number:'1.0-0' }} BIF{{ i < getHighValueTransactions().length - 1 ? ', ' : '' }}
+        </span>
+      </span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table table--responsive">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Utilisateur</th>
+            <th>Type</th>
+            <th>Action</th>
+            <th>Description</th>
+            <th>Montant</th>
+            <th>IP</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of paginatedAuditLogs">
+            <td data-label="Date">{{ log.date }}</td>
+            <td data-label="Heure">{{ log.time }}</td>
+            <td data-label="Utilisateur"><strong>{{ log.user }}</strong></td>
+            <td data-label="Type"><span class="badge">{{ getAuditTypeLabel(log.type) }}</span></td>
+            <td data-label="Action">{{ log.action }}</td>
+            <td data-label="Description" class="desc">{{ log.description }}</td>
+            <td data-label="Montant" class="amount" [class.amount--success]="log.amount > 0 && log.status === 'success'" [class.amount--danger]="log.status === 'danger' || log.amount > 1000000">
+              {{ log.amount > 0 ? (log.amount | number:'1.0-0') + ' BIF' : '-' }}
+              <span *ngIf="log.amount > 1000000" class="amount__alert">🚨</span>
+            </td>
+            <td data-label="IP" class="text-muted">{{ log.ip }}</td>
+            <td data-label="Statut"><span class="status-badge" [class]="getStatusColor(log.status)">{{ getStatusLabel(log.status) }}</span></td>
+            <td data-label="Actions">
+              <button class="btn btn--sm" (click)="viewAuditDetail(log)">👁️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Audit -->
+    <div class="pagination">
+      <div class="pagination__info">
+        Affichage de {{ (auditCurrentPage - 1) * auditPageSize + 1 }} à {{ Math.min(auditCurrentPage * auditPageSize, filteredAuditLogs.length) }} sur {{ filteredAuditLogs.length }} entrées
+      </div>
+      <div class="pagination__controls">
+        <button class="btn btn--sm" (click)="auditPreviousPage()" [disabled]="auditCurrentPage === 1">◀</button>
+        <span class="pagination__page">{{ auditCurrentPage }} / {{ auditTotalPages }}</span>
+        <button class="btn btn--sm" (click)="auditNextPage()" [disabled]="auditCurrentPage === auditTotalPages">▶</button>
+        <select class="pagination__size" [(ngModel)]="auditPageSize" (change)="applyAuditFilters()">
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FRAUDE ============ -->
+  <div *ngIf="activeTab === 'fraude'" class="panel">
+    <div class="panel__header panel__header--danger">
+      <h3 class="panel__title">🚨 Détection de fraude</h3>
+      <span class="panel__badge panel__badge--danger">{{ getActiveFraudRulesCount() }} règles actives</span>
+    </div>
+    <div class="fraud-grid">
+      <div class="fraud-card fraud-card--compact" *ngFor="let rule of fraudRules">
+        <div class="fraud-card__header">
+          <span class="fraud-card__icon">{{ rule.icon }}</span>
+          <h4>{{ rule.name }}</h4>
+          <span class="fraud-card__status" [class.active]="rule.active">
+            {{ rule.active ? '🟢 Actif' : '🔴 Inactif' }}
+          </span>
+        </div>
+        <p class="fraud-card__desc">{{ rule.description }}</p>
+        <div class="fraud-card__stats">
+          <span>Seuil: {{ rule.threshold }}</span>
+          <span>Détecté: {{ rule.detected }}</span>
+          <span>Niveau: {{ rule.config.alertLevel | uppercase }}</span>
+        </div>
+        <div class="fraud-card__actions">
+          <button class="btn btn--primary" (click)="configureFraudRule(rule)">⚙️ Configurer</button>
+          <button class="btn" [class.btn--danger]="rule.active" [class.btn--success]="!rule.active" (click)="toggleFraudRule(rule)">
+            {{ rule.active ? '⏹️ Désactiver' : '▶️ Activer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ KYC ============ -->
+  <div *ngIf="activeTab === 'kyc'" class="panel">
+    <div class="panel__header panel__header--kyc">
+      <h3 class="panel__title">🪪 Vérification KYC</h3>
+      <span class="panel__badge panel__badge--kyc">{{ getPendingKYCCount() }} en attente</span>
+    </div>
+    <div class="table-wrap">
+      <table class="table table--responsive">
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Document</th>
+            <th>ID Document</th>
+            <th>Date</th>
+            <th>Expiration</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let kyc of kycVerifications">
+            <td data-label="Utilisateur"><strong>{{ kyc.user }}</strong></td>
+            <td data-label="Document">{{ kyc.documentType }}</td>
+            <td data-label="ID Document" class="text-muted">{{ kyc.documentId }}</td>
+            <td data-label="Date">{{ kyc.submittedDate }}</td>
+            <td data-label="Expiration">{{ kyc.expiryDate || 'N/A' }}</td>
+            <td data-label="Statut"><span class="status-badge" [class]="getStatusColor(kyc.status)">{{ getStatusLabel(kyc.status) }}</span></td>
+            <td data-label="Actions">
+              <button class="btn btn--sm" (click)="viewKYC(kyc)">👁️</button>
+              <button class="btn btn--sm btn--success" (click)="approveKYC(kyc)" *ngIf="kyc.status === 'pending'">✅</button>
+              <button class="btn btn--sm btn--danger" (click)="rejectKYC(kyc)" *ngIf="kyc.status === 'pending'">❌</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ AML ============ -->
+  <div *ngIf="activeTab === 'aml'" class="panel">
+    <div class="panel__header panel__header--aml">
+      <h3 class="panel__title">⚖️ Anti-Blanchiment (AML)</h3>
+      <span class="panel__badge panel__badge--aml">{{ getActiveAMLAlertsCount() }} alertes actives</span>
+    </div>
+
+    <!-- Filtres AML -->
+    <div class="audit-filters">
+      <select class="filter-select" [(ngModel)]="amlStatusFilter" (change)="applyAMLFilters()">
+        <option value="">Tous les statuts</option>
+        <option value="new">Nouveau</option>
+        <option value="reviewing">En révision</option>
+        <option value="reported">Signalé</option>
+        <option value="closed">Clos</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="amlRiskFilter" (change)="applyAMLFilters()">
+        <option value="">Tous les risques</option>
+        <option value="low">Faible</option>
+        <option value="medium">Moyen</option>
+        <option value="high">Élevé</option>
+      </select>
+      <button class="btn btn--primary" (click)="applyAMLFilters()">🔍 Filtrer</button>
+    </div>
+
+    <div class="aml-grid">
+      <div class="aml-card aml-card--compact" *ngFor="let alert of paginatedAMLLogs">
+        <div class="aml-card__header">
+          <span class="aml-card__icon" [class]="'risk--' + alert.riskLevel">●</span>
+          <h4>{{ alert.type }}</h4>
+          <span class="aml-card__amount">{{ alert.amount | number:'1.0-0' }} BIF</span>
+        </div>
+        <p class="aml-card__desc">{{ alert.description }}</p>
+        <div class="aml-card__footer">
+          <span class="aml-card__date">📅 {{ alert.date }}</span>
+          <span class="status-badge" [class]="getStatusColor(alert.status)">{{ getStatusLabel(alert.status) }}</span>
+          <span class="status-badge" [class]="getStatusColor(alert.riskLevel)">{{ getStatusLabel(alert.riskLevel) }}</span>
+          <button class="btn btn--sm btn--primary" (click)="viewAMLAlert(alert)">🔍 Voir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination AML -->
+    <div class="pagination" *ngIf="filteredAMLLogs.length > 0">
+      <div class="pagination__info">
+        Affichage de {{ (amlCurrentPage - 1) * amlPageSize + 1 }} à {{ Math.min(amlCurrentPage * amlPageSize, filteredAMLLogs.length) }} sur {{ filteredAMLLogs.length }} alertes
+      </div>
+      <div class="pagination__controls">
+        <button class="btn btn--sm" (click)="amlPreviousPage()" [disabled]="amlCurrentPage === 1">◀</button>
+        <span class="pagination__page">{{ amlCurrentPage }} / {{ amlTotalPages }}</span>
+        <button class="btn btn--sm" (click)="amlNextPage()" [disabled]="amlCurrentPage === amlTotalPages">▶</button>
+        <select class="pagination__size" [(ngModel)]="amlPageSize" (change)="applyAMLFilters()">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODALES ============ -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal modal--animated modal--large" *ngIf="showModal">
+    <div class="modal__header">
+      <h2 class="modal__title">{{ modalTitle }}</h2>
+      <button class="modal__close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal__body modal__body--large">
+
+      <!-- Détail Audit -->
+      <div *ngIf="modalType === 'audit_detail'">
+        <div class="modal__icon">📋</div>
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Date</span><span class="detail-value">{{ formData.date }} {{ formData.time }}</span></div>
+          <div class="detail-item"><span class="detail-label">Utilisateur</span><span class="detail-value"><strong>{{ formData.user }}</strong></span></div>
+          <div class="detail-item"><span class="detail-label">Type</span><span class="detail-value">{{ getAuditTypeLabel(formData.type) }}</span></div>
+          <div class="detail-item"><span class="detail-label">Action</span><span class="detail-value">{{ formData.action }}</span></div>
+          <div class="detail-item"><span class="detail-label">Description</span><span class="detail-value">{{ formData.description }}</span></div>
+          <div class="detail-item" *ngIf="formData.amount > 0"><span class="detail-label">Montant</span><span class="detail-value amount" [class.amount--success]="formData.status === 'success'" [class.amount--danger]="formData.status === 'danger' || formData.amount > 1000000">{{ formData.amount | number:'1.0-0' }} BIF <span *ngIf="formData.amount > 1000000" class="amount__alert">🚨</span></span></div>
+          <div class="detail-item" *ngIf="formData.service"><span class="detail-label">Service</span><span class="detail-value">{{ formData.service }}</span></div>
+          <div class="detail-item" *ngIf="formData.reference"><span class="detail-label">Référence</span><span class="detail-value">{{ formData.reference }}</span></div>
+          <div class="detail-item"><span class="detail-label">IP</span><span class="detail-value">{{ formData.ip }}</span></div>
+          <div class="detail-item"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="getStatusColor(formData.status)">{{ getStatusLabel(formData.status) }}</span></span></div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- Configuration Fraude -->
+      <div *ngIf="modalType === 'fraud_config'">
+        <div class="modal__icon">🚨</div>
+        <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
+        <div class="config-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Niveau d'alerte</label>
+              <select class="form-control" [(ngModel)]="formData.alertLevel">
+                <option value="low">🟢 Faible</option>
+                <option value="medium">🟡 Moyen</option>
+                <option value="high">🟠 Élevé</option>
+                <option value="critical">🔴 Critique</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Action</label>
+              <select class="form-control" [(ngModel)]="formData.action">
+                <option value="block">⛔ Bloquer</option>
+                <option value="alert">🔔 Alerter</option>
+                <option value="notify">📧 Notifier</option>
+                <option value="review">📝 Réviser</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Montant minimum (BIF)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.minAmount" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>Montant maximum (BIF)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.maxAmount" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre de transactions</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.transactionCount" placeholder="5" />
+            </div>
+            <div class="form-group">
+              <label>Fenêtre de temps (minutes)</label>
+              <input type="number" class="form-control" [(ngModel)]="formData.timeWindow" placeholder="15" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>IP à blacklister (séparées par des virgules)</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.ipBlacklist" placeholder="192.168.0.0, 10.0.0.0" />
+          </div>
+
+          <div class="form-group">
+            <label>Email de notification</label>
+            <input type="email" class="form-control" [(ngModel)]="formData.notifyEmail" placeholder="securite@iblopay.bi" />
+          </div>
+
+          <div class="form-group">
+            <label>Téléphone de notification</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.notifyPhone" placeholder="+257 79 123 456" />
+          </div>
+
+          <div class="form-check-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="formData.velocityCheck" />
+              <span>Vérification de vélocité</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="formData.anomalyDetection" />
+              <span>Détection d'anomalies</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="formData.deviceFingerprint" />
+              <span>Empreinte de l'appareil</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="saveFraudRule()">💾 Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- Détail KYC -->
+      <div *ngIf="modalType === 'kyc_detail'">
+        <div class="modal__icon">🪪</div>
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Utilisateur</span><span class="detail-value"><strong>{{ formData.user }}</strong></span></div>
+          <div class="detail-item"><span class="detail-label">Document</span><span class="detail-value">{{ formData.documentType }}</span></div>
+          <div class="detail-item"><span class="detail-label">ID Document</span><span class="detail-value">{{ formData.documentId }}</span></div>
+          <div class="detail-item"><span class="detail-label">Date de soumission</span><span class="detail-value">{{ formData.submittedDate }}</span></div>
+          <div class="detail-item"><span class="detail-label">Date d'expiration</span><span class="detail-value">{{ formData.expiryDate || 'N/A' }}</span></div>
+          <div class="detail-item"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="getStatusColor(formData.status)">{{ getStatusLabel(formData.status) }}</span></span></div>
+        </div>
+        <div class="modal__footer" *ngIf="formData.status === 'pending'">
+          <button class="btn btn--success" (click)="approveKYC(selectedItem)">✅ Approuver</button>
+          <button class="btn btn--danger" (click)="rejectKYC(selectedItem)">❌ Rejeter</button>
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+        <div class="modal__footer" *ngIf="formData.status !== 'pending'">
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+      <!-- Détail AML -->
+      <div *ngIf="modalType === 'aml_detail'">
+        <div class="modal__icon">⚖️</div>
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Date</span><span class="detail-value">{{ formData.date }}</span></div>
+          <div class="detail-item"><span class="detail-label">Type</span><span class="detail-value">{{ formData.type }}</span></div>
+          <div class="detail-item"><span class="detail-label">Description</span><span class="detail-value">{{ formData.description }}</span></div>
+          <div class="detail-item"><span class="detail-label">Montant</span><span class="detail-value amount amount--danger">{{ formData.amount | number:'1.0-0' }} BIF</span></div>
+          <div class="detail-item"><span class="detail-label">Transaction</span><span class="detail-value">{{ formData.transactionId }}</span></div>
+          <div class="detail-item"><span class="detail-label">Utilisateur</span><span class="detail-value">{{ formData.userId }}</span></div>
+          <div class="detail-item"><span class="detail-label">Risque</span><span class="detail-value"><span class="status-badge" [class]="getStatusColor(formData.riskLevel)">{{ getStatusLabel(formData.riskLevel) }}</span></span></div>
+          <div class="detail-item"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="getStatusColor(formData.status)">{{ getStatusLabel(formData.status) }}</span></span></div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--primary" *ngIf="formData.status === 'new'" (click)="updateAMLStatus(selectedItem, 'reviewing')">📝 Passer en révision</button>
+          <button class="btn btn--warning" *ngIf="formData.status === 'reviewing'" (click)="updateAMLStatus(selectedItem, 'reported')">📋 Signaler</button>
+          <button class="btn btn--success" *ngIf="formData.status === 'reported'" (click)="updateAMLStatus(selectedItem, 'closed')">✅ Clôturer</button>
+          <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ TOASTS ============ -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>
+      {{ t.message }}
+      <button class="toast__close" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

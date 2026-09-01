@@ -1,0 +1,354 @@
+<div class="page-header">
+  <div>
+    <h1>{{ isEdit ? 'Modifier le workflow' : 'Nouveau workflow' }}</h1>
+    <p *ngIf="etapeBuilder === 'infos'">Étape 1 — Choisissez le service et nommez le circuit de traitement</p>
+    <p *ngIf="etapeBuilder === 'etapes'">Étape 2 — Définissez les étapes de validation et ce que chacune vérifie</p>
+    <p *ngIf="etapeBuilder === 'comptes'">Étape 3 — Créez les comptes des agents et fixez leurs droits par étape</p>
+    <p *ngIf="etapeBuilder === 'finalisation'">Étape 4 — Vérifiez et enregistrez votre workflow</p>
+  </div>
+  <div class="header-actions">
+    <span class="autosave-indicator" *ngIf="derniereSauvegardeBrouillon">
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      Brouillon sauvegardé à {{ derniereSauvegardeBrouillon | date: 'HH:mm:ss' }}
+    </span>
+    <button type="button" class="btn-outline btn-sm" (click)="sauvegarderBrouillon()" title="Sauvegarder maintenant le brouillon">
+      <i class="fa-solid fa-floppy-disk"></i> Sauvegarder le brouillon
+    </button>
+    <a routerLink="/workflows" class="btn-outline">Annuler</a>
+  </div>
+</div>
+
+<!-- ============ INDICATEUR D'ÉTAPES ============ -->
+<div class="steps-indicator">
+  <div class="step-pill" [class.active]="etapeBuilder === 'infos'" [class.done]="etapeBuilder !== 'infos'">
+    <span class="step-num"><i class="fa-solid fa-check" *ngIf="etapeBuilder !== 'infos'"></i><ng-container *ngIf="etapeBuilder === 'infos'">1</ng-container></span>
+    Informations
+  </div>
+  <div class="step-separator"></div>
+  <div class="step-pill" [class.active]="etapeBuilder === 'etapes'" [class.done]="etapeBuilder === 'comptes' || etapeBuilder === 'finalisation'">
+    <span class="step-num"><i class="fa-solid fa-check" *ngIf="etapeBuilder === 'comptes' || etapeBuilder === 'finalisation'"></i><ng-container *ngIf="etapeBuilder !== 'comptes' && etapeBuilder !== 'finalisation'">2</ng-container></span>
+    Étapes du workflow
+  </div>
+  <div class="step-separator"></div>
+  <div class="step-pill" [class.active]="etapeBuilder === 'comptes'" [class.done]="etapeBuilder === 'finalisation'">
+    <span class="step-num"><i class="fa-solid fa-check" *ngIf="etapeBuilder === 'finalisation'"></i><ng-container *ngIf="etapeBuilder !== 'finalisation'">3</ng-container></span>
+    Comptes & droits
+  </div>
+  <div class="step-separator"></div>
+  <div class="step-pill" [class.active]="etapeBuilder === 'finalisation'">
+    <span class="step-num">4</span>
+    Finaliser
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- ÉTAPE 1 — INFORMATIONS                                          -->
+<!-- ================================================================ -->
+<ng-container *ngIf="etapeBuilder === 'infos'">
+  <div class="step-container">
+    <div class="info-card">
+      <div class="info-card-header">
+        <div class="info-card-icon"><i class="fa-solid fa-sitemap"></i></div>
+        <h2>Informations du workflow</h2>
+        <p>Chaque service peut avoir son propre circuit de validation</p>
+      </div>
+      <div class="info-card-body">
+        <div class="field">
+          <label>Service concerné <span class="required">*</span></label>
+          <select [(ngModel)]="workflow.serviceId" [disabled]="isEdit">
+            <option [ngValue]="0" disabled>Sélectionnez un service...</option>
+            <option *ngFor="let s of services" [ngValue]="s.id">{{ s.nom }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nom du workflow <span class="required">*</span></label>
+          <input type="text" placeholder="Ex: Workflow — Demande de certificat" [(ngModel)]="workflow.nom" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea rows="2" placeholder="Décrivez brièvement ce circuit de traitement..." [(ngModel)]="workflow.description"></textarea>
+        </div>
+        <div class="field">
+          <label class="toggle-row">
+            <span class="toggle-label">Workflow actif immédiatement</span>
+            <input type="checkbox" [checked]="workflow.statut === 'ACTIF'" (change)="workflow.statut = workflow.statut === 'ACTIF' ? 'INACTIF' : 'ACTIF'" />
+          </label>
+        </div>
+      </div>
+      <div class="info-card-footer">
+        <button class="btn-primary btn-next" (click)="allerA('etapes')">
+          Continuer <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- ÉTAPE 2 — ÉTAPES DU WORKFLOW                                    -->
+<!-- ================================================================ -->
+<ng-container *ngIf="etapeBuilder === 'etapes'">
+  <div class="etapes-builder">
+    <div class="etape-card" *ngFor="let e of workflow.etapes; let i = index; let last = last">
+      <div class="etape-card-header">
+        <div class="etape-order">{{ i + 1 }}</div>
+        <input type="text" class="etape-nom-input" placeholder="Nom de l'étape (ex: Vérification)" [(ngModel)]="e.nom" />
+        <div class="etape-move-actions">
+          <button class="btn-mini" [disabled]="i === 0" (click)="deplacerEtape(i, -1)" title="Monter"><i class="fa-solid fa-arrow-up"></i></button>
+          <button class="btn-mini" [disabled]="last" (click)="deplacerEtape(i, 1)" title="Descendre"><i class="fa-solid fa-arrow-down"></i></button>
+          <button class="btn-mini btn-mini-red" (click)="supprimerEtape(i)" title="Supprimer l'étape"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+
+      <div class="etape-card-body">
+        <div class="field-group">
+          <div class="field">
+            <label>Rôle responsable de cette étape</label>
+            <input type="text" placeholder="Ex: Secrétaire, Validateur..." [(ngModel)]="e.responsable" />
+          </div>
+          <div class="field">
+            <label>Délai de traitement (heures)</label>
+            <input type="number" min="0" [(ngModel)]="e.delaiHeures" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Ce que cette étape doit valider / vérifier</label>
+          <textarea rows="2" placeholder="Ex: Vérifier la conformité des pièces jointes et l'identité du demandeur..." [(ngModel)]="e.ceQuIlValide"></textarea>
+        </div>
+        <label class="toggle-row toggle-row-inline">
+          <span class="toggle-label">Notifier le responsable à l'arrivée d'un dossier</span>
+          <input type="checkbox" [(ngModel)]="e.notifications" />
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-add-etape" (click)="ajouterEtape()">
+      <i class="fa-solid fa-plus"></i> Ajouter une étape
+    </button>
+  </div>
+
+  <div class="step-footer">
+    <button class="btn-outline" (click)="allerA('infos')"><i class="fa-solid fa-arrow-left"></i> Précédent</button>
+    <button class="btn-primary btn-next" (click)="allerA('comptes')">
+      Continuer <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- ÉTAPE 3 — COMPTES & DROITS                                      -->
+<!-- ================================================================ -->
+<ng-container *ngIf="etapeBuilder === 'comptes'">
+  <div class="comptes-layout">
+    <!-- Sidebar : liste des étapes -->
+    <div class="comptes-sidebar">
+      <div class="sidebar-title">Étapes du workflow</div>
+      <button class="etape-tab" *ngFor="let e of workflow.etapes" [class.active]="etapeActiveId === e.id" (click)="etapeActiveId = e.id">
+        <span class="etape-tab-nom">{{ e.nom || 'Étape sans nom' }}</span>
+        <span class="etape-tab-count">{{ comptesPourEtape(e.id).length }}</span>
+      </button>
+    </div>
+
+    <!-- Panneau principal : comptes de l'étape sélectionnée -->
+    <div class="comptes-panel" *ngIf="etapeActive as e">
+      <div class="comptes-panel-header">
+        <div>
+          <div class="comptes-panel-title">{{ e.nom }}</div>
+          <p class="comptes-panel-desc" *ngIf="e.ceQuIlValide">{{ e.ceQuIlValide }}</p>
+        </div>
+        <button class="btn-primary" (click)="ouvrirNouveauCompte()">
+          <i class="fa-solid fa-user-plus"></i> Ajouter un compte
+        </button>
+      </div>
+
+      <div class="comptes-grid" *ngIf="comptesPourEtape(e.id).length > 0; else aucunCompte">
+        <div class="compte-card" *ngFor="let c of comptesPourEtape(e.id)">
+          <div class="compte-avatar">{{ c.prenom.charAt(0) }}{{ c.nom.charAt(0) }}</div>
+          <div class="compte-infos">
+            <div class="compte-nom">{{ c.prenom }} {{ c.nom }}</div>
+            <div class="compte-role">{{ c.role }}</div>
+            <div class="compte-detail"><i class="fa-solid fa-location-dot"></i> {{ c.adresse }}</div>
+            <div class="compte-detail"><i class="fa-solid fa-phone"></i> {{ c.telephone }}</div>
+            <div class="compte-droits">
+              <span class="droit-chip" *ngFor="let d of c.droits">{{ labelDroit(d) }}</span>
+            </div>
+          </div>
+          <div class="compte-actions">
+            <button class="btn-mini" (click)="modifierCompte(c)" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-mini btn-mini-red" (click)="supprimerCompte(c)" title="Retirer"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #aucunCompte>
+        <div class="empty-comptes">
+          <i class="fa-solid fa-user-group"></i>
+          <p>Aucun compte n'est encore rattaché à cette étape.</p>
+          <p class="empty-hint">Ajoutez un compte pour indiquer qui traitera les demandes à cette étape et ce qu'il aura le droit de faire.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <div class="step-footer">
+    <button class="btn-outline" (click)="allerA('etapes')"><i class="fa-solid fa-arrow-left"></i> Précédent</button>
+    <button class="btn-primary btn-next" (click)="allerA('finalisation')">
+      Continuer <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- ÉTAPE 4 — FINALISATION                                          -->
+<!-- ================================================================ -->
+<ng-container *ngIf="etapeBuilder === 'finalisation'">
+  <div class="step-container">
+    <div class="info-card recap-card">
+      <div class="info-card-header">
+        <div class="info-card-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+        <h2>Récapitulatif</h2>
+        <p>Vérifiez les informations avant d'enregistrer</p>
+      </div>
+      <div class="info-card-body">
+        <div class="recap-row">
+          <span class="recap-label">Service</span>
+          <span class="recap-value">{{ serviceSelectionne?.nom }}</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-label">Workflow</span>
+          <span class="recap-value">{{ workflow.nom }}</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-label">Statut</span>
+          <span class="badge" [ngClass]="workflow.statut === 'ACTIF' ? 'badge-green' : 'badge-gray'">{{ workflow.statut }}</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-label">Étapes</span>
+          <span class="recap-value">{{ workflow.etapes.length }} étape(s)</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-label">Comptes créés</span>
+          <span class="recap-value">{{ comptes.length }} compte(s)</span>
+        </div>
+
+        <div class="recap-etapes">
+          <div class="recap-etape-item" *ngFor="let e of workflow.etapes; let i = index">
+            <div class="recap-etape-num">{{ i + 1 }}</div>
+            <div>
+              <strong>{{ e.nom }}</strong>
+              <div class="text-muted">{{ comptesPourEtape(e.id).length }} compte(s) — {{ e.responsable || 'Responsable non précisé' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-card-footer">
+        <button class="btn-outline" (click)="allerA('comptes')"><i class="fa-solid fa-arrow-left"></i> Précédent</button>
+        <button class="btn-primary btn-next" [disabled]="isSaving || !peutEnregistrer" (click)="enregistrer()">
+          <i class="fa-solid fa-check" *ngIf="!isSaving"></i>
+          <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving"></i>
+          {{ isSaving ? 'Enregistrement...' : 'Enregistrer le workflow' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<!-- ============ MODAL AJOUT / MODIFICATION DE COMPTE ============ -->
+<div class="modal-overlay" *ngIf="showCompteModal" (click)="fermerCompteModal()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()" *ngIf="compteEnEdition as f">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="compte-modal-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <div>
+          <h3>{{ f.id ? 'Modifier le compte' : 'Nouveau compte' }}</h3>
+          <span class="service-code">{{ etapeActive?.nom }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerCompteModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field">
+          <label>Nom <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.nom" placeholder="Ex: Ndikumana" />
+        </div>
+        <div class="field">
+          <label>Prénom <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.prenom" placeholder="Ex: Aline" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Adresse <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="f.adresse" placeholder="Ex: Quartier Rohero, Bujumbura" />
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Téléphone <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.telephone" placeholder="+257 79 000 000" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="f.email" placeholder="nom@iblopay.bi" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Rôle / poste dans le workflow <span class="required">*</span></label>
+        <select [(ngModel)]="f.role">
+          <option *ngFor="let r of rolesSuggeres" [value]="r">{{ r }}</option>
+        </select>
+        <input type="text" class="role-libre" *ngIf="f.role === 'Autre'" placeholder="Précisez le rôle..." [(ngModel)]="f.role" />
+      </div>
+
+      <div class="field-group">
+        <div class="field">
+          <label>Mot de passe de connexion <span class="required">*</span></label>
+          <div class="password-wrap">
+            <input [type]="showMotDePasse ? 'text' : 'password'" [(ngModel)]="f.motDePasse" placeholder="Min. 4 caractères" />
+            <button type="button" class="btn-eye" (click)="showMotDePasse = !showMotDePasse" tabindex="-1">
+              <i class="fa-solid" [class.fa-eye]="!showMotDePasse" [class.fa-eye-slash]="showMotDePasse"></i>
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirmer le mot de passe <span class="required">*</span></label>
+          <input [type]="showMotDePasse ? 'text' : 'password'" [(ngModel)]="f.confirmationMotDePasse" placeholder="Retapez le mot de passe" />
+        </div>
+      </div>
+      <p class="field-hint">
+        Ce compte se connectera avec l'identifiant généré automatiquement (ex: prénom.nom) et ce mot de passe. Transmettez-les-lui en toute sécurité.
+      </p>
+
+      <div class="field">
+        <label>Ce que ce compte a le droit de faire à cette étape <span class="required">*</span></label>
+        <div class="droits-list">
+          <label class="droit-item" *ngFor="let d of droitsCatalogue">
+            <input type="checkbox" [checked]="compteADroit(d.code)" (change)="toggleDroit(d.code)" />
+            <i [class]="d.icon"></i>
+            <span>{{ d.label }}</span>
+          </label>
+          <button type="button" class="droit-item droit-item-add" (click)="ouvrirAjoutDroitPersonnalise()">
+            <i class="fa-solid fa-plus"></i>
+            <span>Ajouter un autre droit...</span>
+          </button>
+        </div>
+
+        <div class="ajout-droit-inline" *ngIf="showAjoutDroitPersonnalise">
+          <input type="text" placeholder="Ex: Imprimer l'attestation" [(ngModel)]="nouveauDroitLibelle"
+                 (keyup.enter)="confirmerAjoutDroitPersonnalise()" />
+          <button type="button" class="btn-mini" (click)="confirmerAjoutDroitPersonnalise()" title="Ajouter"><i class="fa-solid fa-check"></i></button>
+          <button type="button" class="btn-mini btn-mini-red" (click)="annulerAjoutDroitPersonnalise()" title="Annuler"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <p class="field-hint">Une fois connecté, ce compte ne verra et ne pourra faire que ce qui est coché ici.</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerCompteModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrerCompte()">
+        <i class="fa-solid fa-check"></i> {{ f.id ? 'Enregistrer' : 'Ajouter le compte' }}
+      </button>
+    </div>
+  </div>
+</div>

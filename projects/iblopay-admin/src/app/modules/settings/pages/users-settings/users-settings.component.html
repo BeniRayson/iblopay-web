@@ -1,0 +1,1021 @@
+<div class="users-page">
+  <!-- Dashboard stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card__icon">👤</div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ clients.length }}</span>
+        <span class="stat-card__label">Clients</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon">🧍</div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ agents.length }}</span>
+        <span class="stat-card__label">Agents</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon">🧑‍💼</div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ superAgents.length }}</span>
+        <span class="stat-card__label">Super Agents</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--total">
+      <div class="stat-card__icon">📊</div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ clients.length + agents.length + superAgents.length }}</span>
+        <span class="stat-card__label">Total utilisateurs</span>
+      </div>
+    </div>
+  </div>
+
+  <header class="page-header">
+  
+    <div class="page-header__title">
+      <span class="icon">{{ icon }}</span>
+      <div>
+        <h1>{{ title }}</h1>
+        <p>Clients, agents et super agents — une seule console pour tout le cycle de vie des comptes.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Onglets acteurs -->
+  <nav class="actor-tabs">
+    <button
+      type="button"
+      *ngFor="let t of tabs"
+      class="actor-tab"
+      [class.active]="activeTab === t.key"
+      (click)="setTab(t.key)"
+    >
+      <span class="actor-tab__icon">{{ t.icon }}</span> {{ t.label }}
+      <span class="actor-tab__count">{{
+        t.key === 'clients' ? clients.length :
+        t.key === 'agents' ? agents.length :
+        superAgents.length
+      }}</span>
+    </button>
+  </nav>
+
+  <!-- Barre d'outils -->
+  <div class="toolbar">
+    <div class="toolbar__search">
+      <span aria-hidden="true">⌕</span>
+      <input
+        type="text"
+        placeholder="Rechercher par nom, ID, CNI, carte, téléphone..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onFilterChange()"
+        name="search"
+      />
+    </div>
+
+    <select class="toolbar__filter" [(ngModel)]="statutFilter" (ngModelChange)="onFilterChange()" name="statutFilter">
+      <option value="tous">Tous les statuts</option>
+      <option value="actif">Actif</option>
+      <option value="suspendu">Suspendu</option>
+      <option value="archive">Archivé</option>
+    </select>
+
+    <select class="toolbar__filter" *ngIf="activeTab === 'clients'" [(ngModel)]="kycFilter" (ngModelChange)="onFilterChange()" name="kycFilter">
+      <option value="tous">Tous niveaux KYC</option>
+      <option value="1">Niveau 1</option>
+      <option value="2">Niveau 2</option>
+      <option value="3">Niveau 3</option>
+    </select>
+
+    <button type="button" class="btn-export" (click)="exportCSV()">
+      <span aria-hidden="true">⬇</span> Exporter CSV
+    </button>
+
+    <button type="button" class="btn-primary" (click)="openCreateModal()">
+      <span aria-hidden="true">+</span>
+      Ajouter {{ activeTab === 'clients' ? 'un client' : activeTab === 'agents' ? 'un agent' : 'un super agent' }}
+    </button>
+  </div>
+
+  <!-- Tableau -->
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <ng-container [ngSwitch]="activeTab">
+          <tr *ngSwitchCase="'clients'">
+            <th>Client</th><th>CNI &amp; carte</th><th>Adresse</th><th>Ouvert par</th><th>KYC</th><th>Solde wallet</th><th>Statut</th><th class="col-actions">Actions</th>
+          </tr>
+          <tr *ngSwitchCase="'agents'">
+            <th>Agent</th><th>CNI &amp; carte</th><th>Super Agent</th><th>Adresse</th><th>Soldes</th><th>Performance</th><th>Statut</th><th class="col-actions">Actions</th>
+          </tr>
+          <tr *ngSwitchCase="'super-agents'">
+            <th>Super Agent</th><th>CNI &amp; carte</th><th>Région / Adresse</th><th>Agents</th><th>Distribution</th><th>Performance</th><th>Statut</th><th class="col-actions">Actions</th>
+          </tr>
+        </ng-container>
+      </thead>
+
+      <tbody [ngSwitch]="activeTab">
+        <!-- CLIENTS -->
+        <ng-container *ngSwitchCase="'clients'">
+          <tr *ngFor="let u of paginatedList; trackBy: trackById" (click)="openDrawer(u)">
+            <td>
+              <div class="cell-identity">
+                <span class="avatar">{{ initials(u.nom) }}</span>
+                <div>
+                  <div class="cell-name">{{ u.nom }}</div>
+                  <div class="cell-sub">{{ u.id }} · {{ u.telephone }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-sub cell-mono">CNI {{ asClient(u).cni }}</div>
+              <div class="cell-sub cell-mono">{{ asClient(u).numeroCarte }}</div>
+            </td>
+            <td>{{ asClient(u).province }} · {{ asClient(u).commune }}<div class="cell-sub">{{ asClient(u).zone }} · {{ asClient(u).colline }}</div></td>
+            <td class="cell-sub">{{ asClient(u).agentNom }}</td>
+            <td><span class="kyc-badge" [class.kyc-3]="u.kycLevel===3" [class.kyc-2]="u.kycLevel===2">Niveau {{ u.kycLevel }}</span></td>
+            <td class="cell-mono">{{ formatBIF(u.soldeWallet) }}</td>
+            <td><span class="statut-badge" [class]="'statut-' + u.statut">{{ statutLabel(u.statut) }}</span></td>
+            <td class="cell-actions" (click)="$event.stopPropagation()">
+              <button type="button" class="menu-btn" (click)="toggleMenu(u.id)" aria-label="Actions">⋮</button>
+              <div class="action-menu" *ngIf="openMenuId === u.id">
+                <button type="button" *ngFor="let a of actionsFor(u)" [class.danger]="a.danger" (click)="handleAction(u, a.actionId)">
+                  <span>{{ a.icon }}</span> {{ a.label }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+
+        <!-- AGENTS -->
+        <ng-container *ngSwitchCase="'agents'">
+          <tr *ngFor="let u of paginatedList; trackBy: trackById" (click)="openDrawer(u)">
+            <td>
+              <div class="cell-identity">
+                <span class="avatar">{{ initials(u.nom) }}</span>
+                <div>
+                  <div class="cell-name">{{ u.nom }}</div>
+                  <div class="cell-sub">{{ u.id }} · {{ u.telephone }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-sub cell-mono">CNI {{ asAgent(u).cni }}</div>
+              <div class="cell-sub cell-mono">{{ asAgent(u).numeroCarte }}</div>
+            </td>
+            <td>{{ u.superAgentNom }}</td>
+            <td>{{ asAgent(u).province }} · {{ asAgent(u).commune }}<div class="cell-sub">{{ asAgent(u).zone }} · {{ asAgent(u).colline }}</div></td>
+            <td>
+              <div class="cell-sub cell-mono">e-Money {{ formatBIF(asAgent(u).soldeEMoney) }}</div>
+              <div class="cell-sub cell-mono">Cash {{ formatBIF(asAgent(u).soldeCash) }}</div>
+            </td>
+            <td>
+              <div class="perf-bar"><span [style.width.%]="u.performance"></span></div>
+              <span class="cell-sub">{{ u.performance }}/100</span>
+            </td>
+            <td><span class="statut-badge" [class]="'statut-' + u.statut">{{ statutLabel(u.statut) }}</span></td>
+            <td class="cell-actions" (click)="$event.stopPropagation()">
+              <button type="button" class="menu-btn" (click)="toggleMenu(u.id)" aria-label="Actions">⋮</button>
+              <div class="action-menu" *ngIf="openMenuId === u.id">
+                <button type="button" *ngFor="let a of actionsFor(u)" [class.danger]="a.danger" (click)="handleAction(u, a.actionId)">
+                  <span>{{ a.icon }}</span> {{ a.label }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+
+        <!-- SUPER AGENTS -->
+        <ng-container *ngSwitchCase="'super-agents'">
+          <tr *ngFor="let u of paginatedList; trackBy: trackById" (click)="openDrawer(u)">
+            <td>
+              <div class="cell-identity">
+                <span class="avatar">{{ initials(u.nom) }}</span>
+                <div>
+                  <div class="cell-name">{{ u.nom.split(' (')[0] }}</div>
+                  <div class="cell-sub">{{ u.id }} · {{ u.telephone }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="cell-sub cell-mono">CNI {{ asSuperAgent(u).cni }}</div>
+              <div class="cell-sub cell-mono">{{ asSuperAgent(u).numeroCarte }}</div>
+            </td>
+            <td>{{ u.region }}<div class="cell-sub">{{ asSuperAgent(u).province }} · {{ asSuperAgent(u).commune }}</div></td>
+            <td>{{ u.nbAgents }}</td>
+            <td class="cell-mono">{{ formatBIF(u.soldeDistribution) }}</td>
+            <td>
+              <div class="perf-bar"><span [style.width.%]="u.performanceGlobale"></span></div>
+              <span class="cell-sub">{{ u.performanceGlobale }}/100</span>
+            </td>
+            <td><span class="statut-badge" [class]="'statut-' + u.statut">{{ statutLabel(u.statut) }}</span></td>
+            <td class="cell-actions" (click)="$event.stopPropagation()">
+              <button type="button" class="menu-btn" (click)="toggleMenu(u.id)" aria-label="Actions">⋮</button>
+              <div class="action-menu" *ngIf="openMenuId === u.id">
+                <button type="button" *ngFor="let a of actionsFor(u)" [class.danger]="a.danger" (click)="handleAction(u, a.actionId)">
+                  <span>{{ a.icon }}</span> {{ a.label }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+
+    <div class="no-results" *ngIf="filteredList.length === 0">
+      <span class="no-results__icon">🗂️</span>
+      Aucun résultat pour cette recherche ou ce filtre.
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="filteredList.length > 0">
+    <span class="pagination__info">{{ filteredList.length }} résultat(s) — page {{ currentPage }} / {{ totalPages }}</span>
+    <div class="pagination__controls">
+      <button type="button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+      <button type="button" *ngFor="let p of pageNumbers" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+      <button type="button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">›</button>
+    </div>
+  </div>
+
+  <!-- ============ CARTE DE DÉTAIL ============ -->
+  <div class="detail-overlay" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
+  <div class="detail-card" *ngIf="drawerOpen && drawerUser as u" role="dialog" aria-modal="true">
+    <div class="detail-card__header">
+      <div class="cell-identity">
+        <span class="avatar avatar--lg">{{ initials(u.nom) }}</span>
+        <div>
+          <h2>{{ drawerType === 'super-agents' ? u.nom.split(' (')[0] : u.nom }}</h2>
+          <div class="detail-card__meta">
+            <span class="cell-sub">{{ u.id }}</span>
+            <span class="statut-badge" [class]="'statut-' + u.statut">{{ statutLabel(u.statut) }}</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="close-btn" (click)="closeDrawer()" aria-label="Fermer">✕</button>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="detail-card__quick-actions">
+      <button type="button" class="qa-btn" (click)="handleAction(u, 'modifier')">
+        <span>✏️</span> Modifier
+      </button>
+      <button type="button" class="qa-btn qa-btn--warn" *ngIf="u.statut !== 'suspendu'" (click)="handleAction(u, 'suspendre')">
+        <span>⏸️</span> Suspendre
+      </button>
+      <button type="button" class="qa-btn qa-btn--success" *ngIf="u.statut === 'suspendu'" (click)="handleAction(u, 'reactiver')">
+        <span>✅</span> Réactiver
+      </button>
+      <button type="button" class="qa-btn qa-btn--danger" *ngIf="u.statut !== 'archive'" (click)="handleAction(u, 'supprimer')">
+        <span>🗑️</span> Archiver
+      </button>
+
+      <ng-container *ngIf="drawerType === 'clients'">
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'reset_pin')">
+          <span>🔢</span> PIN
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'verifier_kyc')">
+          <span>🪪</span> KYC
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_wallet')">
+          <span>👛</span> Wallet
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_cartes')">
+          <span>💳</span> Cartes
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_historique')">
+          <span>📋</span> Historique
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="drawerType === 'agents'">
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_documents')">
+          <span>📁</span> Dossier
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_performance')">
+          <span>📈</span> Performance
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_limites')">
+          <span>📏</span> Limites
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_commissions')">
+          <span>💵</span> Commissions
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="drawerType === 'super-agents'">
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_documents')">
+          <span>📁</span> Dossier
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_performance')">
+          <span>📈</span> Performance
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_commissions')">
+          <span>💵</span> Commissions
+        </button>
+        <button type="button" class="qa-btn" (click)="handleAction(u, 'voir_agents')">
+          <span>🧍</span> Agents
+        </button>
+      </ng-container>
+
+      <div class="detail-card__more">
+        <button type="button" class="qa-btn qa-btn--icon" (click)="toggleMenu(u.id)" aria-label="Plus d'actions">⋯</button>
+        <div class="action-menu action-menu--top" *ngIf="openMenuId === u.id">
+          <button type="button" *ngFor="let a of moreActionsFor(u)" [class.danger]="a.danger" (click)="handleAction(u, a.actionId)">
+            <span>{{ a.icon }}</span> {{ a.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="detail-card__tabs">
+      <button type="button" *ngFor="let t of drawerTabsFor(drawerType!)" [class.active]="drawerTab === t.key" (click)="drawerTab = t.key">{{ t.label }}</button>
+    </nav>
+
+    <div class="detail-card__body">
+      <!-- INFOS -->
+      <ng-container *ngIf="drawerTab === 'infos'">
+        <ng-container [ngSwitch]="drawerType">
+          <ng-container *ngSwitchCase="'clients'">
+            <div class="info-section">
+              <h4>Identité &amp; contact</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Téléphone</span><span class="info-item__value">{{ asClient(u).telephone }}</span></div>
+                <div class="info-item"><span class="info-item__label">Email</span><span class="info-item__value">{{ asClient(u).email }}</span></div>
+                <div class="info-item"><span class="info-item__label">CNI</span><span class="info-item__value cell-mono">{{ asClient(u).cni }}</span></div>
+                <div class="info-item"><span class="info-item__label">Carte IBLOPAY</span><span class="info-item__value cell-mono">{{ asClient(u).numeroCarte }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Localisation</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Province</span><span class="info-item__value">{{ asClient(u).province }}</span></div>
+                <div class="info-item"><span class="info-item__label">Commune</span><span class="info-item__value">{{ asClient(u).commune }}</span></div>
+                <div class="info-item"><span class="info-item__label">Zone</span><span class="info-item__value">{{ asClient(u).zone }}</span></div>
+                <div class="info-item"><span class="info-item__label">Colline / Quartier</span><span class="info-item__value">{{ asClient(u).colline }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Compte</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Ouvert par</span><span class="info-item__value">{{ asClient(u).agentNom }}</span></div>
+                <div class="info-item"><span class="info-item__label">Niveau KYC</span><span class="info-item__value">Niveau {{ asClient(u).kycLevel }} / 3</span></div>
+                <div class="info-item"><span class="info-item__label">Cartes actives</span><span class="info-item__value">{{ asClient(u).nbCartes }}</span></div>
+                <div class="info-item"><span class="info-item__label">Créé le</span><span class="info-item__value">{{ asClient(u).dateCreation }}</span></div>
+                <div class="info-item"><span class="info-item__label">Dernière connexion</span><span class="info-item__value">{{ asClient(u).derniereConnexion }}</span></div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'agents'">
+            <div class="info-section">
+              <h4>Identité &amp; contact</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Téléphone</span><span class="info-item__value">{{ asAgent(u).telephone }}</span></div>
+                <div class="info-item"><span class="info-item__label">CNI</span><span class="info-item__value cell-mono">{{ asAgent(u).cni }}</span></div>
+                <div class="info-item"><span class="info-item__label">Carte IBLOPAY</span><span class="info-item__value cell-mono">{{ asAgent(u).numeroCarte }}</span></div>
+                <div class="info-item"><span class="info-item__label">Super Agent</span><span class="info-item__value">{{ asAgent(u).superAgentNom }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Informations professionnelles</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">NIF</span><span class="info-item__value cell-mono">{{ asAgent(u).nif }}</span></div>
+                <div class="info-item"><span class="info-item__label">RCCM</span><span class="info-item__value cell-mono">{{ asAgent(u).rccm }}</span></div>
+                <div class="info-item"><span class="info-item__label">Document d'acceptation</span><span class="info-item__value">{{ asAgent(u).documentAcceptation }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Localisation</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Province</span><span class="info-item__value">{{ asAgent(u).province }}</span></div>
+                <div class="info-item"><span class="info-item__label">Commune</span><span class="info-item__value">{{ asAgent(u).commune }}</span></div>
+                <div class="info-item"><span class="info-item__label">Zone</span><span class="info-item__value">{{ asAgent(u).zone }}</span></div>
+                <div class="info-item"><span class="info-item__label">Colline / Quartier</span><span class="info-item__value">{{ asAgent(u).colline }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Finances</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Limite journalière</span><span class="info-item__value">{{ formatBIF(asAgent(u).limiteJournaliere) }}</span></div>
+                <div class="info-item"><span class="info-item__label">Solde e-Money</span><span class="info-item__value">{{ formatBIF(asAgent(u).soldeEMoney) }}</span></div>
+                <div class="info-item"><span class="info-item__label">Solde Cash</span><span class="info-item__value">{{ formatBIF(asAgent(u).soldeCash) }}</span></div>
+                <div class="info-item"><span class="info-item__label">Créé le</span><span class="info-item__value">{{ asAgent(u).dateCreation }}</span></div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'super-agents'">
+            <div class="info-section">
+              <h4>Identité &amp; contact</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Téléphone</span><span class="info-item__value">{{ asSuperAgent(u).telephone }}</span></div>
+                <div class="info-item"><span class="info-item__label">CNI</span><span class="info-item__value cell-mono">{{ asSuperAgent(u).cni }}</span></div>
+                <div class="info-item"><span class="info-item__label">Carte IBLOPAY</span><span class="info-item__value cell-mono">{{ asSuperAgent(u).numeroCarte }}</span></div>
+                <div class="info-item"><span class="info-item__label">Région</span><span class="info-item__value">{{ asSuperAgent(u).region }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Informations professionnelles</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">NIF</span><span class="info-item__value cell-mono">{{ asSuperAgent(u).nif }}</span></div>
+                <div class="info-item"><span class="info-item__label">RCCM</span><span class="info-item__value cell-mono">{{ asSuperAgent(u).rccm }}</span></div>
+                <div class="info-item"><span class="info-item__label">Document d'acceptation</span><span class="info-item__value">{{ asSuperAgent(u).documentAcceptation }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Localisation</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Province</span><span class="info-item__value">{{ asSuperAgent(u).province }}</span></div>
+                <div class="info-item"><span class="info-item__label">Commune</span><span class="info-item__value">{{ asSuperAgent(u).commune }}</span></div>
+                <div class="info-item"><span class="info-item__label">Zone</span><span class="info-item__value">{{ asSuperAgent(u).zone }}</span></div>
+                <div class="info-item"><span class="info-item__label">Colline / Quartier</span><span class="info-item__value">{{ asSuperAgent(u).colline }}</span></div>
+              </div>
+            </div>
+            <div class="info-section">
+              <h4>Réseau &amp; distribution</h4>
+              <div class="info-grid">
+                <div class="info-item"><span class="info-item__label">Nombre d'agents</span><span class="info-item__value">{{ asSuperAgent(u).nbAgents }}</span></div>
+                <div class="info-item"><span class="info-item__label">Solde distribution</span><span class="info-item__value">{{ formatBIF(asSuperAgent(u).soldeDistribution) }}</span></div>
+                <div class="info-item"><span class="info-item__label">Créé le</span><span class="info-item__value">{{ asSuperAgent(u).dateCreation }}</span></div>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+
+      <!-- WALLET -->
+      <ng-container *ngIf="drawerTab === 'wallet'">
+        <div class="stat-block">
+          <span class="stat-block__label">Solde du portefeuille</span>
+          <span class="stat-block__value">{{ formatBIF(asClient(u).soldeWallet) }}</span>
+        </div>
+        <div class="wallet-actions">
+          <button type="button" class="btn-secondary" (click)="handleAction(u, 'reset_pin')">🔢 Réinitialiser le PIN</button>
+          <button type="button" class="btn-secondary" (click)="handleAction(u, 'verifier_kyc')">🪪 Vérifier KYC</button>
+        </div>
+      </ng-container>
+
+      <!-- CARTES -->
+      <ng-container *ngIf="drawerTab === 'cartes'">
+        <div class="wallet-actions">
+          <button type="button" class="btn-secondary" (click)="handleAction(u, 'consulter_cartes')">💳 Consulter les cartes</button>
+          <button type="button" class="btn-secondary" (click)="handleAction(u, 'reset_pin')">🔢 Réinitialiser le PIN</button>
+        </div>
+        <p class="cell-sub" *ngIf="asClient(u).nbCartes === 0">Aucune carte associée à ce client.</p>
+        <div class="card-mock" *ngFor="let c of range(asClient(u).nbCartes)">
+          <span>💳 {{ asClient(u).numeroCarte }}</span>
+          <span class="statut-badge statut-actif">Active</span>
+        </div>
+      </ng-container>
+
+      <!-- BÉNÉFICIAIRES -->
+      <ng-container *ngIf="drawerTab === 'beneficiaires'">
+        <ul class="simple-list">
+          <li *ngFor="let b of range(asClient(u).nbBeneficiaires); let i = index">👤 Bénéficiaire enregistré #{{ i + 1 }}</li>
+        </ul>
+      </ng-container>
+
+      <!-- HISTORIQUE - Version complète avec détails -->
+      <ng-container *ngIf="drawerTab === 'historique'">
+        <div class="history-card">
+          <div class="history-card__header">
+            <span>📋 Historique des transactions</span>
+            <span class="history-card__count">{{ getHistoriqueDetail(u.id).length }} transactions</span>
+          </div>
+          <div class="history-card__body">
+            <table class="mini-table" *ngIf="getHistoriqueDetail(u.id).length > 0; else noHistory">
+              <thead>
+                <tr>
+                  <th>Date & Heure</th>
+                  <th>Type</th>
+                  <th>Montant</th>
+                  <th>Destinataire/Expéditeur</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let h of getHistoriqueDetail(u.id)">
+                  <td class="cell-mono">{{ h.date }}</td>
+                  <td>
+                    <span class="type-badge" [class]="'type-' + h.type">
+                      {{ h.typeLabel }}
+                    </span>
+                  </td>
+                  <td [class.pos]="h.montant.startsWith('+')" [class.neg]="h.montant.startsWith('-')" class="cell-mono">
+                    {{ h.montant }}
+                  </td>
+                  <td>{{ h.destinataire }}</td>
+                  <td><span class="statut-badge" [class]="'statut-' + h.statut">{{ h.statut }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noHistory>
+              <p class="cell-sub text-center">Aucune transaction pour le moment.</p>
+            </ng-template>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- CONNEXIONS -->
+      <ng-container *ngIf="drawerTab === 'connexions'">
+        <div class="history-card">
+          <div class="history-card__header">
+            <span>📶 Journal des connexions</span>
+            <span class="history-card__count">{{ getConnexions(u.id).length }} connexions</span>
+          </div>
+          <div class="history-card__body">
+            <table class="mini-table" *ngIf="getConnexions(u.id).length > 0; else noConnexions">
+              <thead>
+                <tr><th>Date & Heure</th><th>IP</th><th>Appareil</th><th>Localisation</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of getConnexions(u.id)">
+                  <td>{{ c.date }}</td>
+                  <td class="cell-mono">{{ c.ip }}</td>
+                  <td>{{ c.appareil }}</td>
+                  <td>{{ c.localisation }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noConnexions>
+              <p class="cell-sub text-center">Aucune connexion enregistrée.</p>
+            </ng-template>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- PERFORMANCE -->
+      <ng-container *ngIf="drawerTab === 'performance'">
+        <div class="stat-block">
+          <span class="stat-block__label">Score de performance</span>
+          <span class="stat-block__value">{{ drawerType === 'agents' ? asAgent(u).performance : asSuperAgent(u).performanceGlobale }}/100</span>
+        </div>
+        <div class="perf-details">
+          <div class="perf-detail">
+            <span class="perf-detail__label">Taux de réussite</span>
+            <div class="perf-bar-lg"><span [style.width.%]="drawerType === 'agents' ? asAgent(u).performance : asSuperAgent(u).performanceGlobale"></span></div>
+          </div>
+          <div class="perf-stats">
+            <div class="perf-stat">
+              <span class="perf-stat__label">Transactions traitées</span>
+              <span class="perf-stat__value">{{ drawerType === 'agents' ? Math.floor(asAgent(u).performance * 1.5) : Math.floor(asSuperAgent(u).performanceGlobale * 2) }}</span>
+            </div>
+            <div class="perf-stat">
+              <span class="perf-stat__label">Taux de satisfaction</span>
+              <span class="perf-stat__value">{{ drawerType === 'agents' ? Math.min(100, asAgent(u).performance + 10) : Math.min(100, asSuperAgent(u).performanceGlobale + 10) }}%</span>
+            </div>
+            <div class="perf-stat">
+              <span class="perf-stat__label">Temps moyen (min)</span>
+              <span class="perf-stat__value">{{ drawerType === 'agents' ? Math.floor(15 - asAgent(u).performance / 10) : Math.floor(10 - asSuperAgent(u).performanceGlobale / 15) }} min</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- COMMISSIONS -->
+      <ng-container *ngIf="drawerTab === 'commissions'">
+        <div class="stat-block">
+          <span class="stat-block__label">Commissions du mois</span>
+          <span class="stat-block__value">{{ formatBIF(drawerType === 'agents' ? asAgent(u).commissionsMois : asSuperAgent(u).commissionsMois) }}</span>
+        </div>
+        <div class="commission-details">
+          <div class="commission-detail">
+            <span class="commission-detail__label">Taux de commission</span>
+            <span class="commission-detail__value">{{ drawerType === 'agents' ? '2.5%' : '3.5%' }}</span>
+          </div>
+          <div class="commission-detail">
+            <span class="commission-detail__label">Transactions ce mois</span>
+            <span class="commission-detail__value">{{ drawerType === 'agents' ? Math.floor(asAgent(u).commissionsMois / 1500) : Math.floor(asSuperAgent(u).commissionsMois / 2000) }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- LIMITES JOURNALIÈRES -->
+      <ng-container *ngIf="drawerTab === 'limites'">
+        <div class="limits-card">
+          <div class="limits-card__header">
+            <span>📏 Limites journalières</span>
+            <span class="limits-card__sub">{{ asAgent(u).nom }}</span>
+          </div>
+          <div class="limits-card__body">
+            <div class="limits-grid">
+              <div class="limit-item">
+                <span class="limit-item__label">Plafond de transaction</span>
+                <span class="limit-item__value">{{ formatBIF(asAgent(u).limiteJournaliere) }}</span>
+              </div>
+              <div class="limit-item">
+                <span class="limit-item__label">Solde e-Money</span>
+                <span class="limit-item__value">{{ formatBIF(asAgent(u).soldeEMoney) }}</span>
+              </div>
+              <div class="limit-item">
+                <span class="limit-item__label">Solde Cash</span>
+                <span class="limit-item__value">{{ formatBIF(asAgent(u).soldeCash) }}</span>
+              </div>
+              <div class="limit-item">
+                <span class="limit-item__label">Utilisation</span>
+                <span class="limit-item__value">{{ getLimitPercentage(asAgent(u)) }}%</span>
+              </div>
+            </div>
+            <div class="limit-bar">
+              <div class="limit-bar__label">Capacité utilisée</div>
+              <div class="limit-bar__track">
+                <div class="limit-bar__fill" [style.width.%]="getLimitPercentage(asAgent(u))"></div>
+              </div>
+              <div class="limit-bar__info">
+                <span>{{ formatBIF(asAgent(u).soldeEMoney) }}</span>
+                <span>{{ formatBIF(asAgent(u).limiteJournaliere) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- DOCUMENTS - Dossier officiel -->
+      <ng-container *ngIf="drawerTab === 'documents'">
+        <div class="documents-card">
+          <div class="documents-card__header">
+            <span>📁 Dossier officiel</span>
+            <span class="documents-card__count">3 documents</span>
+          </div>
+          <div class="documents-card__body">
+            <!-- Dossier d'acceptation - Lettre officielle -->
+            <div class="document-folder">
+              <div class="document-folder__header" (click)="toggleFolder()">
+                <span class="document-folder__icon">📂</span>
+                <span class="document-folder__title">Lettre d'acceptation IBLOPAY</span>
+                <span class="statut-badge statut-actif">Approuvé</span>
+                <span class="document-folder__toggle">{{ folderOpen ? '−' : '+' }}</span>
+              </div>
+              <div class="document-folder__content" *ngIf="folderOpen">
+                <div class="official-letter">
+                  <div class="official-letter__header">
+                    <div class="official-letter__logo">
+                      <span class="official-letter__brand">IBLOPAY</span>
+                      <span class="official-letter__sub">Système de paiement mobile</span>
+                    </div>
+                    <div class="official-letter__ref">
+                      <span class="official-letter__ref-label">N° Réf:</span>
+                      <span class="official-letter__ref-value">IBL/{{ u.id }}/{{ currentYear }}</span>
+                    </div>
+                  </div>
+                  <div class="official-letter__body">
+                    <div class="official-letter__date">
+                      <span>Date: {{ formatDate(today) }}</span>
+                    </div>
+                    <div class="official-letter__subject">
+                      <h3>OBJET: Acceptation d'exercer en tant que {{ drawerType === 'agents' ? 'Agent IBLOPAY' : 'Super Agent IBLOPAY' }}</h3>
+                    </div>
+                    <div class="official-letter__content">
+                      <p>Nous, soussignés, IBLOPAY SA, représentée par son Directeur Général, certifions que :</p>
+                      <div class="official-letter__identity">
+                        <p><strong>Nom:</strong> {{ drawerType === 'agents' ? asAgent(u).nom : asSuperAgent(u).nom }}</p>
+                        <p><strong>CNI:</strong> {{ drawerType === 'agents' ? asAgent(u).cni : asSuperAgent(u).cni }}</p>
+                        <p><strong>Téléphone:</strong> {{ drawerType === 'agents' ? asAgent(u).telephone : asSuperAgent(u).telephone }}</p>
+                        <p><strong>NIF:</strong> {{ drawerType === 'agents' ? asAgent(u).nif : asSuperAgent(u).nif }}</p>
+                        <p><strong>RCCM:</strong> {{ drawerType === 'agents' ? asAgent(u).rccm : asSuperAgent(u).rccm }}</p>
+                        <p><strong>Adresse:</strong> {{ drawerType === 'agents' ? asAgent(u).province : asSuperAgent(u).province }}, {{ drawerType === 'agents' ? asAgent(u).commune : asSuperAgent(u).commune }}</p>
+                      </div>
+                      <p>est dûment autorisé(e) à exercer en tant que <strong>{{ drawerType === 'agents' ? 'Agent IBLOPAY' : 'Super Agent IBLOPAY' }}</strong> sur l'ensemble du territoire burundais.</p>
+                      <p>La présente autorisation est délivrée pour une durée indéterminée et peut être révoquée à tout moment en cas de non-respect des conditions générales d'utilisation.</p>
+                      <div class="official-letter__signature">
+                        <div class="official-letter__signature-line">
+                          <span>Fait à Bujumbura, le {{ formatDate(today) }}</span>
+                        </div>
+                        <div class="official-letter__signature-line">
+                          <span>Pour IBLOPAY SA,</span>
+                        </div>
+                        <div class="official-letter__signature-line official-letter__signature-line--bold">
+                          <span>Le Directeur Général</span>
+                        </div>
+                        <div class="official-letter__signature-line">
+                          <span>_________________________</span>
+                        </div>
+                        <div class="official-letter__signature-line official-letter__signature-line--stamp">
+                          <span>🔹 Cachet officiel 🔹</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="official-letter__footer">
+                    <span>Document officiel IBLOPAY - {{ currentYear }}</span>
+                    <button type="button" class="btn-secondary btn-sm" (click)="printDocument()">
+                      🖨️ Imprimer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Autres documents -->
+            <div class="document-item">
+              <span class="doc-icon">📄</span>
+              <div>
+                <strong>Pièce d'identité</strong>
+                <span class="cell-sub">CNI {{ drawerType === 'agents' ? asAgent(u).cni : asSuperAgent(u).cni }} — vérifiée</span>
+              </div>
+              <span class="statut-badge statut-actif">Validé</span>
+            </div>
+            <div class="document-item">
+              <span class="doc-icon">📄</span>
+              <div>
+                <strong>Contrat {{ drawerType === 'agents' ? "d'agent" : 'de super agent' }}</strong>
+                <span class="cell-sub">Signé le {{ drawerType === 'agents' ? asAgent(u).dateCreation : asSuperAgent(u).dateCreation }}</span>
+              </div>
+              <span class="statut-badge statut-actif">Signé</span>
+            </div>
+            <div class="document-item">
+              <span class="doc-icon">📄</span>
+              <div>
+                <strong>Document d'acceptation</strong>
+                <span class="cell-sub">{{ drawerType === 'agents' ? asAgent(u).documentAcceptation : asSuperAgent(u).documentAcceptation }}</span>
+              </div>
+              <span class="statut-badge statut-actif">Vérifié</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- RÉSEAU -->
+      <ng-container *ngIf="drawerTab === 'reseau'">
+        <div class="history-card">
+          <div class="history-card__header">
+            <span>🧍 Réseau d'agents</span>
+            <span class="history-card__count">{{ agentsOfSuperAgent(u.id).length }} agents</span>
+          </div>
+          <div class="history-card__body">
+            <table class="mini-table" *ngIf="agentsOfSuperAgent(u.id).length > 0; else noAgent">
+              <thead>
+                <tr><th>Agent</th><th>Province</th><th>Performance</th><th>Statut</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let a of agentsOfSuperAgent(u.id)">
+                  <td>{{ a.nom }}</td>
+                  <td>{{ a.province }}</td>
+                  <td>{{ a.performance }}/100</td>
+                  <td><span class="statut-badge" [class]="'statut-' + a.statut">{{ statutLabel(a.statut) }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noAgent><p class="cell-sub text-center">Aucun agent rattaché pour le moment.</p></ng-template>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- STOCKS -->
+      <ng-container *ngIf="drawerTab === 'stocks'">
+        <div class="stat-block">
+          <span class="stat-block__label">Cartes en stock (région)</span>
+          <span class="stat-block__value">{{ asSuperAgent(u).nbAgents * 12 }}</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ============ CARTE CRÉATION ============ -->
+  <div class="modal-overlay" *ngIf="wizardOpen" (click)="closeWizard()"></div>
+  <div class="wizard" *ngIf="wizardOpen">
+    <div class="wizard__header">
+      <div>
+        <h2>{{ wizardMode === 'create' ? 'Nouveau compte' : 'Modifier le compte' }} — {{ activeTabLabel }}</h2>
+        <p class="cell-sub">Étape {{ wizardStep + 1 }} / {{ wizardSteps.length }} · {{ wizardSteps[wizardStep].label }}</p>
+      </div>
+      <button type="button" class="close-btn" (click)="closeWizard()" aria-label="Fermer">✕</button>
+    </div>
+
+    <ol class="wizard__stepper">
+      <li *ngFor="let s of wizardSteps; let i = index"
+          [class.active]="i === wizardStep"
+          [class.done]="i < wizardStep"
+          (click)="goToStep(i)">
+        <span class="wizard__step-dot">{{ i < wizardStep ? '✓' : i + 1 }}</span>
+        <span class="wizard__step-label">{{ s.label }}</span>
+      </li>
+    </ol>
+
+    <div class="wizard__body">
+      <!-- ÉTAPE 1 : CARTE & OTP -->
+      <section *ngIf="currentStepKey === 'carte'" class="wizard__step">
+        <div class="card-visual card-visual--compact">
+          <div class="card-visual__top">
+            <span class="card-visual__brand">IBLOPAY</span>
+            <span class="card-visual__chip">▮▮</span>
+            <span class="card-visual__type">{{ activeTabLabel }}</span>
+          </div>
+          <div class="card-visual__number">{{ wizardData.numeroCarte }}</div>
+          <div class="card-visual__bottom">
+            <div>
+              <span class="card-visual__label">UID</span>
+              <span class="card-visual__value">{{ wizardData.uid || 'NFC-XXXX' }}</span>
+            </div>
+            <div>
+           
+            </div>
+          </div>
+          <button type="button" class="card-visual__regen" (click)="regenerateCard()" *ngIf="wizardMode === 'create'" title="Régénérer">
+            ↻
+          </button>
+        </div>
+
+        <div class="wizard__fields">
+          <div class="form-group">
+            <label>UID (Identifiant NFC)</label>
+            <input type="text" [(ngModel)]="wizardData.uid" name="wUid" placeholder="NFC-XXXX-XXXX" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Téléphone du bénéficiaire</label>
+            <input type="text" [(ngModel)]="wizardData.telephone" name="wTelephone" placeholder="+257 7X XX XX XX" [disabled]="otpVerified" class="form-control" />
+          </div>
+
+          <div class="otp-box" *ngIf="!otpVerified">
+            <button type="button" class="btn-secondary" (click)="sendOtp()" [disabled]="!wizardData.telephone?.trim()">
+              {{ otpSent ? 'Renvoyer le code OTP' : 'Envoyer le code OTP' }}
+            </button>
+            <ng-container *ngIf="otpSent">
+              <div class="form-group">
+                <label>Code reçu par SMS</label>
+                <input type="text" inputmode="numeric" maxlength="6" class="form-control otp-input" [(ngModel)]="otpInput" name="otpInput" placeholder="······" />
+              </div>
+              <p class="otp-hint">Code de démonstration : <strong class="cell-mono">{{ otpGenerated }}</strong></p>
+              <p class="otp-error" *ngIf="otpError">Code incorrect, veuillez réessayer.</p>
+              <button type="button" class="btn-primary" (click)="verifyOtp()" [disabled]="otpInput.length !== 6">Valider et activer la carte</button>
+            </ng-container>
+          </div>
+          <div class="otp-success" *ngIf="otpVerified">
+            <span>✅</span> Carte activée — le compte peut être finalisé.
+          </div>
+        </div>
+      </section>
+
+      <!-- ÉTAPE 2 : IDENTITÉ -->
+      <section *ngIf="currentStepKey === 'identite'" class="wizard__step">
+        <div class="wizard__grid">
+          <div class="form-group">
+            <label>Nom &amp; prénom <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="wizardData.nom" name="wNom" class="form-control" placeholder="Ex: Jean NDAYISHIMIYE" required />
+          </div>
+          <div class="form-group">
+            <label>Numéro de CNI <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="wizardData.cni" name="wCni" class="form-control" placeholder="Ex: 11234567890" required />
+          </div>
+          <div class="form-group" *ngIf="activeTab === 'clients'">
+            <label>Email (optionnel)</label>
+            <input type="email" [(ngModel)]="wizardData.email" name="wEmail" class="form-control" placeholder="client@email.com" />
+          </div>
+          <div class="form-group" *ngIf="activeTab === 'clients'">
+            <label>Niveau KYC initial</label>
+            <select [(ngModel)]="wizardData.kycLevel" name="wKyc" class="form-control">
+              <option [value]="1">Niveau 1</option>
+              <option [value]="2">Niveau 2</option>
+              <option [value]="3">Niveau 3</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="activeTab === 'clients'">
+            <label>Compte ouvert par (agent)</label>
+            <select [(ngModel)]="wizardData.agentId" name="wAgent" class="form-control">
+              <option *ngFor="let a of agents" [value]="a.id">{{ a.nom }}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="activeTab === 'agents'">
+            <label>Rattaché au Super Agent</label>
+            <select [(ngModel)]="wizardData.superAgentId" name="wSuperAgent" class="form-control">
+              <option *ngFor="let sa of superAgents" [value]="sa.id">{{ sa.nom.split(' (')[0] }}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="activeTab === 'super-agents'">
+            <label>Région d'affectation</label>
+            <select [(ngModel)]="wizardData.region" name="wRegion" class="form-control">
+              <option>Région Centre</option><option>Région Nord</option><option>Région Sud</option>
+              <option>Région Est</option><option>Région Ouest</option><option>Région Bujumbura</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ÉTAPE 3 : ADRESSE -->
+      <section *ngIf="currentStepKey === 'adresse'" class="wizard__step">
+        <div class="wizard__grid">
+          <div class="form-group">
+            <label>Province <span class="required">*</span></label>
+            <select [(ngModel)]="wizardData.province" name="wProvince" (ngModelChange)="onProvinceChange()" class="form-control">
+              <option value="" disabled>Sélectionner une province</option>
+              <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Commune <span class="required">*</span></label>
+            <select [(ngModel)]="wizardData.commune" name="wCommune" (ngModelChange)="onCommuneChange()" [disabled]="!wizardData.province" class="form-control">
+              <option value="" disabled>Sélectionner une commune</option>
+              <option *ngFor="let c of availableCommunes" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Zone <span class="required">*</span></label>
+            <select [(ngModel)]="wizardData.zone" name="wZone" (ngModelChange)="onZoneChange()" [disabled]="!wizardData.commune" class="form-control">
+              <option value="" disabled>Sélectionner une zone</option>
+              <option *ngFor="let z of availableZones" [value]="z">{{ z }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Colline / Quartier <span class="required">*</span></label>
+            <select [(ngModel)]="wizardData.colline" name="wColline" [disabled]="!wizardData.zone" class="form-control">
+              <option value="" disabled>Sélectionner une colline</option>
+              <option *ngFor="let c of availableCollines" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ÉTAPE 4 : INFOS PROFESSIONNELLES -->
+      <section *ngIf="currentStepKey === 'professionnel'" class="wizard__step">
+        <div class="wizard__grid">
+          <div class="form-group">
+            <label>NIF (Numéro d'Identification Fiscale) <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="wizardData.nif" name="wNif" class="form-control" placeholder="Ex: 412345678" required />
+          </div>
+          <div class="form-group">
+            <label>Numéro de registre de commerce (RCCM) <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="wizardData.rccm" name="wRccm" class="form-control" placeholder="Ex: RCCM/BJM/12345" required />
+          </div>
+        </div>
+        <div class="form-group upload-field">
+          <label>Copie d'acceptation <span class="required">*</span></label>
+          <div class="upload-area" (click)="fileInput.click()">
+            <span class="upload-icon">📎</span>
+            <span *ngIf="!wizardData.documentAcceptationNom">Cliquez pour télécharger un document</span>
+            <span *ngIf="wizardData.documentAcceptationNom" class="upload-field__name">{{ wizardData.documentAcceptationNom }}</span>
+            <input type="file" #fileInput (change)="onDocumentSelected($event)" accept=".pdf,.jpg,.png" style="display:none" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ÉTAPE 5 : RÉCAPITULATIF -->
+      <section *ngIf="currentStepKey === 'recap'" class="wizard__step">
+        <div class="recap-grid">
+          <div class="recap-block">
+            <h3>Identité</h3>
+            <dl>
+              <dt>Nom</dt><dd>{{ wizardData.nom }}</dd>
+              <dt>CNI</dt><dd class="cell-mono">{{ wizardData.cni }}</dd>
+              <dt>Téléphone</dt><dd>{{ wizardData.telephone }}</dd>
+              <dt>UID</dt><dd class="cell-mono">{{ wizardData.uid || 'NFC-XXXX' }}</dd>
+              <dt>Carte</dt><dd class="cell-mono">{{ wizardData.numeroCarte }}</dd>
+            </dl>
+          </div>
+          <div class="recap-block">
+            <h3>Adresse</h3>
+            <dl>
+              <dt>Province</dt><dd>{{ wizardData.province }}</dd>
+              <dt>Commune</dt><dd>{{ wizardData.commune }}</dd>
+              <dt>Zone</dt><dd>{{ wizardData.zone }}</dd>
+              <dt>Colline / Quartier</dt><dd>{{ wizardData.colline }}</dd>
+            </dl>
+          </div>
+          <div class="recap-block" *ngIf="needsProfessionalStep">
+            <h3>Infos professionnelles</h3>
+            <dl>
+              <dt>NIF</dt><dd class="cell-mono">{{ wizardData.nif }}</dd>
+              <dt>RCCM</dt><dd class="cell-mono">{{ wizardData.rccm }}</dd>
+              <dt>Document</dt><dd>{{ wizardData.documentAcceptationNom }}</dd>
+            </dl>
+          </div>
+          <div class="recap-block recap-block--accent" *ngIf="wizardMode === 'create'">
+            <h3>Accès initial</h3>
+            <p class="cell-sub">Mot de passe temporaire, à communiquer une seule fois.</p>
+            <p class="recap-password cell-mono">{{ wizardData.tempPassword }}</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="wizard__footer">
+      <button type="button" class="btn-secondary" (click)="wizardPrev()" *ngIf="wizardStep > 0">‹ Précédent</button>
+      <span class="wizard__spacer"></span>
+      <button type="button" class="btn-secondary" (click)="closeWizard()">Annuler</button>
+      <button type="button" class="btn-primary" (click)="wizardNext()" [disabled]="!canGoNext()" *ngIf="currentStepKey !== 'recap'">Suivant ›</button>
+      <button type="button" class="btn-primary" (click)="submitWizard()" *ngIf="currentStepKey === 'recap'">
+        {{ wizardMode === 'create' ? 'Créer le compte' : 'Enregistrer les modifications' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ CONFIRMATION ============ -->
+  <div class="modal-overlay" *ngIf="confirm" (click)="cancelConfirm()"></div>
+  <div class="modal modal--small" *ngIf="confirm as c">
+    <h2>{{ c.title }}</h2>
+    <p>{{ c.message }}</p>
+    <div class="modal__footer">
+      <button type="button" class="btn-secondary" (click)="cancelConfirm()">Annuler</button>
+      <button type="button" [class]="c.danger ? 'btn-danger' : 'btn-primary'" (click)="resolveConfirm()">Confirmer</button>
+    </div>
+  </div>
+
+  <!-- ============ TOASTS ============ -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      {{ t.message }}
+      <button type="button" (click)="dismissToast(t.id)" aria-label="Fermer la notification">✕</button>
+    </div>
+  </div>
+</div>

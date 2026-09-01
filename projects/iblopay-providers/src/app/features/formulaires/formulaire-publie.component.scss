@@ -1,0 +1,241 @@
+@use '../../core/shared' as *;
+
+.formulaire-publie-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+}
+
+.formulaire-statut-ruban {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 14px 14px 0 0;
+  margin: -20px -20px 0;
+  background: var(--accent-green);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.formulaire-header {
+  text-align: center;
+  padding: 30px 30px 20px;
+  background: linear-gradient(135deg, rgba(var(--accent-blue-rgb), 0.04), rgba(var(--accent-purple-rgb), 0.04));
+  border-bottom: 1px solid var(--border-color);
+}
+
+.formulaire-header-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 16px rgba(var(--accent-blue-rgb), 0.3);
+}
+
+.formulaire-header h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.formulaire-description {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.formulaire-divider {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  border-radius: 4px;
+  margin: 16px auto 0;
+}
+
+.formulaire-body {
+  padding: 24px;
+}
+
+/* ============= DISPOSITION INFO ============= */
+.disposition-info {
+  text-align: right;
+  margin-bottom: 12px;
+}
+
+.disposition-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(var(--accent-blue-rgb), 0.12);
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============= GRILLE DES CHAMPS ============= */
+.champs-grid {
+  display: grid;
+  gap: 20px;
+
+  &.col-1 { grid-template-columns: 1fr; }
+  &.col-2 { grid-template-columns: 1fr 1fr; }
+  &.col-3 { grid-template-columns: 1fr 1fr 1fr; }
+  &.col-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  @media (max-width: 768px) {
+    &.col-2 { grid-template-columns: 1fr; }
+    &.col-3 { grid-template-columns: 1fr 1fr; }
+    &.col-4 { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    &.col-2, &.col-3, &.col-4 { grid-template-columns: 1fr; }
+  }
+}
+
+.champ-field {
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .required-mark {
+    color: var(--accent-red);
+    font-weight: 700;
+    margin-left: 2px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-darkest);
+    color: var(--text-primary);
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(var(--accent-blue-rgb), 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 0;
+
+  input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+.file-field {
+  border: 2px dashed var(--border-color);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+
+  i {
+    display: block;
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: var(--accent-blue);
+  }
+
+  &:hover {
+    border-color: var(--accent-blue);
+    background: rgba(var(--accent-blue-rgb), 0.03);
+  }
+}
+
+.champ-aide {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.formulaire-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  background: var(--bg-card-hover);
+  border-radius: 0 0 20px 20px;
+}
+
+.btn-submit {
+  padding: 12px 40px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(var(--accent-blue-rgb), 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    font-size: 16px;
+  }
+}

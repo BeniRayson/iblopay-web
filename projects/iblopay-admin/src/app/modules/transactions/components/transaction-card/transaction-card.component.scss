@@ -1,0 +1,109 @@
+/* ==========================================================
+   VARIABLES DE THÈME POUR LA CARTE DE TRANSACTION
+   ========================================================== */
+:root {
+  /* Mode Lumière (Light) */
+  --tx-card-surface: rgba(255, 255, 255, 0.75);
+  --tx-card-border: var(--border-light, rgba(0, 0, 0, 0.08));
+  --tx-card-shadow: rgba(0, 0, 0, 0.05);
+  --tx-card-icon-bg: #f5f6f8;
+  --tx-card-icon-color: #1c1e26;
+  --tx-card-title: #1c1e26;
+  --tx-card-muted: #8a8f98;
+  --tx-card-amount-inbound: #1fae5b;
+  --tx-card-amount-outbound: #1c1e26;
+}
+
+[data-theme='dark'],
+body.dark-theme {
+  /* Mode Sombre (Dark) */
+  --tx-card-surface: rgba(18, 26, 47, 0.65);
+  --tx-card-border: var(--border-light, rgba(255, 255, 255, 0.12));
+  --tx-card-shadow: rgba(0, 0, 0, 0.3);
+  --tx-card-icon-bg: rgba(255, 255, 255, 0.06);
+  --tx-card-icon-color: var(--text, #ffffff);
+  --tx-card-title: var(--text, #ffffff);
+  --tx-card-muted: var(--text-dim, rgba(255, 255, 255, 0.5));
+  --tx-card-amount-inbound: #22c55e;
+  --tx-card-amount-outbound: var(--text, #ffffff);
+}
+
+
+/* ==========================================================
+   CARTE DE TRANSACTION (.transaction-card)
+   ========================================================== */
+.transaction-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--tx-card-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--tx-card-border);
+  box-shadow: 0 4px 16px var(--tx-card-shadow);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-light, rgba(255, 255, 255, 0.2));
+    box-shadow: 0 6px 20px var(--tx-card-shadow);
+  }
+
+  &__icon {
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tx-card-icon-bg);
+    color: var(--tx-card-icon-color);
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tx-card-title);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__ref {
+    font-weight: 400;
+    color: var(--tx-card-muted);
+  }
+
+  &__date {
+    font-size: 12px;
+    color: var(--tx-card-muted);
+    margin-top: 2px;
+  }
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  &__amount {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--tx-card-amount-inbound);
+
+    &.outbound {
+      color: var(--tx-card-amount-outbound);
+    }
+  }
+}

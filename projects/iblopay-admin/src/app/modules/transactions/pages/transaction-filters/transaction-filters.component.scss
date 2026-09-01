@@ -1,0 +1,165 @@
+/* ==========================================================
+   VARIABLES DE THÈME POUR LES FILTRES
+   ========================================================== */
+:root {
+  /* Mode Lumière (Light) */
+  --filter-surface: rgba(255, 255, 255, 0.75);
+  --filter-surface-hover: rgba(255, 255, 255, 0.95);
+  --filter-border: var(--border-light, rgba(0, 0, 0, 0.08));
+  --filter-input-bg: #ffffff;
+  --filter-input-border: #d7dae0;
+  --filter-label: #8a8f98;
+  --filter-shadow: rgba(0, 0, 0, 0.05);
+
+  --btn-default-bg: #ffffff;
+  --btn-default-color: #1c1e26;
+  --btn-default-border: #d7dae0;
+
+  --btn-primary-bg: #1c1e26;
+  --btn-primary-color: #ffffff;
+  --btn-primary-border: #1c1e26;
+}
+
+[data-theme='dark'],
+body.dark-theme {
+  /* Mode Sombre (Dark) */
+  --filter-surface: rgba(18, 26, 47, 0.65);
+  --filter-surface-hover: rgba(26, 37, 66, 0.85);
+  --filter-border: var(--border-light, rgba(255, 255, 255, 0.12));
+  --filter-input-bg: rgba(0, 0, 0, 0.2);
+  --filter-input-border: rgba(255, 255, 255, 0.15);
+  --filter-label: var(--text-dim, rgba(255, 255, 255, 0.5));
+  --filter-shadow: rgba(0, 0, 0, 0.3);
+
+  --btn-default-bg: rgba(255, 255, 255, 0.05);
+  --btn-default-color: var(--text, #ffffff);
+  --btn-default-border: rgba(255, 255, 255, 0.15);
+
+  --btn-primary-bg: var(--sun, #3b82f6);
+  --btn-primary-color: #ffffff;
+  --btn-primary-border: var(--sun, #3b82f6);
+}
+
+
+/* ==========================================================
+   BARRE DE FILTRES (.tx-filters)
+   ========================================================== */
+.tx-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  padding: 16px;
+
+  /* Effet Glassmorphism */
+  background: var(--filter-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border: 1px solid var(--filter-border);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px var(--filter-shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+
+  /* --- CHAMPS DE FORMULAIRE --- */
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 11px;
+      color: var(--filter-label);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    select,
+    input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--filter-input-border);
+      background: var(--filter-input-bg);
+      color: var(--text, #ffffff);
+      font-size: 13px;
+      min-width: 140px;
+      outline: none;
+      transition: all 0.2s ease;
+
+      /* Style du placeholder en mode sombre */
+      &::placeholder {
+        color: var(--text-faint, rgba(255, 255, 255, 0.3));
+      }
+
+      /* Focus / État actif */
+      &:focus {
+        border-color: var(--sun, #3b82f6);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
+
+      /* Options du select en mode sombre */
+      option {
+        background: var(--surface-3, #1e293b);
+        color: var(--text, #ffffff);
+      }
+    }
+  }
+
+  /* --- BARRE D'ACTIONS --- */
+  &__actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+
+    @media (max-width: 576px) {
+      margin-left: 0;
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+}
+
+
+/* ==========================================================
+   BOUTONS (.btn)
+   ========================================================== */
+.btn {
+  border: 1px solid var(--btn-default-border);
+  background: var(--btn-default-bg);
+  color: var(--btn-default-color);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--filter-surface-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--filter-shadow);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  /* Variante bouton principal */
+  &--primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-color);
+    border-color: var(--btn-primary-border);
+
+    &:hover {
+      opacity: 0.9;
+      background: var(--btn-primary-bg);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+  }
+}

@@ -1,0 +1,50 @@
+<form class="tx-filters" (ngSubmit)="emitChange()">
+  <div class="tx-filters__field">
+    <label>Type</label>
+    <select [(ngModel)]="filter.type" name="type">
+      <option [ngValue]="undefined">All</option>
+      <option *ngFor="let t of types" [ngValue]="t">{{ t }}</option>
+    </select>
+  </div>
+
+  <div class="tx-filters__field">
+    <label>Status</label>
+    <select [(ngModel)]="filter.status" name="status">
+      <option [ngValue]="undefined">All</option>
+      <option *ngFor="let s of statuses" [ngValue]="s">{{ s }}</option>
+    </select>
+  </div>
+
+  <div class="tx-filters__field">
+    <label>Payment mode</label>
+    <select [(ngModel)]="filter.paymentMode" name="paymentMode">
+      <option [ngValue]="undefined">All</option>
+      <option *ngFor="let p of paymentModes" [ngValue]="p">{{ p }}</option>
+    </select>
+  </div>
+
+  <div class="tx-filters__field">
+    <label>From</label>
+    <input type="date" [(ngModel)]="filter.dateFrom" name="dateFrom" />
+  </div>
+
+  <div class="tx-filters__field">
+    <label>To</label>
+    <input type="date" [(ngModel)]="filter.dateTo" name="dateTo" />
+  </div>
+
+  <div class="tx-filters__field">
+    <label>Min amount</label>
+    <input type="number" [(ngModel)]="filter.minAmount" name="minAmount" min="0" />
+  </div>
+
+  <div class="tx-filters__field">
+    <label>Max amount</label>
+    <input type="number" [(ngModel)]="filter.maxAmount" name="maxAmount" min="0" />
+  </div>
+
+  <div class="tx-filters__actions">
+    <button type="submit" class="btn btn--primary">Apply</button>
+    <button type="button" class="btn" (click)="reset()">Reset</button>
+  </div>
+</form>

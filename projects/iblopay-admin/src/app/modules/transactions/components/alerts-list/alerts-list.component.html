@@ -1,0 +1,10 @@
+<div class="alerts-card">
+  <div class="alerts-card__title">Alertes et notifications</div>
+  <div class="alerts-card__list">
+    <div class="alert-item" *ngFor="let alert of alerts">
+      <span class="alert-item__icon">{{ alert.icon }}</span>
+      <span class="alert-item__message">{{ alert.message }}</span>
+      <a class="alert-item__link" href="#">{{ alert.link }}</a>
+    </div>
+  </div>
+</div>

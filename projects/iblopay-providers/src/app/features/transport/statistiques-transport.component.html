@@ -1,0 +1,164 @@
+<div class="page-header">
+  <div>
+    <h1>Statistiques & Suivi — Transport</h1>
+    <p>Tableau de bord financier et opérationnel de votre flotte de bus et taxis</p>
+  </div>
+</div>
+
+<!-- 10 CARTES DE STATS AVEC TENDANCES COMPARATIVES -->
+<div class="stats-grid-2rows" *ngIf="stats as s">
+  <!-- Ligne 1 : Opérations -->
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Véhicules actifs</div>
+      <span class="trend-badge positive">+3% ↗</span>
+    </div>
+    <div class="stat-value">{{ s.vehiculesActifs }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Chauffeurs actifs</div>
+      <span class="trend-badge positive">+1 ↗</span>
+    </div>
+    <div class="stat-value text-green">{{ s.totalChauffeurs }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Courses aujourd'hui</div>
+      <span class="trend-badge positive">+8% ↗</span>
+    </div>
+    <div class="stat-value text-orange">{{ s.coursesAujourdhui | number }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Terminées</div>
+      <span class="trend-badge positive">+5% ↗</span>
+    </div>
+    <div class="stat-value text-red">{{ termineesAujourdhui }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Taux de réussite</div>
+      <span class="trend-badge positive">+4% ↗</span>
+    </div>
+    <div class="stat-value text-blue">{{ tauxReussite }}%</div>
+  </div>
+
+  <!-- Ligne 2 : Finances & Performance -->
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Revenu du jour</div>
+      <span class="trend-badge positive">+15% ↗</span>
+    </div>
+    <div class="stat-value text-green">{{ formatBIF(s.revenuAujourdhui) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Revenu encaissé (courses)</div>
+      <span class="trend-badge positive">+9% ↗</span>
+    </div>
+    <div class="stat-value text-purple">{{ formatBIF(revenuTotalCourses) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Distance cumulée</div>
+      <span class="trend-badge neutral">0% →</span>
+    </div>
+    <div class="stat-value">{{ s.distanceTotaleKm | number }} km</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Taux d'occupation</div>
+      <span class="trend-badge positive">+2% ↗</span>
+    </div>
+    <div class="stat-value text-cyan">{{ s.tauxOccupationMoyen }}%</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <span class="trend-badge negative" *ngIf="s.incidentsOuverts > 0">{{ s.incidentsOuverts }} ⚠</span>
+      <span class="trend-badge neutral" *ngIf="s.incidentsOuverts === 0">0 →</span>
+      <div class="stat-label">Incidents ouverts</div>
+    </div>
+    <div class="stat-value" [ngClass]="s.incidentsOuverts > 0 ? 'text-red' : 'text-green'">{{ s.incidentsOuverts }}</div>
+  </div>
+</div>
+
+<!-- COLONNES PARALLÈLES COMPACTES : GRAPHE SINUSOÏDAL & TABLEAU DÉTAIL -->
+<div class="parallel-grid compact-grid">
+  <!-- Graphique d'évolution des trajets/zones -->
+  <div class="card chart-card">
+    <div class="card-title">Évolution des trajets & zones</div>
+    <div class="chart-wrap-line">
+      <canvas #chartCanvas></canvas>
+    </div>
+  </div>
+
+  <!-- Détail par trajet/zone avec indicateur de Charge Active -->
+  <div class="card table-card">
+    <div class="card-title">Détail par trajet (bus) & zone (taxi)</div>
+    <div class="table-responsive">
+      <table class="data-table compact-table">
+        <thead>
+          <tr>
+            <th>Trajet / Zone</th>
+            <th>Type</th>
+            <th>Courses</th>
+            <th>Charge</th>
+            <th>Occupation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of statsParLigneOuZone">
+            <td><strong>{{ s.nom }}</strong></td>
+            <td>{{ s.type === 'BUS' ? 'Bus' : 'Taxi' }}</td>
+            <td>{{ s.courses }}</td>
+            <td>
+              <span class="workload-badge" [ngClass]="getWorkloadClass(s.tauxOccupation)">
+                {{ getWorkloadLabel(s.tauxOccupation) }}
+              </span>
+            </td>
+            <td>
+              <div class="mini-progress">
+                <div class="mini-progress-fill" [style.width.%]="s.tauxOccupation"></div>
+              </div>
+              {{ s.tauxOccupation }}%
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RAPPORT CHIFFRÉ DÉTAILLÉ PAR TRAJET/ZONE ============ -->
+<div class="card detailed-report-card">
+  <div class="report-header">
+    <div class="card-title">Rapport chiffré détaillé par trajet / zone</div>
+    <select [(ngModel)]="trajetSelectionneId" (ngModelChange)="selectionnerTrajet($event)">
+      <optgroup label="Trajets de bus">
+        <option *ngFor="let l of lignes" [value]="'LIGNE:' + l.id">{{ l.nom }}</option>
+      </optgroup>
+      <optgroup label="Zones taxi">
+        <option *ngFor="let z of zones" [value]="'ZONE:' + z.id">{{ z.nom }}</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <div *ngIf="isLoadingKpis" class="loading-note">Chargement du rapport...</div>
+
+  <ng-container *ngIf="!isLoadingKpis && kpisTrajet.length > 0">
+    <div class="kpi-grid">
+      <div class="kpi-card" *ngFor="let k of kpisTrajet" [ngClass]="colorClass(k.couleur)">
+        <div class="kpi-icon"><i [class]="k.icon"></i></div>
+        <div>
+          <div class="kpi-value">{{ k.valeur }}</div>
+          <div class="kpi-label">{{ k.label }}</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="empty-state" *ngIf="!isLoadingKpis && kpisTrajet.length === 0">
+    Aucune donnée disponible pour ce trajet/zone pour le moment.
+  </div>
+</div>

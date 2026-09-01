@@ -1,0 +1,21 @@
+<div class="donut-card">
+  <div class="donut-card__title">Types d'opérations</div>
+
+  <div class="donut-card__body">
+    <div class="donut-chart" [style.background]="getConicGradient()">
+      <div class="donut-chart__center">
+        <span class="donut-chart__total">{{ totalCount.toLocaleString() }}</span>
+        <span class="donut-chart__label">Total</span>
+      </div>
+    </div>
+
+    <div class="donut-card__legend">
+      <div class="legend-item" *ngFor="let t of types">
+        <span class="legend-item__dot" [style.background]="t.color"></span>
+        <span class="legend-item__label">{{ t.type }}</span>
+        <span class="legend-item__pct">{{ t.percentage.toFixed(1) }}%</span>
+        <span class="legend-item__count">{{ t.count.toLocaleString() }}</span>
+      </div>
+    </div>
+  </div>
+</div>

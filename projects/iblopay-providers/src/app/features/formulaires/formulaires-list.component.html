@@ -1,0 +1,42 @@
+<div class="page-header">
+  <div>
+    <h1>Formulaires</h1>
+    <p>Formulaires dynamiques ou documents texte rattachés à vos services</p>
+  </div>
+  <div class="header-actions">
+    <a class="btn-outline" routerLink="/formulaires/document">
+      <i class="fa-solid fa-file-word"></i> Nouveau document texte
+    </a>
+    <a class="btn-primary" routerLink="/formulaires/builder">
+      <i class="fa-solid fa-plus"></i> Nouveau formulaire
+    </a>
+  </div>
+</div>
+
+<div class="formulaires-grid" *ngIf="!isLoading">
+  <div class="formulaire-card" [class.est-publie]="f.statut === 'PUBLIE'" *ngFor="let f of formulaires" (click)="ouvrirFormulaire(f)">
+    <div class="fc-head">
+      <i class="fa-solid" [class.fa-file-lines]="f.typeFormulaire !== 'DOCUMENT'" [class.fa-file-word]="f.typeFormulaire === 'DOCUMENT'"></i>
+      <span class="badge" [ngClass]="{
+        'badge-green': f.statut === 'PUBLIE',
+        'badge-orange': f.statut === 'BROUILLON',
+        'badge-gray': f.statut === 'ARCHIVE'
+      }">
+        <i class="fa-solid" [class.fa-circle-check]="f.statut === 'PUBLIE'" [class.fa-pen]="f.statut === 'BROUILLON'" [class.fa-box-archive]="f.statut === 'ARCHIVE'"></i>
+        {{ f.statut === 'PUBLIE' ? 'Publié' : (f.statut === 'ARCHIVE' ? 'Archivé' : 'Brouillon') }}
+      </span>
+    </div>
+    <div class="fc-nom">{{ f.nom }}</div>
+    <div class="fc-service">Service : {{ serviceNom(f.serviceId) }}</div>
+    <div class="fc-meta">
+      <span *ngIf="f.typeFormulaire !== 'DOCUMENT'"><i class="fa-solid fa-list-check"></i> {{ f.champs.length }} champ(s)</span>
+      <span *ngIf="f.typeFormulaire === 'DOCUMENT'"><i class="fa-solid fa-file-word"></i> Document texte</span>
+      <span>v{{ f.version }}</span>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="formulaires.length === 0">
+    <i class="fa-solid fa-file-circle-plus"></i>
+    <p>Aucun formulaire créé pour le moment</p>
+  </div>
+</div>

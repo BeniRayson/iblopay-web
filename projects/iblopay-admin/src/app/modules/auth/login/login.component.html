@@ -1,0 +1,124 @@
+<div class="auth-page">
+    <!-- Fond animé (optionnel, purement décoratif) -->
+    <div class="auth-bg">
+        <div class="bg-gradient"></div>
+        <div class="bg-pattern"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        <!-- Panneau branding (masqué en dessous de 900px via le SCSS) -->
+        <div class="auth-branding">
+            <div class="branding-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <!-- ton SVG logo ici -->
+                    </div>
+                    <span class="brand-name">IBLO PAY</span>
+                </div>
+
+                <div class="branding-text">
+                    <h2>Gérez vos transactions en toute sécurité</h2>
+                    <p>Plateforme d'administration IBLO PAY.</p>
+                </div>
+
+                <div class="branding-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-text">
+                            <strong>Sécurisé</strong>
+                            <span>Authentification par PIN</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="auth-form-section">
+            <div class="auth-form-wrapper">
+                <div class="mobile-logo">
+                    <div class="logo-icon-sm"></div>
+                    <span class="mobile-brand">IBLO PAY</span>
+                </div>
+
+                <div class="form-header">
+                    <h2>Connexion</h2>
+                    <p>Accédez à votre espace administrateur</p>
+                </div>
+
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                    <div *ngIf="errorMessage" class="alert alert-error">
+                        {{ errorMessage }}
+                    </div>
+
+                    <div *ngIf="sessionExpired" class="alert alert-warning">
+                        Votre session a expiré. Veuillez vous reconnecter.
+                    </div>
+
+                    <!-- Téléphone -->
+                    <div class="form-group" [class.has-error]="
+              loginForm.get('phone_number')?.invalid &&
+              loginForm.get('phone_number')?.touched
+            ">
+                        <label for="phone_number">Numéro de téléphone</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="phone_number" formControlName="phone_number"
+                                placeholder="Entrez votre numéro" autocomplete="tel" />
+                        </div>
+                        <div *ngIf="
+                loginForm.get('phone_number')?.hasError('required') &&
+                loginForm.get('phone_number')?.touched
+              " class="field-error">
+                            Le numéro de téléphone est requis
+                        </div>
+                    </div>
+
+                    <!-- PIN -->
+                    <div class="form-group" [class.has-error]="
+              loginForm.get('pin')?.invalid && loginForm.get('pin')?.touched
+            ">
+                        <label for="pin">Code PIN</label>
+                        <div class="input-wrapper">
+                            <input [type]="showPin ? 'text' : 'password'" id="pin" formControlName="pin"
+                                placeholder="Entrez votre code PIN" autocomplete="current-password" />
+                            <button type="button" class="toggle-pin" (click)="togglePinVisibility()">
+                                <span *ngIf="!showPin">Afficher</span>
+                                <span *ngIf="showPin">Masquer</span>
+                            </button>
+                        </div>
+                        <div *ngIf="
+                loginForm.get('pin')?.hasError('required') &&
+                loginForm.get('pin')?.touched
+              " class="field-error">
+                            Le code PIN est requis
+                        </div>
+                    </div>
+
+                    <div class="form-actions-top">
+                        <a href="/authentication/forgot-password" class="forgot-link">
+                            Mot de passe oublié?
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btn-login" [class.loading]="isLoading"
+                        [disabled]="isLoading || loginForm.invalid">
+                        <span *ngIf="!isLoading">Se connecter</span>
+                        <span *ngIf="isLoading" class="btn-loader">
+                            <span class="spinner"></span>
+                            Connexion en cours...
+                        </span>
+                    </button>
+                </form>
+
+                <div class="form-footer">
+                    <p>&copy; 2026 IBLO PAY</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

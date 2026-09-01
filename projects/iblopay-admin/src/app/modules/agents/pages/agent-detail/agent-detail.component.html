@@ -1,0 +1,338 @@
+<!-- src/app/modules/agents/pages/agent-detail/agent-detail.component.html -->
+<div class="detail-container" [class.dark-mode]="isDarkMode" *ngIf="!isLoading && agent">
+  
+  <!-- CARTE UNIQUE -->
+  <div class="main-card">
+    
+    <!-- EN-TÊTE -->
+    <div class="card-header">
+      <div class="header-left">
+        <button class="btn-back" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="avatar" [style.background]="'linear-gradient(135deg, ' + getColor(agent.id, 0) + ', ' + getColor(agent.id, 1) + ')'">
+          {{ getInitials(agent.firstName, agent.lastName) }}
+        </div>
+        <div class="header-info">
+          <h1>{{ agent.firstName }} {{ agent.lastName }}</h1>
+          <span class="agent-code">{{ agent.code }}</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-theme" (click)="toggleTheme()">
+          <i class="fas" [class.fa-moon]="!isDarkMode" [class.fa-sun]="isDarkMode"></i>
+        </button>
+        <span class="status-badge" [class]="getStatusClass(agent.status)">
+          <span class="dot"></span> {{ getStatusLabel(agent.status) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- STATS RAPIDES -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <i class="fas fa-exchange-alt"></i>
+        <div>
+          <span class="stat-number">{{ agent.agents?.length || 0 }}</span>
+          <span class="stat-label">Mouvements</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-arrow-down"></i>
+        <div>
+          <span class="stat-number">{{ agent.deposits?.length || 0 }}</span>
+          <span class="stat-label">Dépôts</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-users"></i>
+        <div>
+          <span class="stat-number">{{ agent.agents?.length || 0 }}</span>
+          <span class="stat-label">Affiliés</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-percent"></i>
+        <div>
+          <span class="stat-number">{{ getTotalCommissions() | number:'1.0-0' }}</span>
+          <span class="stat-label">Commissions</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFOS CONTACT -->
+    <div class="contact-row">
+      <div class="contact-item"><i class="fas fa-credit-card"></i> <span>{{ agent.cardNumber }}</span></div>
+      <div class="contact-item"><i class="fas fa-phone"></i> <span>{{ agent.phone }}</span></div>
+      <div class="contact-item"><i class="fas fa-map-marker-alt"></i> <span>{{ agent.address.completeAddress }}</span></div>
+    </div>
+
+    <!-- ONGLETS -->
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'profile'" (click)="setTab('profile')">
+        <i class="fas fa-user"></i> Profil
+      </button>
+      <button class="tab" [class.active]="activeTab === 'mouvements'" (click)="setTab('mouvements')">
+        <i class="fas fa-exchange-alt"></i> Mouvements
+        <span class="tab-count">{{ filteredAgentsForMovement.length || 0 }}</span>
+      </button>
+      <button class="tab" [class.active]="activeTab === 'depots'" (click)="setTab('depots')">
+        <i class="fas fa-arrow-down"></i> Dépôts
+        <span class="tab-count">{{ filteredDeposits.length || 0 }}</span>
+      </button>
+      <button class="tab" [class.active]="activeTab === 'commissions'" (click)="setTab('commissions')">
+        <i class="fas fa-percent"></i> Commissions
+        <span class="tab-count">{{ filteredAgentsForCommission.length || 0 }}</span>
+      </button>
+    </div>
+
+    <!-- CONTENU -->
+    <div class="tab-content">
+      
+      <!-- PROFIL -->
+      <div *ngIf="activeTab === 'profile'" class="pane">
+        <div class="profile-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-id-card"></i> Identité</h4>
+            <div class="info-item"><span>Nom complet</span><span>{{ agent.firstName }} {{ agent.lastName }}</span></div>
+            <div class="info-item"><span>Date naissance</span><span>{{ agent.dateOfBirth | date:'dd/MM/yyyy' }}</span></div>
+            <div class="info-item"><span>CNI</span><span>{{ agent.cin }}</span></div>
+            <div class="info-item"><span>NIF</span><span>{{ agent.nif }}</span></div>
+            <div class="info-item"><span>Registre</span><span>{{ agent.commerceRegister }}</span></div>
+          </div>
+          <div class="info-card">
+            <h4><i class="fas fa-map-pin"></i> Localisation</h4>
+            <div class="info-item"><span>Province</span><span>{{ agent.address.province }}</span></div>
+            <div class="info-item"><span>Commune</span><span>{{ agent.address.commune }}</span></div>
+            <div class="info-item"><span>Zone</span><span>{{ agent.address.zone }}</span></div>
+            <div class="info-item" *ngIf="agent.address.colline"><span>Colline</span><span>{{ agent.address.colline }}</span></div>
+            <div class="info-item" *ngIf="agent.address.quartier"><span>Quartier</span><span>{{ agent.address.quartier }}</span></div>
+          </div>
+          <div class="info-card">
+            <h4><i class="fas fa-clock"></i> Système</h4>
+            <div class="info-item"><span>Adhésion</span><span>{{ agent.joinDate | date:'dd/MM/yyyy' }}</span></div>
+            <div class="info-item"><span>Dernière MAJ</span><span>{{ agent.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span></div>
+            <div class="info-item"><span>Créé par</span><span>{{ agent.createdBy }}</span></div>
+            <div class="info-item"><span>Documents</span><span>{{ agent.documents?.length || 0 }}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOUVEMENTS avec filtre -->
+      <div *ngIf="activeTab === 'mouvements'" class="pane">
+        <div class="table-header">
+          <h4><i class="fas fa-exchange-alt"></i> Mouvements des monnaies</h4>
+          <div class="table-header-right">
+            <span class="count-badge">{{ filteredAgentsForMovement.length || 0 }} agents</span>
+            <div class="search-filter">
+              <i class="fas fa-search"></i>
+              <input 
+                type="text" 
+                placeholder="Recherche ...." 
+                (input)="onMovementSearch($event)"
+                [(ngModel)]="movementSearchTerm"
+              />
+              <button class="search-clear" *ngIf="movementSearchTerm" (click)="clearMovementSearch()">
+                <i class="fas fa-times-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive" *ngIf="filteredAgentsForMovement.length > 0">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Carte</th>
+                <th>Monnaie envoyée</th>
+                <th>Commission reçue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sub of filteredAgentsForMovement">
+                <td>
+                  <div class="agent-cell">
+                    <div class="avatar-small" [style.background]="'linear-gradient(135deg, ' + getColor(sub.id, 2) + ', ' + getColor(sub.id, 3) + ')'">
+                      {{ getInitials(sub.firstName, sub.lastName) }}
+                    </div>
+                    <span>{{ sub.firstName }} {{ sub.lastName }}</span>
+                  </div>
+                </td>
+                <td><span class="card-number">{{ getAgentCardNumber(sub.id) }}</span></td>
+                <td><span class="amount-sent">{{ getTotalSentAmount(sub.id) | number:'1.0-0' }} BIF</span></td>
+                <td><span class="commission-received">{{ getCommissionReceived(sub.id) | number:'1.0-0' }} BIF</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state" *ngIf="filteredAgentsForMovement.length === 0">
+          <i class="fas fa-exchange-alt"></i>
+          <p>{{ agent.agents?.length === 0 ? 'Aucun agent affilié' : 'Aucun résultat trouvé' }}</p>
+        </div>
+      </div>
+
+      <!-- DÉPÔTS avec filtre -->
+      <div *ngIf="activeTab === 'depots'" class="pane">
+        <div class="table-header">
+          <h4><i class="fas fa-arrow-down"></i> Dépôts effectués</h4>
+          <div class="table-header-right">
+            <span class="count-badge">{{ filteredDeposits.length || 0 }} dépôts</span>
+            <div class="search-filter">
+              <i class="fas fa-search"></i>
+              <input 
+                type="text" 
+                placeholder="Recherche ......." 
+                (input)="onDepositSearch($event)"
+                [(ngModel)]="depositSearchTerm"
+              />
+              <button class="search-clear" *ngIf="depositSearchTerm" (click)="clearDepositSearch()">
+                <i class="fas fa-times-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive" *ngIf="filteredDeposits.length > 0">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Carte</th>
+                <th>Montant déposé</th>
+                <th>Commission</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of filteredDeposits">
+                <td>
+                  <div class="agent-cell">
+                    <div class="avatar-small" [style.background]="'linear-gradient(135deg, ' + getColor(d.agentId || 'default', 4) + ', ' + getColor(d.agentId || 'default', 5) + ')'">
+                      {{ getInitialsAgent(d.agentName) }}
+                    </div>
+                    <span>{{ d.agentName }}</span>
+                  </div>
+                </td>
+                <td><span class="card-number">{{ getDepositCardNumber(d.agentId) }}</span></td>
+                <td><span class="amount-sent positive">+{{ d.amount | number:'1.0-0' }} BIF</span></td>
+                <td><span class="commission-received">{{ (d.amount * 0.02) | number:'1.0-0' }} BIF</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state" *ngIf="filteredDeposits.length === 0">
+          <i class="fas fa-arrow-down"></i>
+          <p>{{ agent.deposits?.length === 0 ? 'Aucun dépôt' : 'Aucun résultat trouvé' }}</p>
+        </div>
+      </div>
+
+      <!-- COMMISSIONS avec filtre -->
+      <div *ngIf="activeTab === 'commissions'" class="pane">
+        <div class="commissions-summary">
+          <div class="summary-card">
+            <span class="summary-label">Total commissions</span>
+            <span class="summary-value">{{ getTotalCommissions() | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Nombre commissions</span>
+            <span class="summary-value">{{ filteredAgentsForCommission.length || 0 }}</span>
+          </div>
+        </div>
+        <div class="table-header">
+          <h4><i class="fas fa-percent"></i> Commissions par agent</h4>
+          <div class="table-header-right">
+            <span class="count-badge">{{ filteredAgentsForCommission.length || 0 }} agents</span>
+            <div class="search-filter">
+              <i class="fas fa-search"></i>
+              <input 
+                type="text" 
+                placeholder="Recherche ......." 
+                (input)="onCommissionSearch($event)"
+                [(ngModel)]="commissionSearchTerm"
+              />
+              <button class="search-clear" *ngIf="commissionSearchTerm" (click)="clearCommissionSearch()">
+                <i class="fas fa-times-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive" *ngIf="filteredAgentsForCommission.length > 0">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Carte</th>
+                <th>Commission reçue</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sub of filteredAgentsForCommission">
+                <td>
+                  <div class="agent-cell">
+                    <div class="avatar-small" [style.background]="'linear-gradient(135deg, ' + getColor(sub.id, 6) + ', ' + getColor(sub.id, 7) + ')'">
+                      {{ getInitials(sub.firstName, sub.lastName) }}
+                    </div>
+                    <span>{{ sub.firstName }} {{ sub.lastName }}</span>
+                  </div>
+                </td>
+                <td><span class="card-number">{{ getAgentCardNumber(sub.id) }}</span></td>
+                <td><span class="commission-received">{{ getCommissionReceived(sub.id) | number:'1.0-0' }} BIF</span></td>
+                <td>
+                  <span class="badge-small" [class]="getStatusClass(sub.status)">
+                    <span class="dot"></span> {{ getStatusLabel(sub.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state" *ngIf="filteredAgentsForCommission.length === 0">
+          <i class="fas fa-percent"></i>
+          <p>{{ agent.agents?.length === 0 ? 'Aucune commission' : 'Aucun résultat trouvé' }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL TRANSACTIONS -->
+  <div class="modal-overlay" [class.active]="showTransactionsModal" (click)="closeTransactionsModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fas fa-exchange-alt"></i> Transactions de {{ selectedSubAgent?.firstName }} {{ selectedSubAgent?.lastName }}</h3>
+        <button class="modal-close" (click)="closeTransactionsModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="item-list" *ngIf="selectedSubAgent?.transactions?.length > 0">
+          <div class="list-item" *ngFor="let t of selectedSubAgent?.transactions">
+            <div class="item-icon" [class]="t.type.toLowerCase()">
+              <i class="fas" [class.fa-arrow-down]="t.type === 'DEPOSIT'" 
+                            [class.fa-arrow-up]="t.type === 'WITHDRAWAL'"
+                            [class.fa-exchange-alt]="t.type === 'TRANSFER'"></i>
+            </div>
+            <div class="item-content">
+              <div class="item-title">{{ t.reference }}</div>
+              <div class="item-sub">{{ t.date | date:'dd/MM/yyyy HH:mm' }}</div>
+            </div>
+            <div class="item-right">
+              <span class="item-amount" [class]="t.type.toLowerCase()">
+                {{ t.type === 'DEPOSIT' ? '+' : t.type === 'WITHDRAWAL' ? '-' : '' }}
+                {{ t.amount | number:'1.0-0' }} BIF
+              </span>
+              <span class="badge-small" [class]="t.status.toLowerCase()">{{ t.status }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="!selectedSubAgent?.transactions?.length">
+          <i class="fas fa-exchange-alt"></i>
+          <p>Aucune transaction</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-screen" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <p>Chargement...</p>
+</div>

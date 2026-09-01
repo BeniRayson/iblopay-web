@@ -1,0 +1,121 @@
+.province-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+
+        .total-label {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .total-value {
+            font-size: 18px;
+            font-weight: 800;
+
+            &.green {
+                color: var(--green);
+            }
+
+            &.blue {
+                color: var(--blue);
+            }
+
+            &.purple {
+                color: var(--purple);
+            }
+
+            &.gold {
+                color: var(--sun);
+            }
+
+            &.orange {
+                color: #f97316;
+            }
+
+            &.cyan {
+                color: #06b6d4;
+            }
+        }
+
+        .change-badge {
+            font-size: 11px;
+            font-weight: 600;
+
+            &.positive {
+                color: var(--green);
+            }
+
+            &.negative {
+                color: var(--red);
+            }
+        }
+    }
+
+    .province-items {
+        flex: 1;
+
+        .province-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 8px;
+            border-bottom: 1px solid var(--border-soft);
+            font-size: 12px;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+
+            &:hover {
+                background: var(--surface-2);
+                padding-left: 12px;
+            }
+
+            .province-name {
+                color: var(--text-dim);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                i {
+                    font-size: 14px;
+                    opacity: 0.7;
+                }
+            }
+
+            .province-amount {
+                font-weight: 700;
+                font-size: 12px;
+                font-family: var(--font-mono);
+
+                &.green {
+                    color: var(--green);
+                }
+
+                &.blue {
+                    color: var(--blue);
+                }
+
+                &.orange {
+                    color: #f97316;
+                }
+
+                &.purple {
+                    color: var(--purple);
+                }
+
+                &.gold {
+                    color: var(--sun);
+                }
+
+                &.cyan {
+                    color: #06b6d4;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,33 @@
+<div class="filter-bar">
+  <div class="filter-bar__search">
+    <i class="fas fa-search filter-bar__search-icon"></i>
+    <input type="text" placeholder="Rechercher (N° transaction, nom, téléphone, wallet...)"
+           [(ngModel)]="filter.search" (ngModelChange)="emitChange()" />
+  </div>
+
+  <div class="filter-bar__dropdowns">
+    <select [(ngModel)]="filter.type" (ngModelChange)="emitChange()">
+      <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+    </select>
+    <select [(ngModel)]="filter.actor" (ngModelChange)="emitChange()">
+      <option *ngFor="let a of actors" [value]="a">{{ a }}</option>
+    </select>
+    <select [(ngModel)]="filter.role" (ngModelChange)="emitChange()">
+      <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+    </select>
+    <select [(ngModel)]="filter.status" (ngModelChange)="emitChange()">
+      <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+    </select>
+  </div>
+
+  <div class="filter-bar__date-range">
+    <input type="text" placeholder="Date début" [(ngModel)]="filter.dateFrom" (ngModelChange)="emitChange()" />
+    <span class="filter-bar__date-sep">—</span>
+    <input type="text" placeholder="Date fin" [(ngModel)]="filter.dateTo" (ngModelChange)="emitChange()" />
+  </div>
+
+  <div class="filter-bar__actions">
+    <button class="filter-bar__btn-advanced" (click)="onAdvancedFilters()">Filtres avancés</button>
+    <button class="filter-bar__btn-reset" (click)="reset()">Réinitialiser</button>
+  </div>
+</div>

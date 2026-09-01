@@ -1,0 +1,91 @@
+<div class="transaction-detail-page">
+  <div *ngIf="isLoading" class="state-message">Loading transaction…</div>
+  <div *ngIf="errorMessage" class="state-message state-message--error">{{ errorMessage }}</div>
+
+  <ng-container *ngIf="transaction && !isLoading">
+    <header class="transaction-detail-page__header">
+      <div>
+        <h1>{{ transaction.reference || transaction.transactionId }}</h1>
+        <app-transaction-status-badge [status]="transaction.status"></app-transaction-status-badge>
+      </div>
+    </header>
+
+    <section class="info-section">
+      <h2>Details</h2>
+      <dl class="info-grid">
+        <dt>Type</dt>
+        <dd>{{ transaction.transactionType }}</dd>
+
+        <dt>Amount</dt>
+        <dd>{{ transaction.amount }}</dd>
+
+        <dt>Fee</dt>
+        <dd>{{ transaction.fee }}</dd>
+
+        <dt>From wallet</dt>
+        <dd>{{ transaction.fromWalletId || '—' }}</dd>
+
+        <dt>To wallet</dt>
+        <dd>{{ transaction.toWalletId || '—' }}</dd>
+
+        <dt>Payment mode</dt>
+        <dd>{{ transaction.paymentMode || '—' }}</dd>
+
+        <dt>Description</dt>
+        <dd>{{ transaction.description || '—' }}</dd>
+
+        <dt>Created at</dt>
+        <dd>{{ transaction.createdAt }}</dd>
+
+        <dt>Completed at</dt>
+        <dd>{{ transaction.completedAt || '—' }}</dd>
+      </dl>
+
+      <details class="metadata" *ngIf="transaction.metadata">
+        <summary>Raw metadata</summary>
+        <pre>{{ transaction.metadata | json }}</pre>
+      </details>
+    </section>
+
+    <!-- Sweep detail: only shown for SWEEP / SWEEP_INVERSE transactions -->
+    <section class="info-section" *ngIf="transaction.transactionType === TransactionType.SWEEP || transaction.transactionType === TransactionType.SWEEP_INVERSE">
+      <h2>Sweep details</h2>
+      <div *ngIf="isLoadingSweep" class="state-message">Loading sweep details…</div>
+      <dl class="info-grid" *ngIf="sweep && !isLoadingSweep">
+        <dt>Reason</dt>
+        <dd>{{ sweep.reason || '—' }}</dd>
+
+        <dt>Status</dt>
+        <dd>{{ sweep.status }}</dd>
+
+        <dt>Parent transaction</dt>
+        <dd>{{ sweep.parentTransactionId || '—' }}</dd>
+
+        <dt>Rolled back at</dt>
+        <dd>{{ sweep.rolledBackAt || '—' }}</dd>
+      </dl>
+    </section>
+
+    <!-- Commission detail: only shown for COMMISSION transactions -->
+    <section class="info-section" *ngIf="transaction.transactionType === TransactionType.COMMISSION">
+      <h2>Commission details</h2>
+      <div *ngIf="isLoadingCommission" class="state-message">Loading commission details…</div>
+      <dl class="info-grid" *ngIf="commission && !isLoadingCommission">
+        <dt>Agent</dt>
+        <dd>{{ commission.agentId }}</dd>
+
+        <dt>Commission type</dt>
+        <dd>{{ commission.commissionType }}</dd>
+
+        <dt>Rate</dt>
+        <dd>{{ commission.rate ?? '—' }}%</dd>
+
+        <dt>Status</dt>
+        <dd>{{ commission.status }}</dd>
+
+        <dt>Credited at</dt>
+        <dd>{{ commission.creditedAt || '—' }}</dd>
+      </dl>
+    </section>
+  </ng-container>
+</div>

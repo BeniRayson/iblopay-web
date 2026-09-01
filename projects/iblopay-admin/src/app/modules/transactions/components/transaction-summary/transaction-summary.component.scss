@@ -1,0 +1,82 @@
+/* ==========================================================
+   VARIABLES DE THÈME POUR LES CARTES DE RÉSUMÉ
+   ========================================================== */
+:root {
+  /* Mode Lumière (Light) */
+  --summary-surface: rgba(255, 255, 255, 0.75);
+  --summary-border: var(--border-light, rgba(0, 0, 0, 0.08));
+  --summary-label: #8a8f98;
+  --summary-value: #1c1e26;
+  --summary-shadow: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'],
+body.dark-theme {
+  /* Mode Sombre (Dark) */
+  --summary-surface: rgba(18, 26, 47, 0.65);
+  --summary-border: var(--border-light, rgba(255, 255, 255, 0.12));
+  --summary-label: var(--text-dim, rgba(255, 255, 255, 0.5));
+  --summary-value: var(--text, #ffffff);
+  --summary-shadow: rgba(0, 0, 0, 0.3);
+}
+
+
+/* ==========================================================
+   CONTENEUR DES CARTES DE RÉSUMÉ (.summary-cards)
+   ========================================================== */
+.summary-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &--loading {
+    color: var(--summary-label);
+    font-size: 14px;
+    padding: 16px 0;
+  }
+}
+
+
+/* ==========================================================
+   CARTE DE RÉSUMÉ INDIVIDUELLE (.summary-card)
+   ========================================================== */
+.summary-card {
+  flex: 1;
+  background: var(--summary-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--summary-border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 4px 16px var(--summary-shadow);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-light, rgba(255, 255, 255, 0.2));
+    box-shadow: 0 6px 20px var(--summary-shadow);
+  }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--summary-label);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--summary-value);
+    letter-spacing: -0.02em;
+  }
+}

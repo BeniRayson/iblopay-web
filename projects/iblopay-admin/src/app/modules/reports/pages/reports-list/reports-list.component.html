@@ -1,0 +1,48 @@
+<div class="reports-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-header__title">Rapports & Analytics</h1>
+      <p class="page-header__subtitle">Sélectionnez un rapport pour voir les détails</p>
+    </div>
+    <div class="page-header__right">
+      <div class="role-toggle">
+        <button [class.active]="currentRole === 'admin'" (click)="setRole('admin')">Admin</button>
+        <button [class.active]="currentRole === 'super_agent'" (click)="setRole('super_agent')">Super Agent</button>
+        <button [class.active]="currentRole === 'agent'" (click)="setRole('agent')">Agent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Sections -->
+  <ng-container *ngFor="let catKey of getCategoryKeys()">
+    <h3 class="category-title">
+      {{ categoryLabels[catKey] || catKey }}
+    </h3>
+    <div class="reports-grid">
+      <div class="report-card" *ngFor="let r of getReportsByCategory(catKey)" (click)="openReport(r.route)">
+        <div class="report-card__inner">
+          <div class="report-card-icon" [style.background]="categoryColors[r.category] + '18'" [style.color]="categoryColors[r.category]">
+            <i [class]="r.icon"></i>
+          </div>
+          <div class="report-card__body">
+            <div class="report-card__header">
+              <h4 class="report-card__name">{{ r.name }}</h4>
+              <span class="category-badge" [style.background]="(categoryColors[r.category] || '#3b82f6') + '22'" [style.color]="categoryColors[r.category] || '#3b82f6'">
+                {{ (categoryLabels[r.category] || r.category).split(' &')[0] }}
+              </span>
+            </div>
+            <p class="report-card__desc">{{ r.description }}</p>
+          </div>
+          <i class="fa-solid fa-chevron-right report-card__arrow"></i>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredReports.length === 0">
+    <i class="fa-solid fa-eye-slash"></i>
+    <p>Aucun rapport disponible pour ce rôle.</p>
+  </div>
+</div>

@@ -1,0 +1,488 @@
+<!-- ================================================================
+     NOTIFICATION TOAST
+   ================================================================ -->
+<div class="notification-toast" *ngIf="showNotification" [class.notification-success]="notificationType === 'success'"
+    [class.notification-error]="notificationType === 'error'" [class.notification-info]="notificationType === 'info'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path *ngIf="notificationType === 'success'" d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+        <polyline *ngIf="notificationType === 'success'" points="22 4 12 14.01 9 11.01" />
+        <circle *ngIf="notificationType === 'error'" cx="12" cy="12" r="10" />
+        <line *ngIf="notificationType === 'error'" x1="15" y1="9" x2="9" y2="15" />
+        <line *ngIf="notificationType === 'error'" x1="9" y1="9" x2="15" y2="15" />
+        <circle *ngIf="notificationType === 'info'" cx="12" cy="12" r="10" />
+        <line *ngIf="notificationType === 'info'" x1="12" y1="16" x2="12" y2="12" />
+        <line *ngIf="notificationType === 'info'" x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+    <span>{{ notificationMessage }}</span>
+</div>
+
+<!-- ================================================================
+     CONTENEUR PRINCIPAL
+   ================================================================ -->
+<div class="card-table-container" [class.loading]="isLoading">
+
+    <!-- ============================================================
+         INDICATEUR DE CHARGEMENT
+    ============================================================ -->
+    <div class="card-table-loader" *ngIf="isLoading">
+        <div class="loader-spinner"></div>
+        <span>Chargement des cartes...</span>
+    </div>
+
+    <!-- ============================================================
+         STATISTIQUES
+    ============================================================ -->
+    <div class="stats-grid" *ngIf="!isLoading">
+        <div class="stat-card">
+            <div class="stat-icon total">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M8 12h8" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.total }}</span>
+                <span class="stat-label">Total</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.active }}</span>
+                <span class="stat-label">Actives</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon blocked">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.blocked }}</span>
+                <span class="stat-label">Bloquées</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon suspended">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.suspended }}</span>
+                <span class="stat-label">Suspendues</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon closed">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.closed }}</span>
+                <span class="stat-label">Clôturées</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon parent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.parentCards }}</span>
+                <span class="stat-label">Parents</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="4" />
+                </svg>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ stats.secondaryCards }}</span>
+                <span class="stat-label">Secondaires</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         FILTRES
+    ============================================================ -->
+    <div class="filters-panel" *ngIf="!isLoading">
+        <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()"
+                placeholder="Rechercher une carte..." />
+        </div>
+
+        <div class="filters-right">
+            <div class="filter-group">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="M8 12h8" />
+                </svg>
+                <select [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+                    <option value="">Tous les statuts</option>
+                    <option value="ACTIVE">Actives</option>
+                    <option value="BLOCKED">Bloquées</option>
+                    <option value="SUSPENDED">Suspendues</option>
+                    <option value="CLOSED">Clôturées</option>
+                    <option value="REPLACED">Remplacées</option>
+                    <option value="NEUTRAL">Neutres</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" />
+                    <line x1="8" y1="2" x2="8" y2="22" />
+                    <line x1="16" y1="2" x2="16" y2="22" />
+                    <line x1="2" y1="8" x2="22" y2="8" />
+                    <line x1="2" y1="16" x2="22" y2="16" />
+                </svg>
+                <select [(ngModel)]="selectedType" (change)="onFilterChange()">
+                    <option value="">Tous les types</option>
+                    <option value="PHYSICAL">Physiques</option>
+                    <option value="VIRTUAL">Virtuelles</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" />
+                </svg>
+                <select [(ngModel)]="selectedCardType" (change)="onFilterChange()">
+                    <option value="">Tous</option>
+                    <option value="PARENT">Parents</option>
+                    <option value="SECONDARY">Secondaires</option>
+                </select>
+            </div>
+
+            <button class="btn-clear" (click)="clearFilters()" title="Réinitialiser">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         TABLEAU
+    ============================================================ -->
+    <div class="table-scroll">
+        <table class="card-table" [class.hidden]="isLoading">
+            <thead>
+                <tr>
+                    <th class="col-number">#</th>
+                    <th class="col-holder">Propriétaire</th>
+                    <th class="col-card">Numéro de carte</th>
+                    <th class="col-solde">Solde</th>
+                    <th class="col-type">Type</th>
+                    <th class="col-status">Statut</th>
+                    <th class="col-view"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let card of paginatedCards; let i = index; trackBy: trackByCardId">
+                    <td class="col-number">
+                        <span class="card-table__row-number">
+                            {{ (currentPage - 1) * itemsPerPage + i + 1 }}
+                        </span>
+                    </td>
+
+                    <td class="col-holder">
+                        <div class="card-table__holder">
+                            <div class="card-table__avatar" [style.background]="getAvatarColor(card.holderName)">
+                                {{ (card.holderName || 'C')[0] | uppercase }}
+                            </div>
+                            <div class="card-table__holder-info">
+                                <span class="card-table__holder-name">{{ card.holderName || 'Cardholder' }}</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="col-card">
+                        <div class="card-table__pan-wrapper">
+                            <span class="card-table__pan">{{ card.cardNumber }}</span>
+                        </div>
+                    </td>
+
+                    <td class="col-solde">
+                        <span class="card-table__balance" [class.balance-negative]="card.balance < 0">
+                            {{ getFormattedBalance(card.balance) }}
+                        </span>
+                    </td>
+
+                    <td class="col-type">
+                        <span class="type-badge" [class]="getCardTypeClass(card)">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect *ngIf="card.isParent" x="2" y="2" width="20" height="20" rx="2.18" />
+                                <circle *ngIf="!card.isParent" cx="12" cy="12" r="10" />
+                            </svg>
+                            {{ getCardTypeLabel(card) }}
+                            <span *ngIf="card.isParent && card.children && card.children.length > 0"
+                                class="children-badge">
+                                ({{ card.children.length }})
+                            </span>
+                        </span>
+                    </td>
+
+                    <td class="col-status">
+                        <span class="status-badge" [class]="getStatusClass(card.status)">
+                            <span class="status-dot"></span>
+                            {{ getStatusLabel(card.status) }}
+                        </span>
+                    </td>
+
+                    <td class="col-view">
+                        <button type="button" class="view-btn" (click)="voirCarte(card)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            Voir
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ============================================================
+         PAGINATION
+    ============================================================ -->
+    <div class="table-footer" *ngIf="filteredCards && filteredCards.length > 0">
+        <span class="pagination-info">
+            {{ (currentPage - 1) * itemsPerPage + 1 }} -
+            {{ Math.min(currentPage * itemsPerPage, filteredCards.length) }}
+            / {{ filteredCards.length }}
+        </span>
+        <div class="pagination-controls">
+            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+            <button *ngFor="let page of getPaginationPages()" (click)="changePage(page)"
+                [class.active]="currentPage === page">
+                {{ page }}
+            </button>
+            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ÉTAT VIDE
+    ============================================================ -->
+    <div class="card-table-empty" *ngIf="!isLoading && cards && cards.length === 0">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="M8 12h8" />
+        </svg>
+        <span>Aucune carte à afficher</span>
+    </div>
+</div>
+
+<!-- ============================================================
+     OVERLAY - DÉTAIL DE LA CARTE (avec toutes les actions - SANS DISABLED)
+   ============================================================ -->
+<div class="card-table__overlay" *ngIf="selectedCard" (click)="fermerCarte()">
+    <div class="card-table__overlay-content" (click)="$event.stopPropagation()">
+        <button type="button" class="card-table__close" (click)="fermerCarte()" aria-label="Fermer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <div class="card-preview-placeholder">
+            <div class="card-preview-header">
+                <div class="card-preview-avatar" [style.background]="getAvatarColor(selectedCard.holderName)">
+                    {{ (selectedCard.holderName || 'C')[0] | uppercase }}
+                </div>
+                <div class="card-preview-title">
+                    <h3>{{ selectedCard.holderName || 'Cardholder' }}</h3>
+                    <span class="card-preview-id">{{ selectedCard.cardId }}</span>
+                </div>
+            </div>
+
+            <div class="card-preview-body">
+                <div class="card-preview-row">
+                    <span class="card-preview-label">Numéro de carte</span>
+                    <span class="card-preview-value card-number-full">{{ selectedCard.cardNumber }}</span>
+                </div>
+                <div class="card-preview-row">
+                    <span class="card-preview-label">Solde</span>
+                    <span class="card-preview-value solde-value">{{ getFormattedBalance(selectedCard.balance) }}</span>
+                </div>
+                <div class="card-preview-row">
+                    <span class="card-preview-label">Type de carte</span>
+                    <span class="card-preview-value">
+                        <span class="type-badge" [class]="getCardTypeClass(selectedCard)">
+                            {{ getCardTypeLabel(selectedCard) }}
+                        </span>
+                    </span>
+                </div>
+                <div class="card-preview-row">
+                    <span class="card-preview-label">Type physique</span>
+                    <span class="card-preview-value">
+                        <span class="type-badge"
+                            [class]="selectedCard.cardType === 'PHYSICAL' ? 'type-physical' : 'type-virtual'">
+                            {{ selectedCard.cardType === 'PHYSICAL' ? 'Physique' : 'Virtuelle' }}
+                        </span>
+                    </span>
+                </div>
+                <div class="card-preview-row">
+                    <span class="card-preview-label">Statut</span>
+                    <span class="card-preview-value">
+                        <span class="status-badge" [class]="getStatusClass(selectedCard.status)">
+                            <span class="status-dot"></span>
+                            {{ getStatusLabel(selectedCard.status) }}
+                        </span>
+                    </span>
+                </div>
+                <div class="card-preview-row"
+                    *ngIf="selectedCard.isParent && selectedCard.children && selectedCard.children.length > 0">
+                    <span class="card-preview-label">Cartes enfants</span>
+                    <span class="card-preview-value">
+                        <span class="children-count-badge">{{ selectedCard.children.length }} carte(s)
+                            secondaire(s)</span>
+                    </span>
+                </div>
+                <div class="card-preview-row" *ngIf="!selectedCard.isParent && selectedCard.parentCardId">
+                    <span class="card-preview-label">Carte parente</span>
+                    <span class="card-preview-value">
+                        <span class="parent-id-badge">{{ selectedCard.parentCardId }}</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Actions : Activer, Bloquer, Remplacer, Clôturer - SANS DISABLED, tous les boutons sont toujours actifs -->
+            <div class="card-preview-actions">
+                <button class="card-preview-btn preview-btn-primary" (click)="activer(selectedCard)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Activer
+                </button>
+                <button class="card-preview-btn preview-btn-warning" (click)="bloquer(selectedCard)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0110 0v4" />
+                    </svg>
+                    Bloquer
+                </button>
+                <button class="card-preview-btn preview-btn-replace" (click)="remplacer(selectedCard)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16" />
+                    </svg>
+                    Remplacer
+                </button>
+                <button class="card-preview-btn preview-btn-danger" (click)="cloturer(selectedCard)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                    Clôturer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MODAL - SAISIE DU CODE PIN ADMIN
+   ============================================================ -->
+<div class="pin-modal-overlay" *ngIf="showPinModal" (click)="cancelPin()">
+    <div class="pin-modal-content" (click)="$event.stopPropagation()">
+        <button type="button" class="pin-modal-close" (click)="cancelPin()" aria-label="Fermer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+
+        <div class="pin-modal-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+        </div>
+
+        <h3 class="pin-modal-title">Code PIN Administrateur requis</h3>
+        <p class="pin-modal-subtitle">Veuillez saisir le code PIN admin pour confirmer cette action</p>
+
+        <div class="pin-input-wrapper">
+            <input type="password" class="pin-input" [(ngModel)]="pinInput" (keyup.enter)="confirmPin()"
+                placeholder="Entrez le code PIN" maxlength="10" autofocus />
+        </div>
+
+        <div class="pin-error" *ngIf="pinError">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            {{ pinError }}
+        </div>
+
+        <div class="pin-modal-actions">
+            <button class="pin-btn pin-btn-cancel" (click)="cancelPin()">Annuler</button>
+            <button class="pin-btn pin-btn-confirm" (click)="confirmPin()">Valider</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,117 @@
+<div class="page-header">
+  <div>
+    <h1>Statistiques & Suivi — Événements</h1>
+    <p>Tableau de bord financier et opérationnel de vos matchs, concerts et conférences</p>
+  </div>
+</div>
+
+<div class="stats-grid-2rows" *ngIf="stats as s">
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Événements actifs</div><span class="trend-badge positive">+2 ↗</span></div>
+    <div class="stat-value">{{ s.evenementsActifs }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Organisateurs actifs</div><span class="trend-badge positive">+1 ↗</span></div>
+    <div class="stat-value text-green">{{ s.totalOrganisateurs }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Billets vendus aujourd'hui</div><span class="trend-badge positive">+8% ↗</span></div>
+    <div class="stat-value text-orange">{{ s.billetsVendusAujourdhui | number }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Billets vendus (total)</div><span class="trend-badge positive">+5% ↗</span></div>
+    <div class="stat-value text-red">{{ billetsVendusCount }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Taux de remplissage</div><span class="trend-badge positive">+4% ↗</span></div>
+    <div class="stat-value text-blue">{{ s.tauxRemplissageMoyen }}%</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Revenu du jour</div><span class="trend-badge positive">+15% ↗</span></div>
+    <div class="stat-value text-green">{{ formatBIF(s.revenuAujourdhui) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Revenu encaissé (billets)</div><span class="trend-badge positive">+9% ↗</span></div>
+    <div class="stat-value text-purple">{{ formatBIF(revenuTotalBillets) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Événements au total</div><span class="trend-badge neutral">0% →</span></div>
+    <div class="stat-value">{{ evenements.length }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row"><div class="stat-label">Taux de remplissage moyen</div><span class="trend-badge positive">+2% ↗</span></div>
+    <div class="stat-value text-cyan">{{ s.tauxRemplissageMoyen }}%</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <span class="trend-badge negative" *ngIf="s.reclamationsOuvertes > 0">{{ s.reclamationsOuvertes }} ⚠</span>
+      <span class="trend-badge neutral" *ngIf="s.reclamationsOuvertes === 0">0 →</span>
+      <div class="stat-label">Réclamations ouvertes</div>
+    </div>
+    <div class="stat-value" [ngClass]="s.reclamationsOuvertes > 0 ? 'text-red' : 'text-green'">{{ s.reclamationsOuvertes }}</div>
+  </div>
+</div>
+
+<div class="parallel-grid compact-grid">
+  <div class="card chart-card">
+    <div class="card-title">Évolution des ventes par événement</div>
+    <div class="chart-wrap-line">
+      <canvas #chartCanvas></canvas>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <div class="card-title">Détail par événement & niveau de demande</div>
+    <div class="table-responsive">
+      <table class="data-table compact-table">
+        <thead>
+          <tr><th>Événement</th><th>Type</th><th>Billets vendus</th><th>Demande</th><th>Remplissage</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of statsParEvenement">
+            <td><strong>{{ s.nom }}</strong></td>
+            <td>{{ s.type }}</td>
+            <td>{{ s.billetsVendus }}</td>
+            <td>
+              <span class="workload-badge" [ngClass]="getWorkloadClass(s.tauxRemplissage)">
+                {{ getWorkloadLabel(s.tauxRemplissage) }}
+              </span>
+            </td>
+            <td>
+              <div class="mini-progress"><div class="mini-progress-fill" [style.width.%]="s.tauxRemplissage"></div></div>
+              {{ s.tauxRemplissage }}%
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card detailed-report-card">
+  <div class="report-header">
+    <div class="card-title">Rapport chiffré détaillé par événement</div>
+    <select [(ngModel)]="evenementSelectionneId" (ngModelChange)="selectionnerEvenement($event)">
+      <option *ngFor="let e of evenements" [value]="e.id">{{ e.nom }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="isLoadingKpis" class="loading-note">Chargement du rapport...</div>
+
+  <ng-container *ngIf="!isLoadingKpis && kpisEvenement.length > 0">
+    <div class="kpi-grid">
+      <div class="kpi-card" *ngFor="let k of kpisEvenement" [ngClass]="colorClass(k.couleur)">
+        <div class="kpi-icon"><i [class]="k.icon"></i></div>
+        <div>
+          <div class="kpi-value">{{ k.valeur }}</div>
+          <div class="kpi-label">{{ k.label }}</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="empty-state" *ngIf="!isLoadingKpis && kpisEvenement.length === 0">
+    Aucune donnée disponible pour cet événement pour le moment.
+  </div>
+</div>

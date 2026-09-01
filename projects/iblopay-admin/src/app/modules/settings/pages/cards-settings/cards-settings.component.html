@@ -1,0 +1,435 @@
+<div class="settings-page">
+  <header class="page-header">
+    
+    <div class="page-header__title">
+      <span class="icon">💳</span>
+      <div>
+        <h1>Gestion des Cartes</h1>
+        <p>Émission, association, stocks et inventaire des cartes.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card" (click)="setActiveTab('cartes')" [class.active]="activeTab === 'cartes'">
+      <span class="stat-card__icon">💳</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getTotalCartes() }}</span>
+        <span class="stat-card__label">Total Cartes</span>
+        <span class="stat-card__sub">{{ getCartesByStatut('active').length }} actives</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setActiveTab('cartes')" [class.active]="activeTab === 'cartes'">
+      <span class="stat-card__icon">👨‍👦</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getCartesParent().length }}</span>
+        <span class="stat-card__label">Cartes Parent</span>
+        <span class="stat-card__sub">{{ getCartesEnfant().length }} enfants</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="setActiveTab('stocks')" [class.active]="activeTab === 'stocks'">
+      <span class="stat-card__icon">📦</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getStockTotal() }}</span>
+        <span class="stat-card__label">Stock Total</span>
+        <span class="stat-card__sub">{{ getCartesInactives().length }} inactives</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--total">
+      <span class="stat-card__icon">📊</span>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ getTotalGeneral() }}</span>
+        <span class="stat-card__label">Total Général</span>
+        <span class="stat-card__sub">Cartes + Stock</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtre de recherche -->
+  <div class="search-bar">
+    <div class="search-bar__input">
+      <span class="search-bar__icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Rechercher une carte par numéro, UID, ID ou utilisateur..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+        class="search-bar__field"
+      />
+    </div>
+    <div class="search-bar__filters">
+      <select [(ngModel)]="filterStatut" (ngModelChange)="onFilterChange()" class="filter-select">
+        <option value="tous">Tous les statuts</option>
+        <option value="active">Active</option>
+        <option value="bloquee">Bloquée</option>
+        <option value="desactivee">Désactivée</option>
+        <option value="expiree">Expirée</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <select [(ngModel)]="filterType" (ngModelChange)="onFilterChange()" class="filter-select">
+        <option value="tous">Tous les types</option>
+        <option value="parent">Parent</option>
+        <option value="enfant">Enfant</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <nav class="tabs">
+    <button type="button" class="tab" [class.active]="activeTab === 'cartes'" (click)="setActiveTab('cartes')">
+      <span class="tab__icon">💳</span>
+      Cartes
+      <span class="tab__count">{{ getFilteredCartes().length }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab === 'stocks'" (click)="setActiveTab('stocks')">
+      <span class="tab__icon">📦</span>
+      Stocks
+      <span class="tab__count">{{ getFilteredStock().length }}</span>
+    </button>
+  </nav>
+
+  <!-- Section Cartes -->
+  <div *ngIf="activeTab === 'cartes'" class="table-wrapper">
+    <div class="table-header">
+      <h3>Liste des Cartes ({{ getFilteredCartes().length }})</h3>
+      <div class="table-actions">
+        <button type="button" class="btn-sm" (click)="exportExcel()">📊 Exporter Excel</button>
+        <button type="button" class="btn-sm" (click)="printList()">🖨️ Imprimer</button>
+        <button type="button" class="btn-sm" (click)="openAction('historique')">📋 Historique</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="cards-table" id="cardsTable">
+        <thead>
+          <tr>
+            <th>Carte</th>
+            <th>UID</th>
+            <th>Type</th>
+            <th>Utilisateur</th>
+            <th>Solde</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let card of getPaginatedFilteredCartes()">
+            <td>
+              <div class="cell-identity">
+                <span class="card-icon">💳</span>
+                <div>
+                  <div class="cell-name">{{ card.numero }}</div>
+                  <div class="cell-sub">{{ card.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="cell-mono">{{ card.uid }}</td>
+            <td>
+              <span class="type-badge" [class]="'type-' + card.typeCarte">
+                {{ card.typeCarte === 'parent' ? '👨‍👦 Parent' : '👶 Enfant' }}
+              </span>
+            </td>
+            <td>
+              <div class="cell-name">{{ card.utilisateur }}</div>
+              <div class="cell-sub">{{ card.userId }}</div>
+            </td>
+            <td class="cell-mono">{{ card.solde | number:'1.0-0' }} BIF</td>
+            <td><span class="statut-badge" [class]="'statut-' + card.statut">{{ getStatutLabel(card.statut) }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <button type="button" class="btn-icon" title="Voir détails" (click)="openCardDetails(card)">👁️</button>
+                <button type="button" class="btn-icon" title="Historique" (click)="openCardHistory(card)">📋</button>
+                <button type="button" class="btn-icon" title="Émettre" (click)="openCardAction(card, 'emettre')">➕</button>
+                <button type="button" class="btn-icon" title="Associer" (click)="openCardAction(card, 'associer')">🔗</button>
+                <button type="button" class="btn-icon" title="Bloquer" (click)="openCardAction(card, 'bloquer')">🔒</button>
+                <button type="button" class="btn-icon" title="Débloquer" (click)="openCardAction(card, 'debloquer')">🔓</button>
+                <button type="button" class="btn-icon" title="Réinitialiser PIN" (click)="openCardAction(card, 'reinitialiser_pin')">🔢</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" *ngIf="getTotalFilteredPages('cartes') > 1">
+      <div class="pagination__controls">
+        <button type="button" class="pagination__btn" (click)="previousPage('cartes')" [disabled]="getCurrentPage('cartes') === 1">‹</button>
+        <span class="pagination__info">Page {{ getCurrentPage('cartes') }} / {{ getTotalFilteredPages('cartes') }}</span>
+        <button type="button" class="pagination__btn" (click)="nextPage('cartes')" [disabled]="getCurrentPage('cartes') === getTotalFilteredPages('cartes')">›</button>
+      </div>
+      <span class="pagination__total">{{ getFilteredCartes().length }} cartes</span>
+    </div>
+  </div>
+
+  <!-- Section Stocks (uniquement INACTIVE) -->
+  <div *ngIf="activeTab === 'stocks'" class="table-wrapper">
+    <div class="table-header">
+      <h3>Cartes Inactives ({{ getFilteredStock().length }})</h3>
+      <div class="table-actions">
+        <button type="button" class="btn-sm" (click)="exportExcelStock()">📊 Exporter Excel</button>
+        <button type="button" class="btn-sm" (click)="printStock()">🖨️ Imprimer</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="cards-table" id="stockTable">
+        <thead>
+          <tr>
+            <th>Carte</th>
+            <th>UID</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let card of getPaginatedFilteredStock()">
+            <td>
+              <div class="cell-identity">
+                <span class="card-icon">💳</span>
+                <div>
+                  <div class="cell-name">{{ card.numero }}</div>
+                  <div class="cell-sub">{{ card.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="cell-mono">{{ card.uid }}</td>
+            <td><span class="statut-badge statut-inactive">Inactive</span></td>
+            <td>
+              <div class="action-buttons">
+                <button type="button" class="btn-icon" title="Associer" (click)="openCardAction(card, 'associer')">🔗</button>
+                <button type="button" class="btn-icon" title="Activer" (click)="openCardAction(card, 'activer')">✅</button>
+                <button type="button" class="btn-icon" title="Détruire" (click)="openCardAction(card, 'detruire')">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" *ngIf="getTotalFilteredPages('stocks') > 1">
+      <div class="pagination__controls">
+        <button type="button" class="pagination__btn" (click)="previousPage('stocks')" [disabled]="getCurrentPage('stocks') === 1">‹</button>
+        <span class="pagination__info">Page {{ getCurrentPage('stocks') }} / {{ getTotalFilteredPages('stocks') }}</span>
+        <button type="button" class="pagination__btn" (click)="nextPage('stocks')" [disabled]="getCurrentPage('stocks') === getTotalFilteredPages('stocks')">›</button>
+      </div>
+      <span class="pagination__total">{{ getFilteredStock().length }} cartes</span>
+    </div>
+  </div>
+
+  <!-- MODALE PIN -->
+  <div class="modal-overlay" *ngIf="pinModalOpen" (click)="closePinModal()"></div>
+  <div class="modal modal--pin" *ngIf="pinModalOpen">
+    <div class="modal__header">
+      <h2>🔐 Sécurité</h2>
+      <button type="button" class="close-btn" (click)="closePinModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="pin-card">
+        <div class="pin-card__icon">🔒</div>
+        <div class="pin-card__title">Veuillez entrer votre code PIN</div>
+        <div class="pin-card__sub">Pour confirmer cette opération, veuillez saisir votre code PIN à 4 chiffres</div>
+        <div class="pin-card__input">
+          <input
+            type="password"
+            [(ngModel)]="formData.pin"
+            class="pin-input"
+            placeholder="• • • •"
+            maxlength="4"
+            pattern="[0-9]{4}"
+            (keyup)="onPinChange()"
+          />
+        </div>
+        <div class="pin-card__dots">
+          <span class="pin-dot" [class.filled]="formData.pin.length >= 1">●</span>
+          <span class="pin-dot" [class.filled]="formData.pin.length >= 2">●</span>
+          <span class="pin-dot" [class.filled]="formData.pin.length >= 3">●</span>
+          <span class="pin-dot" [class.filled]="formData.pin.length >= 4">●</span>
+        </div>
+        <div class="pin-card__error" *ngIf="pinError">
+          ⚠️ Code PIN incorrect. Veuillez réessayer.
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn-secondary" (click)="closePinModal()">Annuler</button>
+      <button type="button" class="btn-primary" (click)="confirmPin()" [disabled]="formData.pin.length !== 4">Confirmer</button>
+    </div>
+  </div>
+
+  <!-- MODALE ACTION -->
+  <div class="modal-overlay" *ngIf="actionModalOpen && !pinModalOpen" (click)="closeActionModal()"></div>
+  <div class="modal modal--action" *ngIf="actionModalOpen && !pinModalOpen">
+    <div class="modal__header">
+      <h2>{{ actionModalTitle }}</h2>
+      <button type="button" class="close-btn" (click)="closeActionModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="action-card">
+        <div class="action-card__icon">{{ getActionIcon() }}</div>
+        <div class="action-card__title">{{ actionModalTitle }}</div>
+        <div class="action-card__sub" *ngIf="selectedCard">Carte: {{ selectedCard.numero }} ({{ selectedCard.uid }})</div>
+
+        <div class="form-group" *ngIf="actionModalType === 'emettre'">
+          <label>Type de carte</label>
+          <select [(ngModel)]="formData.typeCarte" class="form-control">
+            <option value="parent">👨‍👦 Parent</option>
+            <option value="enfant">👶 Enfant</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'emettre'">
+          <label>Quantité</label>
+          <input type="number" [(ngModel)]="formData.quantite" class="form-control" placeholder="1" min="1" max="100" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'emettre'">
+          <label>Solde initial (BIF)</label>
+          <input type="number" [(ngModel)]="formData.soldeInitial" class="form-control" placeholder="0" min="0" step="100" />
+        </div>
+
+        <div class="form-group" *ngIf="actionModalType === 'associer'">
+          <label>ID de l'utilisateur</label>
+          <input type="text" [(ngModel)]="formData.userId" class="form-control" placeholder="CL-XXXX" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'associer'">
+          <label>Type d'association</label>
+          <select [(ngModel)]="formData.associationType" class="form-control">
+            <option value="principal">Principal</option>
+            <option value="secondaire">Secondaire</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="actionModalType === 'reinitialiser_pin'">
+          <label>Nouveau PIN</label>
+          <input type="password" [(ngModel)]="formData.nouveauPin" class="form-control" placeholder="Nouveau code PIN" maxlength="4" pattern="[0-9]{4}" />
+          <label>Confirmer le PIN</label>
+          <input type="password" [(ngModel)]="formData.confirmPin" class="form-control" placeholder="Confirmer le code PIN" maxlength="4" pattern="[0-9]{4}" />
+        </div>
+
+        <div class="form-group" *ngIf="actionModalType === 'historique'">
+          <div class="history-actions">
+            <button type="button" class="btn-sm" (click)="exportHistoryExcel()">📊 Exporter Excel</button>
+            <button type="button" class="btn-sm" (click)="printHistory()">🖨️ Imprimer</button>
+          </div>
+          <div class="history-table-wrapper" *ngIf="historiqueCartes.length > 0; else noHistory">
+            <table class="history-table" id="historyTable">
+              <thead>
+                <tr>
+                  <th>Date & Heure</th>
+                  <th>Action</th>
+                  <th>Détail</th>
+                  <th>Utilisateur</th>
+                  <th>Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let h of historiqueCartes">
+                  <td class="history-date">{{ h.date }}</td>
+                  <td><span class="history-action" [class]="'action-' + getActionClass(h.action)">{{ h.action }}</span></td>
+                  <td class="history-detail">{{ h.detail }}</td>
+                  <td class="history-user">{{ h.utilisateur }}</td>
+                  <td class="history-montant" [class]="getMontantClass(h.montant)">{{ h.montant }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noHistory>
+            <p class="text-center cell-sub">Aucun historique pour le moment.</p>
+          </ng-template>
+        </div>
+
+        <div class="form-group" *ngIf="actionModalType === 'inventaire'">
+          <div class="inventaire-summary">
+            <div class="inventaire-item">
+              <span class="inventaire-item__label">Total cartes</span>
+              <span class="inventaire-item__value">{{ getTotalCartes() }}</span>
+            </div>
+            <div class="inventaire-item">
+              <span class="inventaire-item__label">Cartes Parent</span>
+              <span class="inventaire-item__value">{{ getCartesParent().length }}</span>
+            </div>
+            <div class="inventaire-item">
+              <span class="inventaire-item__label">Cartes Enfant</span>
+              <span class="inventaire-item__value">{{ getCartesEnfant().length }}</span>
+            </div>
+            <div class="inventaire-item">
+              <span class="inventaire-item__label">Inactives</span>
+              <span class="inventaire-item__value">{{ getCartesInactives().length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer" *ngIf="actionModalType !== 'historique' && actionModalType !== 'inventaire'">
+      <button type="button" class="btn-secondary" (click)="closeActionModal()">Annuler</button>
+      <button type="button" class="btn-primary" (click)="confirmAction()">Confirmer</button>
+    </div>
+    <div class="modal__footer" *ngIf="actionModalType === 'historique' || actionModalType === 'inventaire'">
+      <button type="button" class="btn-primary" (click)="closeActionModal()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- MODALE DÉTAILS CARTE -->
+  <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
+  <div class="modal modal--card" *ngIf="modalOpen && selectedCard">
+    <div class="modal__header">
+      <h2>💳 Détails de la carte</h2>
+      <div class="modal__header-actions">
+        <button type="button" class="btn-icon-sm" title="Imprimer" (click)="printCardDetail()">🖨️</button>
+        <button type="button" class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal__body" id="cardDetailPrint">
+      <div class="card-detail">
+        <div class="card-detail__header">
+          <div class="card-detail__number">{{ selectedCard.numero }}</div>
+          <div class="card-detail__uid">UID: {{ selectedCard.uid }}</div>
+          <span class="statut-badge" [class]="'statut-' + selectedCard.statut">{{ getStatutLabel(selectedCard.statut) }}</span>
+        </div>
+        <div class="card-detail__body">
+          <div class="card-detail__item">
+            <span class="card-detail__label">ID</span>
+            <span class="card-detail__value">{{ selectedCard.id }}</span>
+          </div>
+          <div class="card-detail__item">
+            <span class="card-detail__label">Type</span>
+            <span class="card-detail__value">{{ selectedCard.typeCarte === 'parent' ? '👨‍👦 Parent' : '👶 Enfant' }}</span>
+          </div>
+          <div class="card-detail__item">
+            <span class="card-detail__label">Utilisateur</span>
+            <span class="card-detail__value">{{ selectedCard.utilisateur }}</span>
+          </div>
+          <div class="card-detail__item">
+            <span class="card-detail__label">User ID</span>
+            <span class="card-detail__value">{{ selectedCard.userId }}</span>
+          </div>
+          <div class="card-detail__item">
+            <span class="card-detail__label">Solde</span>
+            <span class="card-detail__value">{{ selectedCard.solde | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="card-detail__item">
+            <span class="card-detail__label">Date d'émission</span>
+            <span class="card-detail__value">{{ selectedCard.dateEmission }}</span>
+          </div>
+          <div class="card-detail__item">
+            <span class="card-detail__label">Date d'expiration</span>
+            <span class="card-detail__value">{{ selectedCard.dateExpiration }}</span>
+          </div>
+        </div>
+        <div class="card-detail__actions">
+          <button type="button" class="btn-sm" (click)="openCardAction(selectedCard, 'bloquer')">🔒 Bloquer</button>
+          <button type="button" class="btn-sm" (click)="openCardAction(selectedCard, 'debloquer')">🔓 Débloquer</button>
+          <button type="button" class="btn-sm" (click)="openCardAction(selectedCard, 'reinitialiser_pin')">🔢 Réinitialiser PIN</button>
+          <button type="button" class="btn-sm" (click)="openCardAction(selectedCard, 'renouveler')">🔄 Renouveler</button>
+          <button type="button" class="btn-sm" (click)="printCardDetail()">🖨️ Imprimer</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn-primary" (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      {{ t.message }}
+      <button type="button" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

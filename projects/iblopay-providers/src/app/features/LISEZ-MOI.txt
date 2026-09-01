@@ -1,0 +1,73 @@
+LISEZ-MOI — Corrections du module "Formulaires"
+===================================================
+
+CE QUI CAUSAIT LES DEUX BUGS
+==============================
+
+1) "L'aperçu n'affiche pas les colonnes comme construites"
+   -------------------------------------------------------
+   Le nombre de colonnes (nbColonnes) choisi pendant la construction était
+   une simple variable du composant, JAMAIS incluse dans l'objet envoyé à
+   formulairesService.save(). Résultat : à chaque enregistrement, la
+   disposition choisie était perdue, et à l'ouverture/l'édition, tout
+   repartait à 1 colonne par défaut. Le champ "description" avait
+   exactement le même problème.
+
+   → Corrigé : nbColonnes et description sont maintenant écrits dans
+     formulaire.configuration.nbColonnes et formulaire.description avant
+     l'enregistrement, et relus correctement à l'ouverture d'un formulaire
+     existant.
+
+   → Par précaution, les champs sont aussi systématiquement triés par leur
+     propriété "ordre" à l'ouverture, pour garantir qu'ils s'affichent
+     exactement dans l'ordre où ils ont été construits.
+
+2) "Le formulaire ne s'affiche pas bien en mode édition + Publier"
+   -----------------------------------------------------------------
+   Dans le panneau de configuration d'un champ, le code accédait à
+   champSelectionne.configuration.aide SANS protection. Si un champ chargé
+   depuis les données sauvegardées n'avait pas de "configuration" définie,
+   cliquer dessus faisait planter l'affichage (erreur JS silencieuse côté
+   navigateur qui casse le rendu Angular).
+
+   → Corrigé : la configuration est maintenant systématiquement initialisée
+     (objet vide {}) dès qu'un champ est sélectionné ou dupliqué, et les
+     3 champs texte concernés utilisent l'opérateur "!" pour éviter tout
+     risque similaire à l'avenir.
+
+
+FICHIERS MODIFIÉS
+==================
+
+Dossier "formulaires/" (à remplacer dans) :
+  projects/iblopay-providers/src/app/features/formulaires/
+
+  - form-builder.component.ts   → logique de sauvegarde/chargement corrigée
+  - form-builder.component.html → bindings sécurisés (configuration!.aide)
+  - form-builder.component.scss → inchangé, fourni pour cohérence
+  - formulaires-list.component.*     → inchangés, fournis pour cohérence
+  - formulaire-publie.component.*    → sécurisé + lit la vraie disposition
+
+Dossier "dependances-a-mettre-a-jour/" :
+  provider.model.ts
+    → projects/iblopay-providers/src/app/models/provider.model.ts
+    Ajoute 2 champs optionnels à l'interface Formulaire :
+
+      description?: string;
+      configuration?: {
+        nbColonnes?: number;
+      };
+
+    ⚠️ IMPORTANT : si votre provider.model.ts a évolué depuis notre dernier
+    échange (vous avez peut-être ajouté d'autres champs entre-temps), ne
+    remplacez pas le fichier en entier — ajoutez seulement ces 2 lignes à
+    l'intérieur de votre interface Formulaire existante.
+
+
+À NOTER
+========
+Le composant "formulaire-publie" (vue du formulaire tel qu'un citoyen le
+verrait) existe déjà dans vos fichiers mais n'est pour l'instant relié à
+aucune route ni bouton. Si vous voulez qu'il s'affiche quelque part
+(ex: bouton "Aperçu public" dans la liste des formulaires, ou redirection
+après publication), dites-le-moi et je le branche.

@@ -1,0 +1,123 @@
+// src/app/modules/dashboard/widgets/recent-transactions/recent-transactions.component.scss
+.recent-transactions {
+    .transactions-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .view-all {
+            font-size: 13px;
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 500;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 20px 0;
+        color: var(--text-faint);
+        font-size: 14px;
+    }
+
+    .transactions-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+
+        thead {
+            th {
+                text-align: left;
+                padding: 10px 8px;
+                color: var(--text-dim);
+                font-weight: 600;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 2px solid var(--border-soft);
+            }
+        }
+
+        tbody {
+            td {
+                padding: 10px 8px;
+                border-bottom: 1px solid var(--border-soft);
+                vertical-align: middle;
+            }
+
+            tr:hover {
+                background: var(--surface-2);
+            }
+        }
+
+        .ref {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 12px;
+        }
+
+        .amount {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+
+            &.type-badge {
+                &.paiement {
+                    background: rgba(var(--blue-rgb), 0.14);
+                    color: var(--blue);
+                }
+
+                &.recharge {
+                    background: rgba(var(--green-rgb), 0.14);
+                    color: var(--green);
+                }
+
+                &.retrait {
+                    background: rgba(var(--sun-rgb), 0.14);
+                    color: var(--sun);
+                }
+
+                &.transfert {
+                    background: rgba(var(--purple-rgb), 0.14);
+                    color: var(--purple);
+                }
+            }
+
+            &.status-badge {
+                &.success {
+                    background: rgba(var(--green-rgb), 0.14);
+                    color: var(--green);
+                }
+
+                &.pending {
+                    background: rgba(var(--sun-rgb), 0.14);
+                    color: var(--sun);
+                }
+
+                &.failed {
+                    background: rgba(var(--red-rgb), 0.14);
+                    color: var(--red);
+                }
+            }
+        }
+    }
+}

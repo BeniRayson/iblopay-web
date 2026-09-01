@@ -1,0 +1,986 @@
+// src/app/modules/agents/pages/agent-approvisionnement/agent-approvisionnement.component.scss
+
+/* ================================================================
+   THEME VARIABLES
+   ================================================================ */
+:host {
+  --bg-body: #f0f2f5;
+  --bg-card: #ffffff;
+  --bg-hover: #f8f9fa;
+  --bg-input: #f1f3f5;
+  --text-primary: #1a1a2e;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border-color: #e5e7eb;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-hover: 0 4px 20px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --primary: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --purple: #8b5cf6;
+}
+
+.funding-container.dark-mode {
+  --bg-body: #0f172a;
+  --bg-card: #1e293b;
+  --bg-hover: #2d3a4f;
+  --bg-input: #2d3a4f;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --shadow-hover: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* ================================================================
+   LAYOUT PRINCIPAL
+   ================================================================ */
+.funding-container {
+  min-height: 100vh;
+  background: var(--bg-body);
+  padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: all 0.3s ease;
+}
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+.funding-header {
+  max-width: 780px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.btn-back:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.agent-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.agent-info h1 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.agent-info .agent-code {
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-theme {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.btn-theme:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.status-badge.active {
+  background: rgba(16,185,129,0.12);
+  color: var(--success);
+}
+.status-badge.active .dot { background: var(--success); }
+.status-badge.pending {
+  background: rgba(245,158,11,0.12);
+  color: var(--warning);
+}
+.status-badge.pending .dot { background: var(--warning); }
+.status-badge.blocked {
+  background: rgba(239,68,68,0.12);
+  color: var(--danger);
+}
+.status-badge.blocked .dot { background: var(--danger); }
+.status-badge.inactive {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+.status-badge.inactive .dot { background: var(--text-secondary); }
+
+/* ================================================================
+   CONTENU PRINCIPAL
+   ================================================================ */
+.funding-content {
+  max-width: 780px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* ================================================================
+   BALANCE SUMMARY
+   ================================================================ */
+.balance-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.balance-card {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+
+  .balance-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .balance-value {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 4px;
+  }
+
+  &.highlight {
+    background: rgba(79, 70, 229, 0.05);
+    border-color: var(--primary);
+
+    .balance-value {
+      color: var(--success);
+    }
+  }
+}
+
+/* ================================================================
+   PANNEAU DE RÉCONCILIATION
+   ================================================================ */
+.recon-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+
+  i {
+    font-size: 16px;
+    color: var(--success);
+    flex-shrink: 0;
+  }
+
+  .recon-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .recon-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .recon-detail {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  &.recon-alert {
+    background: rgba(239, 68, 68, 0.06);
+    border-color: rgba(239, 68, 68, 0.25);
+
+    i { color: var(--danger); }
+  }
+}
+
+/* ================================================================
+   MESSAGES
+   ================================================================ */
+.fund-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i { font-size: 14px; }
+}
+
+.fund-success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i { font-size: 14px; }
+}
+
+.fund-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: var(--warning);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i { font-size: 14px; }
+}
+
+.fund-info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: var(--info);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i { font-size: 14px; }
+}
+
+/* ================================================================
+   FORMULAIRE
+   ================================================================ */
+.fund-form {
+  margin-bottom: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.fund-form-group {
+  margin-bottom: 0;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+
+    i { font-size: 14px; color: var(--text-muted); }
+  }
+
+  small {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  &.full-width { grid-column: 1 / -1; }
+}
+
+.fund-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s;
+
+  &:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    background: var(--bg-card);
+  }
+
+  &.ng-invalid.ng-touched {
+    border-color: var(--danger);
+    &:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+  }
+
+  &.fund-input-error {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+  }
+}
+
+.fund-textarea {
+  height: auto;
+  padding: 10px 12px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* ================================================================
+   CHECKBOX
+   ================================================================ */
+.fund-checkbox-group {
+  padding: 12px 14px;
+  background: rgba(79, 70, 229, 0.04);
+  border-radius: 8px;
+  border: 1.5px solid rgba(79, 70, 229, 0.12);
+
+  &.fund-checkbox-warning {
+    background: rgba(245, 158, 11, 0.06);
+    border-color: rgba(245, 158, 11, 0.25);
+    .fund-checkbox-label i { color: var(--warning); }
+  }
+}
+
+.fund-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .fund-checkbox-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    i { color: var(--primary); margin-right: 4px; }
+  }
+}
+
+/* ================================================================
+   BOUTONS
+   ================================================================ */
+.fund-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+
+  button {
+    flex: 1;
+    height: 46px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+}
+
+.fund-btn-cancel {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-secondary);
+
+  &:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--text-muted); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.fund-btn-confirm {
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  border: none;
+  color: white;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.35);
+  }
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+}
+
+.fund-btn-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fund-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   HISTORIQUE
+   ================================================================ */
+.fund-history {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1.5px solid var(--border-color);
+}
+
+.fund-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  i { margin-right: 6px; color: var(--text-muted); }
+}
+
+.history-count {
+  font-weight: 400;
+  font-size: 11px;
+  background: var(--bg-input);
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+.fund-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fund-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 14px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  gap: 10px;
+}
+
+.fund-history-info { display: flex; flex-direction: column; gap: 2px; }
+.fund-history-top { display: flex; align-items: center; gap: 8px; }
+.fund-history-ref { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.fund-history-agent { font-size: 12px; color: var(--text-secondary); }
+.fund-history-date { font-size: 11px; color: var(--text-muted); }
+.fund-history-audit { font-size: 11px; color: var(--text-muted); font-style: italic; }
+
+.fund-history-reject-reason {
+  font-size: 11px;
+  color: var(--danger);
+  margin-top: 2px;
+  i { margin-right: 4px; }
+}
+
+.fund-status-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.fund-status-active { background: rgba(16,185,129,0.12); color: var(--success); }
+.fund-status-pending { background: rgba(245,158,11,0.14); color: var(--warning); }
+.fund-status-rejected { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+.fund-history-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.fund-history-amount { font-size: 16px; font-weight: 700; color: var(--success); }
+.fund-history-actions { display: flex; gap: 6px; }
+
+.fund-btn-mini {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.fund-btn-approve {
+  background: rgba(16,185,129,0.12);
+  color: var(--success);
+  border-color: rgba(16,185,129,0.3);
+  &:hover { background: rgba(16,185,129,0.2); }
+}
+
+.fund-btn-reject {
+  background: rgba(239,68,68,0.1);
+  color: var(--danger);
+  border-color: rgba(239,68,68,0.25);
+  &:hover { background: rgba(239,68,68,0.18); }
+}
+
+/* ================================================================
+   MODALE DE REJET
+   ================================================================ */
+.reject-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.reject-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: var(--shadow-hover);
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    i { color: var(--danger); }
+  }
+
+  p { margin: 0 0 12px; font-size: 12px; color: var(--text-secondary); }
+}
+
+.reject-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  button { flex: 1; height: 40px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+}
+
+.fund-btn-reject-confirm {
+  background: var(--danger);
+  border: none;
+  color: white;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+/* ================================================================
+   MODALE CODE PIN
+   ================================================================ */
+.pin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.pin-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-hover);
+
+  h3 { margin: 12px 0 4px; font-size: 16px; color: var(--text-primary); }
+  p { margin: 0 0 18px; font-size: 12.5px; color: var(--text-secondary); }
+}
+
+.pin-modal-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.pin-input {
+  width: 100%;
+  height: 52px;
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 10px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s;
+
+  &:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+
+  &:disabled { opacity: 0.5; }
+}
+
+.pin-error {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pin-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  button { flex: 1; height: 42px; border-radius: 8px; font-size: 13px; }
+}
+
+/* ================================================================
+   ÉCRAN DE TRAITEMENT
+   ================================================================ */
+.processing-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+}
+
+.processing-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  padding: 28px 36px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+}
+
+.fund-spinner-lg {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+  border-color: rgba(79, 70, 229, 0.2);
+  border-top-color: var(--primary);
+}
+
+/* ================================================================
+   CARTE RÉCAPITULATIVE (REÇU)
+   ================================================================ */
+.summary-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.summary-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: var(--shadow-hover);
+}
+
+.printable-card {
+  border: 1.5px dashed var(--border-color);
+  border-radius: 10px;
+  padding: 18px;
+  background: var(--bg-hover);
+}
+
+.summary-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.summary-card-logo {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+}
+
+.summary-card-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.summary-card-txn {
+  margin: 0 0 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.summary-card-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 6px;
+
+  &:last-child { border-bottom: none; }
+}
+
+.summary-label { color: var(--text-secondary); }
+.summary-value { color: var(--text-primary); font-weight: 600; text-align: right; }
+
+.summary-row-amount .summary-value {
+  color: var(--success);
+  font-size: 16px;
+}
+
+.summary-card-footer {
+  margin: 14px 0 0;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+.summary-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  button { flex: 1; height: 44px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+}
+
+.fund-btn-print {
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(79, 70, 229, 0.35); }
+}
+
+/* Impression : n'affiche que la carte récapitulative */
+@media print {
+  body * { visibility: hidden; }
+  .printable-card, .printable-card * { visibility: visible; }
+  .printable-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border: none;
+    background: white;
+  }
+}
+
+/* ================================================================
+   LOADING
+   ================================================================ */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.loading-screen .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-screen p { color: var(--text-secondary); font-size: 13px; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 768px) {
+  .funding-container { padding: 12px; }
+  .funding-header { flex-direction: column; align-items: stretch; padding: 14px 16px; }
+  .header-left { flex-wrap: wrap; }
+  .funding-content { padding: 16px; }
+  .balance-summary { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .fund-form-group.full-width { grid-column: 1; }
+
+  .fund-actions {
+    flex-direction: column;
+    button { width: 100%; }
+  }
+
+  .fund-history-item { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .fund-history-right { align-items: flex-start; width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .funding-header { padding: 10px 12px; }
+  .agent-info h1 { font-size: 15px; }
+  .avatar { width: 34px; height: 34px; font-size: 13px; }
+  .funding-content { padding: 12px; }
+  .balance-card .balance-value { font-size: 18px; }
+}

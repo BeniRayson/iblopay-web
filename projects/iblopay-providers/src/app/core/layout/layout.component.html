@@ -1,0 +1,146 @@
+<div class="layout-container">
+
+  <div class="overlay" [class.show]="isSidebarOpen" (click)="closeSidebar()"></div>
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" [class.open]="isSidebarOpen">
+    <div class="sidebar-logo">
+      <img src="assets/images/logo_iblo.jpeg" alt="IBLOPAY" class="logo-img" />
+      <div class="logo-text">
+        <div class="logo-text-main">IBLOPAY</div>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item" *ngFor="let item of menuItems">
+        <div class="nav-section-label" *ngIf="item.sectionStart">{{ item.sectionStart }}</div>
+        <a class="nav-link" [routerLink]="item.link" routerLinkActive="active" (click)="closeSidebar()">
+          <i class="nav-icon {{ item.icon }}"></i>
+          <span class="nav-label">{{ item.label }}</span>
+          <span class="nav-badge" *ngIf="item.badge">{{ item.badge }}</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="institution-card">
+        <div class="institution-avatar">{{ institution.initiales }}</div>
+        <div>
+          <div class="institution-nom">{{ institution.nom }}</div>
+          <div class="institution-role">{{ institution.role }}</div>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <i class="fa-solid fa-sign-out-alt"></i> Se déconnecter
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" [class.active]="isSidebarOpen" (click)="toggleSidebar()">
+          <i class="fa-solid" [class.fa-bars]="!isSidebarOpen" [class.fa-xmark]="isSidebarOpen"></i>
+        </button>
+        <div class="topbar-brand">
+          <span class="brand-name">IBLOPAY</span>
+          <span class="brand-separator">—</span>
+          <span class="brand-module">{{ moduleTitle }}</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+
+        <!-- ============ NOTIFICATIONS ============ -->
+        <div class="notif-wrap">
+          <button class="icon-btn" [class.active]="isNotifOpen" [class.pulse]="bellPulse" title="Notifications" (click)="toggleNotif(); $event.stopPropagation()">
+            <i class="fa-regular fa-bell"></i>
+            <span class="notif-dot" *ngIf="notifCount > 0"></span>
+          </button>
+
+          <div class="notif-card" *ngIf="isNotifOpen">
+            <div class="notif-card-header">
+              <i class="fa-regular fa-bell"></i> Notifications
+              <span class="notif-count" *ngIf="notifCount > 0">{{ notifCount }}</span>
+            </div>
+            <div class="notif-card-body">
+              <!-- ============ JOURNAL D'ACTIVITÉ (chaque action effectuée) ============ -->
+              <div class="notif-section-title" *ngIf="activitesRecentes.length > 0">Activité récente</div>
+              <a *ngFor="let a of activitesRecentes" class="notif-item notif-item-activite"
+                 [routerLink]="a.lien || null" (click)="isNotifOpen = false">
+                <div class="notif-icon"><i [class]="a.icone"></i></div>
+                <div class="notif-text">
+                  {{ a.message }}
+                  <span class="notif-time">{{ a.date | date: 'dd/MM à HH:mm' }}</span>
+                </div>
+              </a>
+              <div class="notif-empty" *ngIf="activitesRecentes.length === 0">
+                <i class="fa-regular fa-clock"></i>
+                <span>Aucune activité récente</span>
+              </div>
+
+              <!-- Secteur SERVICES -->
+              <ng-container *ngIf="!utilisateur || (utilisateur.secteur !== 'TRANSPORT' && utilisateur.secteur !== 'EVENEMENTS')">
+                <a routerLink="/demandes" class="notif-item" *ngIf="demandesUrgentes.length > 0" (click)="isNotifOpen = false">
+                  <div class="notif-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                  <div class="notif-text">
+                    <strong>{{ demandesUrgentes.length }}</strong> demande(s) en attente depuis plus de 2 jours nécessitent votre attention.
+                  </div>
+                </a>
+                <div class="notif-empty" *ngIf="demandesUrgentes.length === 0">
+                  <i class="fa-regular fa-circle-check"></i>
+                  <span>Tout est à jour</span>
+                </div>
+              </ng-container>
+
+              <!-- Secteur TRANSPORT -->
+              <ng-container *ngIf="utilisateur?.secteur === 'TRANSPORT'">
+                <a routerLink="/transport/flotte" class="notif-item" *ngIf="vehiculesEnPanneTransport.length > 0" (click)="isNotifOpen = false">
+                  <div class="notif-icon"><i class="fa-solid fa-car-burst"></i></div>
+                  <div class="notif-text">
+                    <strong>{{ vehiculesEnPanneTransport.length }}</strong> véhicule(s) en panne nécessitent votre attention.
+                  </div>
+                </a>
+                <a routerLink="/transport/flotte" class="notif-item" *ngIf="incidentsTransport.length > 0" (click)="isNotifOpen = false">
+                  <div class="notif-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                  <div class="notif-text">
+                    <strong>{{ incidentsTransport.length }}</strong> incident(s) ouvert(s) sur la flotte.
+                  </div>
+                </a>
+                <div class="notif-empty" *ngIf="notifCount === 0">
+                  <i class="fa-regular fa-circle-check"></i>
+                  <span>Tout est à jour</span>
+                </div>
+              </ng-container>
+
+              <!-- Secteur ÉVÉNEMENTS -->
+              <ng-container *ngIf="utilisateur?.secteur === 'EVENEMENTS'">
+                <a routerLink="/evenements/gestion" class="notif-item" *ngIf="reclamationsEvenements.length > 0" (click)="isNotifOpen = false">
+                  <div class="notif-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                  <div class="notif-text">
+                    <strong>{{ reclamationsEvenements.length }}</strong> réclamation(s) ouverte(s) nécessitent votre attention.
+                  </div>
+                </a>
+                <div class="notif-empty" *ngIf="reclamationsEvenements.length === 0">
+                  <i class="fa-regular fa-circle-check"></i>
+                  <span>Tout est à jour</span>
+                </div>
+              </ng-container>
+            </div>
+            <div class="notif-card-footer">
+              <a routerLink="/notifications" (click)="isNotifOpen = false">Voir toutes les notifications</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="topbar-avatar">{{ institution.initiales }}</div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <app-toast-container></app-toast-container>
+</div>

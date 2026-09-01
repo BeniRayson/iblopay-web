@@ -1,0 +1,183 @@
+/* ==========================================================
+   VARIABLES DE THÈME POUR LA PAGE EXPORT
+   ========================================================== */
+:root {
+  /* Mode Lumière (Light) */
+  --export-bg: var(--bg-light, #f8fafc);
+  --export-surface: rgba(255, 255, 255, 0.75);
+  --export-surface-hover: rgba(255, 255, 255, 0.95);
+  --export-border: var(--border-light, rgba(0, 0, 0, 0.08));
+  --export-input-bg: #ffffff;
+  --export-input-border: #d7dae0;
+  --export-hint: #8a8f98;
+  --export-shadow: rgba(0, 0, 0, 0.05);
+
+  --btn-primary-bg: #1c1e26;
+  --btn-primary-color: #ffffff;
+  --btn-primary-border: #1c1e26;
+
+  --warning-color: #d97706;
+}
+
+[data-theme='dark'],
+body.dark-theme {
+  /* Mode Sombre (Dark) */
+  --export-bg: var(--ink, #0b0f19);
+  --export-surface: rgba(18, 26, 47, 0.65);
+  --export-surface-hover: rgba(26, 37, 66, 0.85);
+  --export-border: var(--border-light, rgba(255, 255, 255, 0.12));
+  --export-input-bg: rgba(0, 0, 0, 0.2);
+  --export-input-border: rgba(255, 255, 255, 0.15);
+  --export-hint: var(--text-dim, rgba(255, 255, 255, 0.5));
+  --export-shadow: rgba(0, 0, 0, 0.3);
+
+  --btn-primary-bg: var(--sun, #3b82f6);
+  --btn-primary-color: #ffffff;
+  --btn-primary-border: var(--sun, #3b82f6);
+
+  --warning-color: #f59e0b;
+}
+
+
+/* ==========================================================
+   PAGE EXPORT (.export-page)
+   ========================================================== */
+.export-page {
+  padding: 24px 32px;
+  max-width: 480px;
+  background-color: var(--export-bg);
+  min-height: 100vh;
+  color: var(--text, #ffffff);
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  @media (max-width: 576px) {
+    padding: 20px 16px;
+    max-width: 100%;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text, #ffffff);
+    letter-spacing: -0.3px;
+  }
+
+  &__hint {
+    color: var(--export-hint);
+    font-size: 13px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+}
+
+
+/* ==========================================================
+   FORMULAIRE D'EXPORT (.export-form)
+   ========================================================== */
+.export-form {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: var(--export-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--export-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px var(--export-shadow);
+  transition: all 0.3s ease;
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 140px;
+
+    label {
+      font-size: 11px;
+      color: var(--export-hint);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--export-input-border);
+      background: var(--export-input-bg);
+      color: var(--text, #ffffff);
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s ease;
+
+      &::placeholder {
+        color: var(--text-faint, rgba(255, 255, 255, 0.3));
+      }
+
+      &:focus {
+        border-color: var(--sun, #3b82f6);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
+    }
+  }
+}
+
+
+/* ==========================================================
+   BOUTONS (.btn)
+   ========================================================== */
+.btn {
+  border: 1px solid transparent;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+
+  &--primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-color);
+    border-color: var(--btn-primary-border);
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+
+/* ==========================================================
+   MESSAGES D'ÉTAT (.state-message)
+   ========================================================== */
+.state-message {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-dim, #6f737c);
+
+  &--error {
+    color: var(--warning-color);
+    font-weight: 500;
+  }
+}

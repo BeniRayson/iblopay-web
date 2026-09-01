@@ -1,0 +1,81 @@
+/* ==========================================================
+   VARIABLES DE THÈME POUR LE GRAPHIQUE HORIZONTAL
+   ========================================================== */
+:root {
+  /* Mode Lumière (Light) */
+  --tx-chart-empty: #8a8f98;
+  --tx-chart-label: #4a4f57;
+  --tx-chart-track: #eef0f3;
+  --tx-chart-fill: var(--purple, #6f6fef);
+  --tx-chart-count: #1c1e26;
+}
+
+[data-theme='dark'],
+body.dark-theme {
+  /* Mode Sombre (Dark) */
+  --tx-chart-empty: var(--text-dim, rgba(255, 255, 255, 0.5));
+  --tx-chart-label: var(--text-dim, rgba(255, 255, 255, 0.7));
+  --tx-chart-track: rgba(255, 255, 255, 0.08);
+  --tx-chart-fill: var(--purple, #818cf8);
+  --tx-chart-count: var(--text, #ffffff);
+}
+
+
+/* ==========================================================
+   COMPOSANT GRAPHIQUE HORIZONTAL (.tx-chart)
+   ========================================================== */
+.tx-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &--empty {
+    color: var(--tx-chart-empty);
+    font-size: 13px;
+    padding: 16px 0;
+    text-align: center;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 140px 1fr 32px;
+    align-items: center;
+    gap: 10px;
+
+    @media (max-width: 576px) {
+      grid-template-columns: 100px 1fr 28px;
+      gap: 8px;
+    }
+  }
+
+  &__label {
+    font-size: 12px;
+    color: var(--tx-chart-label);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+  }
+
+  &__track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--tx-chart-track);
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  &__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--bar-fill-color, var(--tx-chart-fill));
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &__count {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: right;
+    color: var(--tx-chart-count);
+  }
+}

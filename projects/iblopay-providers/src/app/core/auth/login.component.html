@@ -1,0 +1,64 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="assets/images/logo_iblo.jpeg" alt="IBLOPAY" class="logo-img" />
+    </div>
+    <h1>Bienvenue sur votre plateforme</h1>
+    <p class="login-subtitle">Connectez-vous avec l'identifiant et le mot de passe fournis par votre administrateur.</p>
+
+    <form (ngSubmit)="connexion()">
+      <div class="field">
+        <label>Identifiant</label>
+        <input type="text" placeholder="Ex: 72483021 ou prenom.nom" [(ngModel)]="identifiant" name="identifiant" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label>Mot de passe / PIN</label>
+        <div class="password-wrap">
+          <input [type]="showMotDePasse ? 'text' : 'password'" placeholder="••••" [(ngModel)]="motDePasse" name="motDePasse" autocomplete="current-password" />
+          <button type="button" class="btn-eye" (click)="showMotDePasse = !showMotDePasse" tabindex="-1">
+            <i class="fa-solid" [class.fa-eye]="!showMotDePasse" [class.fa-eye-slash]="showMotDePasse"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="erreur-msg" *ngIf="erreur">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ erreur }}
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="isLoading">
+        <i class="fa-solid fa-spinner fa-spin" *ngIf="isLoading"></i>
+        <i class="fa-solid fa-right-to-bracket" *ngIf="!isLoading"></i>
+        {{ isLoading ? 'Connexion...' : 'Se connecter' }}
+      </button>
+    </form>
+
+    <div class="aide-demo">
+      <button type="button" class="btn-aide-toggle" (click)="toggleAide()">
+        <i class="fa-solid fa-circle-info"></i> Identifiants de démonstration
+      </button>
+      <div class="aide-body" *ngIf="showAide">
+        <p>Ceci est un environnement de démonstration. Deux espaces sont disponibles selon l'identifiant utilisé :</p>
+        <div class="aide-creds">
+          <div class="aide-creds-titre"><i class="fa-solid fa-layer-group"></i> Espace Services</div>
+          <span>Identifiant : <strong>{{ adminServicesIdentifiant }}</strong></span>
+          <span>Mot de passe : <strong>{{ adminServicesPin }}</strong></span>
+        </div>
+        <button type="button" class="btn-aide-remplir" (click)="remplir(adminServicesIdentifiant, adminServicesPin)">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Utiliser ces identifiants
+        </button>
+
+        <div class="aide-creds">
+          <div class="aide-creds-titre"><i class="fa-solid fa-bus"></i> Espace Transport (Bus & Taxis)</div>
+          <span>Identifiant : <strong>{{ adminTransportIdentifiant }}</strong></span>
+          <span>Mot de passe : <strong>{{ adminTransportPin }}</strong></span>
+        </div>
+        <button type="button" class="btn-aide-remplir" (click)="remplir(adminTransportIdentifiant, adminTransportPin)">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Utiliser ces identifiants
+        </button>
+
+        <p class="aide-note">Les comptes des agents (secrétaires, validateurs...) se connectent avec l'identifiant et le mot de passe définis lors de leur création dans un workflow, et n'accèdent qu'à l'espace Services.</p>
+      </div>
+    </div>
+  </div>
+</div>

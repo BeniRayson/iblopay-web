@@ -1,0 +1,253 @@
+<div class="page-header">
+  <div class="header-left">
+    <div>
+      <h1>Services</h1>
+      <p>Gérez les services proposés par votre institution</p>
+    </div>
+    
+    <!-- Statistiques intégrées sur la même ligne -->
+    <div class="stats-inline">
+      <div class="stat-item">
+        <span class="stat-num">{{ stats.total }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num text-green">{{ stats.actifs }}</span>
+        <span class="stat-label">Actifs</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num text-orange">{{ stats.brouillon }}</span>
+        <span class="stat-label">Brouillons</span>
+      </div>
+    </div>
+  </div>
+
+  <a class="btn-primary" routerLink="/services/nouveau">
+    <i class="fa-solid fa-plus"></i> Nouveau service
+  </a>
+</div>
+
+<!-- ============ TOOLBAR ============ -->
+<div class="toolbar">
+  <div class="search-box">
+    <i class="fa-solid fa-search"></i>
+    <input type="text" placeholder="Rechercher un service..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
+  </div>
+  <select [(ngModel)]="selectedStatut" (ngModelChange)="applyFilters()">
+    <option value="">Tous les statuts</option>
+    <option value="ACTIF">Actif</option>
+    <option value="INACTIF">Inactif</option>
+    <option value="BROUILLON">Brouillon</option>
+  </select>
+</div>
+
+<!-- ============ LISTE LIGNE PAR LIGNE (COMPACTE) ============ -->
+<div class="card table-card" *ngIf="!isLoading">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Catégorie</th>
+        <th>Prix</th>
+        <th>Statut</th>
+        <th class="actions-col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of pagedServices" (click)="selectedService = s" class="clickable-row">
+        <td>
+          <div class="service-cell">
+            <div class="service-icon" [style.background]="couleurCategorie(s.categorie)">
+              <i class="fa-solid fa-cube"></i>
+            </div>
+            <div>
+              <div class="service-nom">{{ s.nom }}</div>
+              <div class="service-code">{{ s.code }}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="categorie-cell">
+            <span class="categorie-badge" [style.background]="couleurCategorie(s.categorie) + '20'" [style.color]="couleurCategorie(s.categorie)">
+              {{ s.categorie }}
+            </span>
+          </div>
+        </td>
+        <td>
+          <span *ngIf="s.prix" class="prix-text">
+            {{ s.prix | number }} {{ s.devise }}
+          </span>
+          <span class="text-muted" *ngIf="!s.prix">Gratuit</span>
+        </td>
+        <td>
+          <span class="badge" [ngClass]="{
+            'badge-green': s.statut === 'ACTIF',
+            'badge-gray': s.statut === 'INACTIF',
+            'badge-orange': s.statut === 'BROUILLON'
+          }">{{ s.statut }}</span>
+        </td>
+        <td class="actions-col" (click)="$event.stopPropagation()">
+          <div class="row-actions">
+            <button class="btn-icon btn-blue" title="Formulaire" (click)="ouvrirFormBuilder(s)">
+              <i class="fa-solid fa-file-pen"></i>
+            </button>
+            <button class="btn-icon btn-purple" title="Voir le schéma du workflow" (click)="voirSchemaWorkflow(s)">
+              <i class="fa-solid fa-sitemap"></i>
+            </button>
+            <button class="btn-icon btn-indigo" title="Modifier" [routerLink]="['/services', s.id, 'edit']">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon" [ngClass]="s.statut === 'ACTIF' ? 'btn-green-active' : 'btn-gray-inactive'" title="Activer/désactiver" (click)="toggleStatut(s)">
+              <i class="fa-solid fa-power-off"></i>
+            </button>
+            <button class="btn-icon btn-red" title="Supprimer" (click)="deleteService(s)">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ============ PAGINATION ============ -->
+  <div class="pagination-container" *ngIf="filtered.length > 0">
+    <span class="pagination-info">
+      Affichage de {{ (currentPage * pageSize) + 1 }} à {{ mathMin((currentPage + 1) * pageSize, filtered.length) }} sur {{ filtered.length }} services
+    </span>
+    <div class="pagination-buttons">
+      <button class="btn-page" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">
+        <i class="fa-solid fa-chevron-left"></i> Précédent
+      </button>
+      <span class="page-indicator">Page {{ currentPage + 1 }} / {{ totalPages || 1 }}</span>
+      <button class="btn-page" [disabled]="(currentPage + 1) * pageSize >= filtered.length" (click)="changePage(currentPage + 1)">
+        Suivant <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filtered.length === 0">
+    <i class="fa-solid fa-box-open"></i>
+    <p>Aucun service trouvé</p>
+    <p class="empty-hint">Essayez de modifier vos critères de recherche</p>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading">
+  <i class="fa-solid fa-spinner fa-spin"></i>
+  <p>Chargement des services...</p>
+</div>
+
+<!-- ============ MODAL / CARTE DE DÉTAILS AU MILIEU ============ -->
+<div class="modal-overlay" *ngIf="selectedService" (click)="selectedService = null">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="service-icon" [style.background]="couleurCategorie(selectedService.categorie)">
+          <i class="fa-solid fa-cube"></i>
+        </div>
+        <div>
+          <h3>{{ selectedService.nom }}</h3>
+          <span class="service-code">{{ selectedService.code }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="selectedService = null">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Catégorie</span>
+          <span class="detail-value">{{ selectedService.categorie }} <span *ngIf="selectedService.sousCategorie">({{ selectedService.sousCategorie }})</span></span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Statut</span>
+          <span class="badge" [ngClass]="{
+            'badge-green': selectedService.statut === 'ACTIF',
+            'badge-gray': selectedService.statut === 'INACTIF',
+            'badge-orange': selectedService.statut === 'BROUILLON'
+          }">{{ selectedService.statut }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Prix</span>
+          <span class="detail-value">{{ selectedService.prix ? (selectedService.prix | number) + ' ' + selectedService.devise : 'Gratuit' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedService.formulaireId">
+          <span class="detail-label">ID Formulaire</span>
+          <span class="detail-value font-mono">{{ selectedService.formulaireId }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="selectedService = null">Fermer</button>
+      <button class="btn-outline-modal" (click)="voirSchemaWorkflow(selectedService); selectedService = null">
+        <i class="fa-solid fa-sitemap"></i> Workflow
+      </button>
+      <button class="btn-primary" (click)="ouvrirFormBuilder(selectedService); selectedService = null">
+        <i class="fa-solid fa-file-pen"></i> Éditer le formulaire
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL SCHÉMA DE WORKFLOW AVEC SCROLL ============ -->
+<div class="modal-overlay" *ngIf="serviceSchemaActif" (click)="fermerSchemaWorkflow()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="workflow-schema-icon"><i class="fa-solid fa-sitemap"></i></div>
+        <div>
+          <h3>{{ workflowSchemaAffiche?.nom || 'Schéma du workflow' }}</h3>
+          <span class="service-code">{{ serviceSchemaActif.nom }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerSchemaWorkflow()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Corps avec scroll vertical -->
+    <div class="modal-body-scrollable">
+      <div class="loading-schema" *ngIf="isLoadingSchema">
+        <i class="fa-solid fa-spinner fa-spin"></i> Chargement du schéma...
+      </div>
+
+      <ng-container *ngIf="!isLoadingSchema && workflowSchemaAffiche as w">
+        <p class="workflow-desc" *ngIf="w.description">{{ w.description }}</p>
+
+        <div class="etapes-timeline">
+          <div class="etape-timeline-item" *ngFor="let e of w.etapes; let i = index; let last = last">
+            <div class="etape-timeline-marker" [class.marker-last]="last">{{ i + 1 }}</div>
+            <div class="etape-timeline-content">
+              <div class="etape-timeline-header">
+                <strong>{{ e.nom }}</strong>
+                <span class="text-muted">Délai : {{ e.delaiHeures }}h</span>
+              </div>
+              <p class="etape-valide" *ngIf="e.ceQuIlValide">
+                <i class="fa-solid fa-clipboard-check"></i> {{ e.ceQuIlValide }}
+              </p>
+
+              <div class="parties-prenantes-title">Parties prenantes</div>
+              <div class="comptes-mini-list">
+                <span class="compte-chip" *ngFor="let c of comptesPourEtapeSchema(e.id)">
+                  <i class="fa-solid fa-user"></i> {{ c.prenom }} {{ c.nom }} — {{ c.role }}
+                </span>
+                <span class="text-muted" *ngIf="comptesPourEtapeSchema(e.id).length === 0">Aucune partie prenante assignée</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Pied de page fixe en bas -->
+    <div class="modal-footer-fixed">
+      <button class="btn-secondary" (click)="fermerSchemaWorkflow()">Fermer</button>
+      <button class="btn-primary" *ngIf="workflowSchemaAffiche" (click)="modifierWorkflowDepuisSchema()">
+        <i class="fa-solid fa-pen"></i> Modifier le workflow
+      </button>
+    </div>
+  </div>
+</div>

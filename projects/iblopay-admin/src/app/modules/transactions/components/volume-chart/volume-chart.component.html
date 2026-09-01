@@ -1,0 +1,23 @@
+<div class="chart-card">
+  <div class="chart-card__header">
+    <span class="chart-card__title">Répartition des volumes par période</span>
+    <div class="chart-card__tabs">
+      <button class="chart-tab" [class.chart-tab--active]="selectedPeriod === 'today'" (click)="setPeriod('today')">Aujourd'hui</button>
+      <button class="chart-tab" [class.chart-tab--active]="selectedPeriod === '7d'" (click)="setPeriod('7d')">7 derniers jours</button>
+      <button class="chart-tab" [class.chart-tab--active]="selectedPeriod === '30d'" (click)="setPeriod('30d')">30 derniers jours</button>
+      <button class="chart-tab" [class.chart-tab--active]="selectedPeriod === 'custom'" (click)="setPeriod('custom')">Personnalisé</button>
+    </div>
+  </div>
+  <div class="chart-card__body">
+    <div class="bar-chart">
+      <div class="bar-chart__bar-wrapper" *ngFor="let v of values; let i = index">
+        <div class="bar-chart__bar" [style.height.%]="(v / maxValue) * 85"
+             [style.background]="'linear-gradient(to top, #2f6fed, #2f6fed88)'"
+             [title]="labels[i] + ': ' + v"></div>
+      </div>
+    </div>
+    <div class="bar-chart__labels">
+      <span *ngFor="let label of labels" class="bar-chart__label">{{ label }}</span>
+    </div>
+  </div>
+</div>

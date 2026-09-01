@@ -1,0 +1,67 @@
+// src/app/modules/dashboard/widgets/agents-status/agents-status.component.scss
+.agents-status {
+    .agents-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0 0 16px;
+        }
+    }
+
+    .agents-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--surface-2);
+            border-radius: 8px;
+
+            .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+
+                &.online {
+                    background: var(--green);
+                }
+
+                &.busy {
+                    background: var(--sun);
+                }
+
+                &.offline {
+                    background: var(--red);
+                }
+            }
+
+            .agent-name {
+                flex: 1;
+                color: var(--text);
+            }
+
+            .agent-status {
+                font-size: 12px;
+                color: var(--text-dim);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--text-faint);
+            font-size: 14px;
+        }
+    }
+}

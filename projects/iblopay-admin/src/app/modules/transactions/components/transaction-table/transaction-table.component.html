@@ -1,0 +1,62 @@
+<div class="table-section">
+  <div class="table-section__header">
+    <span class="table-section__title">Liste des transactions ({{ total.toLocaleString() }} résultats)</span>
+    <div class="table-section__controls">
+      <button class="table-section__btn-export">Exporter</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="transaction-table">
+      <thead>
+        <tr>
+          <th>Date/Heure</th>
+          <th>N° Transaction</th>
+          <th>Type</th>
+          <th>Expéditeur</th>
+          <th>Destinataire</th>
+          <th>Montant</th>
+          <th>Frais</th>
+          <th>Statut</th>
+          <th>Canal</th>
+          <th>Localisation</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows" (click)="onRowClick(row.transactionNo)" class="transaction-table__row">
+          <td class="transaction-table__cell-date">{{ row.dateTime }}</td>
+          <td class="transaction-table__cell-ref">{{ row.transactionNo }}</td>
+          <td><span class="pill pill--type" [style.background]="row.typePillColor + '18'" [style.color]="row.typePillColor">{{ row.type }}</span></td>
+          <td>{{ row.sender }}</td>
+          <td>{{ row.recipient }}</td>
+          <td class="transaction-table__cell-amount">{{ row.amount }}</td>
+          <td>{{ row.fee }}</td>
+          <td><span class="pill pill--status" [style.background]="row.statusPillColor + '18'" [style.color]="row.statusPillColor">{{ row.status }}</span></td>
+          <td><span class="canal-label" [class.canal-wallet]="row.channel === 'wallet'" [class.canal-card]="row.channel === 'card'" [class.canal-attribue]="row.channel === 'attribué'">{{ getCanalLabel(row.channel) }}</span></td>
+          <td>{{ row.location }}</td>
+          <td class="transaction-table__cell-actions">
+            <button class="action-btn action-btn--reverse" title="Réverser la transaction" (click)="onReverseClick($event, row.transactionNo)">
+              <i class="fas fa-undo-alt"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-section__footer">
+    <div class="table-section__info">
+      Affichage de {{ startRecord }} à {{ endRecord }} sur {{ total.toLocaleString() }} transactions
+    </div>
+    <div class="pagination">
+      <button class="pagination__btn" [disabled]="currentPage === 1" (click)="pageChange.emit(currentPage - 1)">‹</button>
+      <button class="pagination__btn pagination__btn--active" *ngFor="let p of pages"
+              [class.pagination__btn--active]="p === currentPage"
+              (click)="pageChange.emit(p)">{{ p }}</button>
+      <button class="pagination__btn" [disabled]="currentPage === totalPages" (click)="pageChange.emit(currentPage + 1)">›</button>
+      <span class="pagination__info">… {{ totalPages }}</span>
+    </div>
+    <div class="table-section__page-size">{{ pageSize }} / page</div>
+  </div>
+</div>

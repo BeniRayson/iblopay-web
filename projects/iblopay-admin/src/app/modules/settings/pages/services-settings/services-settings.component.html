@@ -1,0 +1,598 @@
+<div class="settings-page">
+  <header class="page-header">
+    
+    <div class="page-header__title">
+      <span class="icon">🏛</span>
+      <div>
+        <h1>Gestion des Services RNF</h1>
+        <p>Services selon la loi budgétaire 2025-2026 - Recettes Non Fiscales</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let kpi of getKpiData()">
+      <div class="kpi-card__icon" [style.background-color]="kpi.color" [style.color]="kpi.textColor">
+        {{ kpi.icon }}
+      </div>
+      <div class="kpi-card__content">
+        <span class="kpi-card__value">{{ kpi.value }}</span>
+        <span class="kpi-card__label">{{ kpi.label }}</span>
+        <span class="kpi-card__trend" [class]="kpi.trend">
+          {{ kpi.trend === 'up' ? '↑' : kpi.trend === 'down' ? '↓' : '→' }}
+          {{ kpi.trendValue }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabs-nav">
+    <button class="tab-btn" *ngFor="let tab of tabs"
+            [class.active]="activeTab === tab.key"
+            (click)="setActiveTab(tab.key)">
+      <span class="tab-btn__icon">{{ tab.icon }}</span>
+      {{ tab.label }}
+      <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
+    </button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div *ngIf="activeTab === 'dashboard'" class="panel">
+    <div class="dashboard-grid">
+      <div class="dashboard-card dashboard-card--blue">
+        <div class="dashboard-card__header">
+          <span class="dashboard-card__icon">📂</span>
+          <h3>Revenus par Catégorie</h3>
+        </div>
+        <div class="dashboard-card__body">
+          <div class="stat-item" *ngFor="let item of getRevenuesByCategory() | slice:0:5">
+            <span class="stat-item__label">{{ item.category }}</span>
+            <span class="stat-item__value stat-item__value--blue">
+              {{ getTotalRevenuesByCategory(item.category) }} BIF
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card dashboard-card--purple">
+        <div class="dashboard-card__header">
+          <span class="dashboard-card__icon">🏛️</span>
+          <h3>Top Services</h3>
+        </div>
+        <div class="dashboard-card__body">
+          <div class="stat-item" *ngFor="let item of getRevenuesByServiceList() | slice:0:5">
+            <span class="stat-item__label">{{ item.service }}</span>
+            <span class="stat-item__value stat-item__value--gold">
+              {{ item.total | number:'1.0-0' }} BIF
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card dashboard-card--etat">
+        <div class="dashboard-card__header">
+          <span class="dashboard-card__icon">📊</span>
+          <h3>Statistiques</h3>
+        </div>
+        <div class="dashboard-card__body">
+          <div class="stat-item">
+            <span class="stat-item__label">Services Actifs</span>
+            <span class="stat-item__value">{{ getActiveServicesCount() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Total Clients</span>
+            <span class="stat-item__value">{{ clients.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Total Transactions</span>
+            <span class="stat-item__value">{{ revenues.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Revenu Total</span>
+            <span class="stat-item__value stat-item__value--blue">
+              {{ getTotalRevenuesFormatted() }} BIF
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div *ngIf="activeTab === 'services'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">📋 Liste des Services RNF ({{ services.length }})</h3>
+      <div class="panel__actions">
+        <button class="btn btn--primary" (click)="exportToExcel()">📊 Export Excel</button>
+        <button class="btn btn--secondary" (click)="printServices()">🖨️ Imprimer</button>
+        <button class="btn btn--primary" (click)="openPinModal()">🔐 PIN</button>
+      </div>
+    </div>
+    
+    <div class="table-wrap" *ngIf="services.length > 0">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Catégorie</th>
+            <th>Compte</th>
+            <th>Frais</th>
+            <th>Statut</th>
+            <th>Clients</th>
+            <th>Revenus</th>
+            <th style="min-width: 200px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let service of services">
+            <td>
+              <span class="service-icon">{{ service.icon }}</span>
+              <span class="service-name">{{ service.name }}</span>
+            </td>
+            <td><span class="badge">{{ service.category }}</span></td>
+            <td class="text-muted">{{ service.accountNumber }}</td>
+            <td>{{ service.fees }} {{ service.feesType === 'fixe' ? 'BIF' : '%' }}</td>
+            <td>
+              <span class="status-badge" [class]="service.status === 'actif' ? 'status-badge--actif' : 'status-badge--inactif'">
+                {{ service.status === 'actif' ? '✅ Actif' : '⛔ Inactif' }}
+              </span>
+            </td>
+            <td class="text-center">{{ getServiceClientCount(service.id) }}</td>
+            <td class="amount amount--success">{{ getServiceTotalRevenueFormatted(service.id) }} BIF</td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn" title="Voir détails" (click)="openDetailModal(service)">👁️</button>
+                <button class="action-btn" title="Activer" (click)="openServiceModal(service, 'activer')" *ngIf="service.status === 'inactif'">▶️</button>
+                <button class="action-btn" title="Désactiver" (click)="openDesactivatePinModal(service)" *ngIf="service.status === 'actif'">⏹️</button>
+                <button class="action-btn" title="Frais" (click)="openServiceModal(service, 'modifier_frais')">💰</button>
+                <button class="action-btn" title="Plafond" (click)="openServiceModal(service, 'definir_plafond')">📊</button>
+                <button class="action-btn" title="Commission" (click)="openServiceModal(service, 'definir_commission')">💵</button>
+                <button class="action-btn" title="Documents" (click)="openServiceModal(service, 'modifier_documents')">📄</button>
+                <button class="action-btn" title="Procédure" (click)="openServiceModal(service, 'modifier_procedure')">📋</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="empty-state" *ngIf="services.length === 0">
+      <span class="empty-state__icon">📭</span>
+      <p>Aucun service disponible.</p>
+    </div>
+  </div>
+
+  <!-- REVENUS -->
+  <div *ngIf="activeTab === 'revenues'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">💰 Revenus ({{ revenues.length }})</h3>
+      <span class="panel__badge">Total: {{ getTotalRevenuesFormatted() }} BIF</span>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Service</th>
+            <th>Catégorie</th>
+            <th>Montant</th>
+            <th>Référence</th>
+            <th>Méthode</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let revenue of getPaginatedRevenues()">
+            <td>{{ revenue.date }}</td>
+            <td><strong>{{ revenue.clientName || 'N/A' }}</strong></td>
+            <td>{{ revenue.serviceName }}</td>
+            <td><span class="badge">{{ revenue.category }}</span></td>
+            <td class="amount amount--success">{{ revenue.amount | number:'1.0-0' }} BIF</td>
+            <td class="text-muted">{{ revenue.reference }}</td>
+            <td>{{ revenue.paymentMethod }}</td>
+            <td>
+              <span class="status-badge" [class]="'status-badge--' + revenue.statut">
+                {{ getStatutLabel(revenue.statut) }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination" *ngIf="getTotalPages('revenues') > 1">
+        <button class="pagination__btn" (click)="prevPage('revenues')" [disabled]="getCurrentPage('revenues') === 1">‹</button>
+        <span class="pagination__info">Page {{ getCurrentPage('revenues') }} / {{ getTotalPages('revenues') }}</span>
+        <button class="pagination__btn" (click)="nextPage('revenues')" [disabled]="getCurrentPage('revenues') === getTotalPages('revenues')">›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATÉGORIES -->
+  <div *ngIf="activeTab === 'categories'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">📂 Catégories RNF - Loi Budgétaire 2025-2026</h3>
+      <span class="panel__badge">{{ categories.length }} catégories</span>
+    </div>
+    <div class="categories-grid" *ngIf="categories.length > 0">
+      <div class="category-card" *ngFor="let cat of categories">
+        <div class="category-card__header">
+          <span class="category-card__icon">{{ cat.icon }}</span>
+          <h4>{{ cat.name }}</h4>
+        </div>
+        <p class="category-card__desc">{{ cat.description }}</p>
+        <div class="category-card__subs">
+          <span class="sub-tag" *ngFor="let sub of cat.subCategories | slice:0:3">
+            {{ sub.name || sub }}
+          </span>
+          <span class="sub-tag sub-tag--more" *ngIf="cat.subCategories.length > 3">
+            +{{ cat.subCategories.length - 3 }}
+          </span>
+        </div>
+        <div class="category-card__stats">
+          <span class="stat">
+            Services: {{ getServicesByCategoryCount(cat.id) }}
+          </span>
+          <span class="stat">
+            Revenus: {{ getRevenuesByCategoryIdFormatted(cat.id) }} BIF
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="categories.length === 0">
+      <span class="empty-state__icon">📭</span>
+      <p>Aucune catégorie disponible.</p>
+    </div>
+  </div>
+
+  <!-- MODAL DÉTAILS SERVICE -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()"></div>
+  <div class="modal modal--animated modal--large" *ngIf="showDetailModal && selectedService">
+    <div class="modal__header">
+      <h2 class="modal__title">
+        <span class="modal__icon">{{ selectedService.icon }}</span>
+        {{ selectedService.name }}
+      </h2>
+      <button class="modal__close" (click)="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal__body modal__body--large">
+      
+      <!-- Informations générales -->
+      <div class="detail-section">
+        <h3 class="section-title">📋 Informations générales</h3>
+        <div class="info-grid">
+          <div class="info-card">
+            <span class="info-card__label">ID Service</span>
+            <span class="info-card__value">{{ selectedService.id }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-card__label">Catégorie</span>
+            <span class="info-card__value">{{ selectedService.category }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-card__label">Compte</span>
+            <span class="info-card__value">{{ selectedService.accountNumber }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-card__label">Statut</span>
+            <span class="info-card__value">
+              <span class="status-badge" [class]="selectedService.status === 'actif' ? 'status-badge--actif' : 'status-badge--inactif'">
+                {{ selectedService.status === 'actif' ? '✅ Actif' : '⛔ Inactif' }}
+              </span>
+            </span>
+          </div>
+          <div class="info-card">
+            <span class="info-card__label">Frais</span>
+            <span class="info-card__value">{{ selectedService.fees }} {{ selectedService.feesType === 'fixe' ? 'BIF' : '%' }}</span>
+          </div>
+          <div class="info-card">
+            <span class="info-card__label">Plafond</span>
+            <span class="info-card__value">{{ selectedService.plafond | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="info-card">
+            <span class="info-card__label">Commission</span>
+            <span class="info-card__value">{{ selectedService.commission }}%</span>
+          </div>
+          <div class="info-card">
+            <span class="info-card__label">Total Revenus</span>
+            <span class="info-card__value amount--success">{{ getServiceTotalRevenueFormatted(selectedService.id) }} BIF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Texte légal -->
+      <div class="detail-section">
+        <h3 class="section-title">📜 Référence Légale</h3>
+        <div class="legal-box">
+          <p>{{ selectedService.legalText || 'Conformément à la loi budgétaire 2025-2026, ce service est soumis aux dispositions du code des impôts et taxes.' }}</p>
+          <p class="legal-reference">Référence: Article {{ selectedService.accountNumber }} du Code Général des Impôts</p>
+        </div>
+      </div>
+
+      <!-- Description et procédure -->
+      <div class="detail-section">
+        <h3 class="section-title">📄 Description et procédure</h3>
+        <div class="description-box">
+          <p>{{ selectedService.description || 'Aucune description disponible' }}</p>
+        </div>
+        
+        <div class="documents-grid">
+          <div class="documents-card">
+            <h4>📎 Documents requis</h4>
+            <ul class="documents-list">
+              <li *ngFor="let doc of selectedService.requiredDocuments">
+                <span class="doc-icon">📄</span>
+                {{ doc }}
+              </li>
+            </ul>
+          </div>
+          <div class="documents-card">
+            <h4>📝 Procédure</h4>
+            <ul class="documents-list">
+              <li *ngFor="let step of selectedService.procedure">
+                <span class="step-number">{{ step.charAt(0) }}</span>
+                {{ step.substring(2) }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clients -->
+      <div class="detail-section">
+        <h3 class="section-title">👥 Clients ({{ getServiceClientCount(selectedService.id) }})</h3>
+        <div class="table-wrap">
+          <table class="table table--small">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let client of getPaginatedClients(selectedService.id)">
+                <td><strong>{{ client.name }}</strong></td>
+                <td>{{ client.email }}</td>
+                <td>{{ client.phone }}</td>
+                <td>{{ client.requestDate }}</td>
+                <td class="amount">{{ client.amount | number:'1.0-0' }} BIF</td>
+                <td>
+                  <span class="status-badge" [class]="'status-badge--' + client.status">
+                    {{ getStatutLabel(client.status) }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-group">
+                    <button class="action-btn" title="Voir détails" (click)="openClientDetail(client)">👁️</button>
+                    <button class="action-btn" title="Approuver" (click)="approveClient(client)" *ngIf="client.status === 'en_attente'" style="background: #2e7d32; color: white;">✅</button>
+                    <button class="action-btn" title="Rejeter" (click)="rejectClient(client)" *ngIf="client.status === 'en_attente'" style="background: #c62828; color: white;">❌</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination" *ngIf="getTotalClientPages(selectedService.id) > 1">
+            <button class="pagination__btn" (click)="prevClientPage(selectedService.id)" [disabled]="getCurrentPage('clients') === 1">‹</button>
+            <span class="pagination__info">Page {{ getCurrentPage('clients') }} / {{ getTotalClientPages(selectedService.id) }}</span>
+            <button class="pagination__btn" (click)="nextClientPage(selectedService.id)" [disabled]="getCurrentPage('clients') === getTotalClientPages(selectedService.id)">›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire de demande -->
+      <div class="detail-section">
+        <h3 class="section-title">📝 Copie de la Demande Administrative</h3>
+        <div class="form-card form-card--admin">
+          <div class="form-card__header">
+            <span class="form-card__icon">📋</span>
+            <h4>DEMANDE D'AUTORISATION / CERTIFICAT</h4>
+            <span class="form-card__ref">N° {{ getRandomDemandeNumber() }}</span>
+          </div>
+          <div class="form-card__body">
+            <div class="admin-header">
+              <div class="admin-header__left">
+                <p><strong>RÉPUBLIQUE DU BURUNDI</strong></p>
+                <p><strong>MINISTÈRE DES FINANCES</strong></p>
+                <p><strong>DIRECTION GÉNÉRALE DES IMPÔTS</strong></p>
+              </div>
+              <div class="admin-header__right">
+                <p><strong>Bujumbura, le {{ getCurrentDate() }}</strong></p>
+              </div>
+            </div>
+
+            <div class="admin-title">
+              <h3>OBJET : Demande de {{ selectedService.name }}</h3>
+            </div>
+
+            <div class="admin-body">
+              <p>Je soussigné(e), <strong>Jean Bosco NIZIGIYIMANA</strong>,</p>
+              <p>Né(e) le <strong>15/05/1985</strong> à <strong>Bujumbura</strong>,</p>
+              <p>De nationalité <strong>Burundaise</strong>,</p>
+              <p>Demeurant à <strong>Bujumbura, Quartier Kinindo, Avenue de la République N°15</strong>,</p>
+              <p>Titulaire de la pièce d'identité N° <strong>CNI-2025-001234</strong>,</p>
+              <p>Exerçant la profession de <strong>Commerçant</strong>,</p>
+
+              <p class="admin-object">Par la présente, je sollicite auprès de votre service l'obtention de l'autorisation/certificat suivant :</p>
+
+              <div class="admin-service-info">
+                <p><strong>Service demandé :</strong> {{ selectedService.name }}</p>
+                <p><strong>Catégorie :</strong> {{ selectedService.category }}</p>
+                <p><strong>Référence légale :</strong> Article {{ selectedService.accountNumber }}</p>
+              </div>
+
+              <p class="admin-motivation">Motivation de la demande :</p>
+              <p>Je certifie sur l'honneur que toutes les informations fournies dans la présente demande sont exactes et conformes à la réalité. Je m'engage à respecter toutes les conditions et réglementations en vigueur relatives à ce service, conformément aux dispositions de la loi budgétaire 2025-2026.</p>
+
+              <p>Pièces jointes à l'appui de la demande :</p>
+              <ul class="admin-documents">
+                <li *ngFor="let doc of selectedService.requiredDocuments">- {{ doc }}</li>
+              </ul>
+
+              <div class="admin-signature">
+                <p>Fait à Bujumbura, le {{ getCurrentDate() }}</p>
+                <div class="admin-signature__line">
+                  <p>Le demandeur</p>
+                  <p><strong>Jean Bosco NIZIGIYIMANA</strong></p>
+                  <p><em>Signature et cachet</em></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-footer">
+              <p><strong>Pour usage administratif</strong></p>
+              <p>Enregistré le {{ getCurrentDate() }} sous le numéro {{ getRandomDemandeNumber() }}</p>
+              <p>Cachet et signature du service compétent</p>
+            </div>
+          </div>
+          <div class="form-card__footer">
+            <button class="btn btn--primary" (click)="toast('Demande soumise avec succès !', 'success')">📨 Valider et soumettre</button>
+            <button class="btn btn--secondary" (click)="closeDetailModal()">Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DÉTAILS CLIENT -->
+  <div class="modal-overlay" *ngIf="showClientModal" (click)="closeClientModal()"></div>
+  <div class="modal modal--animated" *ngIf="showClientModal && selectedClient">
+    <div class="modal__header">
+      <h2 class="modal__title">👤 Détails du Client</h2>
+      <button class="modal__close" (click)="closeClientModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="detail-card">
+        <div class="detail-card__body">
+          <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">{{ selectedClient.id }}</span></div>
+          <div class="detail-row"><span class="detail-label">Nom</span><span class="detail-value"><strong>{{ selectedClient.name }}</strong></span></div>
+          <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">{{ selectedClient.email }}</span></div>
+          <div class="detail-row"><span class="detail-label">Téléphone</span><span class="detail-value">{{ selectedClient.phone }}</span></div>
+          <div class="detail-row"><span class="detail-label">Adresse</span><span class="detail-value">{{ selectedClient.address || 'N/A' }}</span></div>
+          <div class="detail-row"><span class="detail-label">Pièce d'identité</span><span class="detail-value">{{ selectedClient.idNumber || 'N/A' }}</span></div>
+          <div class="detail-row"><span class="detail-label">Service</span><span class="detail-value">{{ selectedClient.serviceName }}</span></div>
+          <div class="detail-row"><span class="detail-label">Date de demande</span><span class="detail-value">{{ selectedClient.requestDate }}</span></div>
+          <div class="detail-row"><span class="detail-label">Montant</span><span class="detail-value amount amount--success">{{ selectedClient.amount | number:'1.0-0' }} BIF</span></div>
+          <div class="detail-row"><span class="detail-label">Référence</span><span class="detail-value">{{ selectedClient.reference }}</span></div>
+          <div class="detail-row"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="'status-badge--' + selectedClient.status">{{ getStatutLabel(selectedClient.status) }}</span></span></div>
+        </div>
+        <div class="detail-card__footer">
+          <button class="btn btn--secondary" (click)="closeClientModal()">Fermer</button>
+          <button class="btn btn--primary" (click)="approveClient(selectedClient)" *ngIf="selectedClient.status === 'en_attente'">✅ Approuver</button>
+          <button class="btn btn--danger" (click)="rejectClient(selectedClient)" *ngIf="selectedClient.status === 'en_attente'">❌ Rejeter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DÉSACTIVATION PIN -->
+  <div class="modal-overlay" *ngIf="showDesactivatePinModal" (click)="closeDesactivatePinModal()"></div>
+  <div class="modal modal--animated modal--pin" *ngIf="showDesactivatePinModal">
+    <div class="modal__header">
+      <h2 class="modal__title">🔐 Code PIN requis</h2>
+      <button class="modal__close" (click)="closeDesactivatePinModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__icon">🔐</div>
+      <p class="modal__subtitle">Veuillez entrer votre code PIN pour désactiver ce service</p>
+      <div class="pin-input-group">
+        <input type="password" class="pin-input" [(ngModel)]="desactivatePinCode" maxlength="4" placeholder="• • • •" autofocus>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" *ngFor="let key of [1,2,3,4,5,6,7,8,9]" (click)="addDesactivatePinDigit(key)">{{ key }}</button>
+        <button class="pin-key pin-key--clear" (click)="clearDesactivatePin()">⌫</button>
+        <button class="pin-key pin-key--zero" (click)="addDesactivatePinDigit(0)">0</button>
+        <button class="pin-key pin-key--confirm" (click)="confirmDesactivatePin()">✓</button>
+      </div>
+      <div class="pin-error" *ngIf="desactivatePinCode.length === 4 && desactivatePinCode !== '1234'">
+        ⚠️ Code PIN incorrect (Code: 1234)
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PIN -->
+  <div class="modal-overlay" *ngIf="showPinModal" (click)="closePinModal()"></div>
+  <div class="modal modal--animated modal--pin" *ngIf="showPinModal">
+    <div class="modal__header">
+      <h2 class="modal__title">🔐 Code PIN</h2>
+      <button class="modal__close" (click)="closePinModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__icon">🔐</div>
+      <p class="modal__subtitle">Veuillez entrer votre code PIN</p>
+      <div class="pin-input-group">
+        <input type="password" class="pin-input" [(ngModel)]="pinCode" maxlength="4" placeholder="• • • •" autofocus>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" *ngFor="let key of [1,2,3,4,5,6,7,8,9]" (click)="addPinDigit(key)">{{ key }}</button>
+        <button class="pin-key pin-key--clear" (click)="clearPin()">⌫</button>
+        <button class="pin-key pin-key--zero" (click)="addPinDigit(0)">0</button>
+        <button class="pin-key pin-key--confirm" (click)="confirmPin()">✓</button>
+      </div>
+      <div class="pin-error" *ngIf="pinCode.length === 4 && pinCode !== '1234'">
+        ⚠️ Code PIN incorrect (Code: 1234)
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SERVICE -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
+  <div class="modal modal--animated" *ngIf="showModal">
+    <div class="modal__header">
+      <h2 class="modal__title">{{ modalTitle }}</h2>
+      <button class="modal__close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__icon">{{ selectedService?.icon || '🏛️' }}</div>
+      
+      <div class="form-group" *ngIf="modalType === 'modifier_frais'">
+        <label>Montant des frais</label>
+        <input type="number" [(ngModel)]="formData.fees" class="form-control" step="0.01" />
+        <label>Type de frais</label>
+        <select [(ngModel)]="formData.feesType" class="form-control">
+          <option value="fixe">Fixe (BIF)</option>
+          <option value="pourcentage">Pourcentage (%)</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="modalType === 'definir_plafond'">
+        <label>Plafond (BIF)</label>
+        <input type="number" [(ngModel)]="formData.plafond" class="form-control" />
+      </div>
+
+      <div class="form-group" *ngIf="modalType === 'definir_commission'">
+        <label>Commission (%)</label>
+        <input type="number" [(ngModel)]="formData.commission" class="form-control" step="0.1" />
+      </div>
+
+      <div class="form-group" *ngIf="modalType === 'modifier_documents'">
+        <label>Documents requis (séparés par des virgules)</label>
+        <input type="text" [(ngModel)]="formData.documents" class="form-control" />
+      </div>
+
+      <div class="form-group" *ngIf="modalType === 'modifier_procedure'">
+        <label>Procédure (une étape par ligne)</label>
+        <textarea [(ngModel)]="formData.procedure" class="form-control" rows="6"></textarea>
+      </div>
+
+      <div class="alert alert--warning" *ngIf="modalType === 'activer'">
+        Êtes-vous sûr de vouloir activer ce service ?
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+      <button class="btn btn--primary" (click)="confirmModal()">Confirmer</button>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>
+      {{ t.message }}
+      <button class="toast__close" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

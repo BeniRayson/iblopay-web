@@ -1,0 +1,528 @@
+<div class="page-header">
+  <div>
+    <h1>Demandes</h1>
+    <p>Suivez le traitement des demandes soumises par les citoyens, document par document</p>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="search-box">
+    <i class="fa-solid fa-search"></i>
+    <input type="text" placeholder="Rechercher une référence, un nom..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" />
+  </div>
+  <select [(ngModel)]="selectedStatut" (ngModelChange)="applyFilters()">
+    <option value="">Tous les statuts</option>
+    <option value="SOUMIS">Soumis</option>
+    <option value="EN_VERIFICATION">En vérification</option>
+    <option value="EN_VALIDATION">En validation</option>
+    <option value="EN_TRAITEMENT">En traitement</option>
+    <option value="APPROUVE">Approuvé</option>
+    <option value="TERMINE">Terminé</option>
+    <option value="REJETE">Rejeté</option>
+  </select>
+</div>
+
+<div class="layout-with-detail">
+  <div class="card table-card">
+    <table class="data-table" *ngIf="!isLoading">
+      <thead>
+        <tr>
+          <th>Référence</th>
+          <th>Service</th>
+          <th>Demandeur</th>
+          <th>Étape</th>
+          <th>Statut</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of filtered" (click)="ouvrirDetail(d)" class="clickable-row" [class.active-row]="demandeSelectionnee?.id === d.id">
+          <td class="ref-cell">{{ d.numeroReference }}</td>
+          <td>{{ d.serviceNom }}</td>
+          <td>{{ d.utilisateurNom }}</td>
+          <td>{{ d.etapeActuelle }}</td>
+          <td><span class="badge" [ngClass]="statutClass(d.statut)">{{ statutLabel(d.statut) }}</span></td>
+          <td>{{ d.dateSoumission | date:'dd/MM/yyyy' }}</td>
+          <td><i class="fa-solid fa-chevron-right chevron"></i></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">Aucune demande trouvée</div>
+  </div>
+
+  <!-- ============ PANNEAU DETAIL — VUE COMPLETE ============ -->
+  <div class="card detail-panel" *ngIf="demandeSelectionnee as d">
+    <div class="detail-header">
+      <div>
+        <div class="detail-ref">{{ d.numeroReference }}</div>
+        <div class="detail-service">{{ d.serviceNom }}</div>
+      </div>
+      <button class="btn-icon" (click)="fermerDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="detail-info">
+      <div><span>Demandeur</span><strong>{{ d.utilisateurNom }}</strong></div>
+      <div><span>Téléphone</span><strong>{{ d.utilisateurTelephone }}</strong></div>
+      <div><span>Montant</span><strong>{{ d.montant | number }} BIF</strong></div>
+      <div><span>Paiement</span><strong [class.text-green]="d.montantPaye" [class.text-red]="!d.montantPaye">{{ d.montantPaye ? 'Payé' : 'Non payé' }}</strong></div>
+      <div><span>Soumis le</span><strong>{{ d.dateSoumission | date:'dd/MM/yyyy à HH:mm' }}</strong></div>
+      <div><span>Dernière mise à jour</span><strong>{{ d.dateMaj | date:'dd/MM/yyyy à HH:mm' }}</strong></div>
+    </div>
+
+    <!-- ============ COPIE OFFICIELLE SCANNÉE (LETTRE ADMINISTRATIVE) ============ -->
+    <div class="official-copy-section" *ngIf="copieOfficielle as docOfficiel">
+      <div class="workflow-title">
+        Copie officielle scannée (Lettre administrative)
+      </div>
+
+      <div class="droit-bloque" *ngIf="!peutVoirDocuments">
+        <i class="fa-solid fa-lock"></i>
+        <span>Vous n'avez pas le droit de consulter les documents à cette étape.</span>
+      </div>
+
+      <div class="scanned-document-sheet" *ngIf="peutVoirDocuments" (click)="voirDocument(docOfficiel, $event)" title="Cliquer pour lire le contenu officiel">
+        <div class="scan-preview-content">
+          <!-- Si image brute disponible -->
+          <img *ngIf="docOfficiel.apercuUrl" [src]="docOfficiel.apercuUrl" [alt]="docOfficiel.label" class="scan-img" />
+          
+          <!-- Lettre administrative bien écrite (aperçu réduit) -->
+          <div class="official-letter-paper" *ngIf="!docOfficiel.apercuUrl || docOfficiel.type === 'FICHIER'">
+            <div class="letter-header">
+              <div class="letter-org-name">RÉPUBLIQUE DU BURUNDI</div>
+              <div class="letter-org-sub">MINISTÈRE DE L'INTÉRIEUR</div>
+              <div class="letter-org-service">DIRECTION GÉNÉRALE DES SERVICES ADMINISTRATIFS</div>
+              <div class="letter-divider"></div>
+              <div class="letter-ref">
+                <span>Réf : {{ d.numeroReference }}</span>
+                <span>N° Dossier : {{ d.id }}</span>
+              </div>
+            </div>
+
+            <div class="letter-date-place">
+              <span>Bujumbura, le {{ d.dateSoumission | date:'dd/MM/yyyy' }}</span>
+            </div>
+
+            <div class="letter-recipient">
+              <strong>OBJET : DEMANDE DE DÉLIVRANCE D'ACTE ADMINISTRATIF</strong>
+            </div>
+
+            <div class="letter-salutation">
+              À l'attention du Chef de Service,
+            </div>
+
+            <div class="letter-body">
+              <p>
+                Je soussigné(e), <strong>{{ d.utilisateurNom }}</strong>, demeurant au Burundi, 
+                sollicite par la présente l'obtention d'un acte administratif officiel relatif 
+                au service <strong>{{ d.serviceNom }}</strong>.
+              </p>
+              <p>
+                Le présent dossier a été soumis le {{ d.dateSoumission | date:'dd/MM/yyyy' }} 
+                sous la référence unique <strong>{{ d.numeroReference }}</strong>. 
+                Les pièces justificatives requises ont été fournies conformément à la 
+                réglementation en vigueur.
+              </p>
+              <p>
+                Je vous prie d'agréer, Monsieur le Chef de Service, l'expression de mes 
+                salutations distinguées.
+              </p>
+            </div>
+
+            <div class="letter-footer">
+              <div class="letter-signature">
+                <div class="signature-line"></div>
+                <span class="signature-name">{{ d.utilisateurNom }}</span>
+                <span class="signature-title">Demandeur</span>
+              </div>
+              <div class="letter-stamp">
+                <div class="stamp-circle">
+                  <i class="fa-solid fa-stamp"></i>
+                  <span>CERTIFIÉ</span>
+                  <span>IBLOPAY</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="scan-footer-bar">
+          <i class="fa-solid fa-shield-halved"></i> Document officiel scanné - {{ docOfficiel.label || 'Lettre administrative' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ PROGRESSION DU WORKFLOW (CLIQUABLE) ============ -->
+    <div class="workflow-title">
+      Progression du workflow (Cliquez sur une étape)
+    </div>
+    <div class="workflow-steps">
+      <div class="workflow-step clickable-step" *ngFor="let e of etapes; let i = index"
+           [class.done]="i < etapeIndex(d.statut) || d.statut === 'TERMINE'"
+           [class.current]="i === etapeIndex(d.statut) && d.statut !== 'TERMINE' && d.statut !== 'REJETE'"
+           [class.selected-step]="etapeSelectionnee?.code === e.code"
+           (click)="selectionnerEtapeWorkflow(e)">
+        <div class="step-dot">
+          <i class="fa-solid fa-check" *ngIf="i < etapeIndex(d.statut) || d.statut === 'TERMINE'"></i>
+          <i [class]="e.icon" *ngIf="!(i < etapeIndex(d.statut) || d.statut === 'TERMINE')"></i>
+        </div>
+        <div class="step-body">
+          <div class="step-label">{{ e.label }}</div>
+          <div class="step-security" *ngIf="i <= etapeIndex(d.statut) || d.statut === 'TERMINE'">
+            <i class="fa-solid fa-shield-halved"></i> Validé IBLOPAY
+          </div>
+        </div>
+        <i class="fa-solid fa-eye step-inspect-icon"></i>
+      </div>
+    </div>
+
+    <!-- ============ HISTORIQUE / APPROBATION DE L'ÉTAPE SÉLECTIONNÉE ============ -->
+    <div class="step-audit-card" *ngIf="etapeSelectionnee as es">
+      <div class="audit-header">
+        <i class="fa-solid fa-circle-info"></i> Approbation : <strong>{{ es.label }}</strong>
+      </div>
+      <div class="audit-body">
+        <div class="audit-row"><span>Statut étape :</span> <strong class="text-green">{{ getAuditInfo(es.code).statut }}</strong></div>
+        <div class="audit-row"><span>Traité par :</span> <strong>{{ getAuditInfo(es.code).agent }}</strong></div>
+        <div class="audit-row"><span>Date / Heure :</span> <strong>{{ getAuditInfo(es.code).date }}</strong></div>
+        <div class="audit-row" *ngIf="getAuditInfo(es.code).commentaire"><span>Notes :</span> <em>{{ getAuditInfo(es.code).commentaire }}</em></div>
+      </div>
+    </div>
+
+    <!-- ============ BORDEREAU DE PAIEMENT ============ -->
+    <div class="bordereau-section">
+      <div class="bordereau-annexe" [class.bordereau-paye]="d.montantPaye" (click)="ouvrirBordereau(d, $event)">
+        <div class="bordereau-header">
+          <div class="bordereau-title">
+            <i class="fa-solid fa-receipt"></i> BORDEREAU DE PAIEMENT
+          </div>
+          <div class="bordereau-qr-code">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="60" height="60" fill="white"/>
+              <!-- Position markers (3 coins) -->
+              <rect x="4" y="4" width="14" height="14" fill="black"/>
+              <rect x="6" y="6" width="10" height="10" fill="white"/>
+              <rect x="8" y="8" width="6" height="6" fill="black"/>
+              <rect x="42" y="4" width="14" height="14" fill="black"/>
+              <rect x="44" y="6" width="10" height="10" fill="white"/>
+              <rect x="46" y="8" width="6" height="6" fill="black"/>
+              <rect x="4" y="42" width="14" height="14" fill="black"/>
+              <rect x="6" y="44" width="10" height="10" fill="white"/>
+              <rect x="8" y="46" width="6" height="6" fill="black"/>
+              <!-- Data modules -->
+              <rect x="22" y="4" width="4" height="4" fill="black"/>
+              <rect x="28" y="4" width="4" height="4" fill="black"/>
+              <rect x="34" y="4" width="4" height="4" fill="black"/>
+              <rect x="22" y="10" width="4" height="4" fill="black"/>
+              <rect x="34" y="10" width="4" height="4" fill="black"/>
+              <rect x="4" y="22" width="4" height="4" fill="black"/>
+              <rect x="10" y="22" width="4" height="4" fill="black"/>
+              <rect x="4" y="28" width="4" height="4" fill="black"/>
+              <rect x="10" y="28" width="4" height="4" fill="black"/>
+              <rect x="22" y="22" width="4" height="4" fill="black"/>
+              <rect x="28" y="22" width="4" height="4" fill="black"/>
+              <rect x="34" y="22" width="4" height="4" fill="black"/>
+              <rect x="22" y="28" width="4" height="4" fill="black"/>
+              <rect x="34" y="28" width="4" height="4" fill="black"/>
+              <rect x="42" y="22" width="4" height="4" fill="black"/>
+              <rect x="48" y="22" width="4" height="4" fill="black"/>
+              <rect x="42" y="28" width="4" height="4" fill="black"/>
+              <rect x="48" y="28" width="4" height="4" fill="black"/>
+              <rect x="22" y="34" width="4" height="4" fill="black"/>
+              <rect x="34" y="34" width="4" height="4" fill="black"/>
+              <rect x="42" y="34" width="4" height="4" fill="black"/>
+              <rect x="48" y="34" width="4" height="4" fill="black"/>
+              <rect x="22" y="42" width="4" height="4" fill="black"/>
+              <rect x="28" y="42" width="4" height="4" fill="black"/>
+              <rect x="34" y="42" width="4" height="4" fill="black"/>
+              <rect x="42" y="42" width="4" height="4" fill="black"/>
+              <rect x="48" y="42" width="4" height="4" fill="black"/>
+              <rect x="28" y="48" width="4" height="4" fill="black"/>
+              <rect x="34" y="48" width="4" height="4" fill="black"/>
+              <rect x="42" y="48" width="4" height="4" fill="black"/>
+              <rect x="48" y="48" width="4" height="4" fill="black"/>
+            </svg>
+          </div>
+        </div>
+        <div class="bordereau-badge" [class.badge-green]="d.montantPaye" [class.badge-orange]="!d.montantPaye">
+          <i class="fa-solid" [class.fa-circle-check]="d.montantPaye" [class.fa-clock]="!d.montantPaye"></i>
+          {{ d.montantPaye ? '✓ PAYÉ' : '⏳ EN ATTENTE' }}
+        </div>
+        <div class="bordereau-body">
+          <div class="bordereau-row"><span>N° Bordereau</span><strong>{{ numeroBordereau }}</strong></div>
+          <div class="bordereau-row"><span>Payeur</span><strong>{{ d.utilisateurNom }}</strong></div>
+          <div class="bordereau-row"><span>Service</span><strong>{{ d.serviceNom }}</strong></div>
+          <div class="bordereau-row"><span>Formulaire</span><strong>{{ d.etapeActuelle || 'Demande administrative' }}</strong></div>
+          <div class="bordereau-row"><span>Montant</span><strong>{{ d.montant | number }} BIF</strong></div>
+          <div class="bordereau-row"><span>Date d'émission</span><strong>{{ d.dateSoumission | date: 'dd/MM/yyyy à HH:mm' }}</strong></div>
+          <div class="bordereau-row"><span>Statut</span><strong [class.text-green]="d.montantPaye" [class.text-orange]="!d.montantPaye">{{ d.montantPaye ? '✓ Payé' : '⏳ En attente' }}</strong></div>
+        </div>
+        <div class="bordereau-footer" *ngIf="!d.montantPaye">
+          <i class="fa-solid fa-info-circle"></i>
+          <span>Ce bordereau sera validé dès la confirmation de l'encaissement.</span>
+        </div>
+        <div class="bordereau-click-hint">
+          <i class="fa-solid fa-eye"></i> Cliquez pour visualiser
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DOCUMENTS JOINTS ANNEXES ============ -->
+    <div class="documents-section" *ngIf="documentsJoints.length > 0 && peutVoirDocuments">
+      <div class="workflow-title">Pièces justificatives annexes</div>
+      <div class="documents-grid">
+        <div class="document-thumb" *ngFor="let doc of documentsJoints" (click)="voirDocument(doc, $event)">
+          <img [src]="doc.apercuUrl" [alt]="doc.label" />
+          <div class="doc-label">
+            <i class="fa-solid fa-file"></i> {{ doc.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ PAIEMENT ============ -->
+    <div class="paiement-action" *ngIf="!d.montantPaye && peutEncaisser">
+      <button class="btn-outline btn-paiement" (click)="confirmerPaiement()">
+        <i class="fa-solid fa-money-bill"></i> Confirmer l'encaissement du paiement
+      </button>
+    </div>
+
+    <div class="detail-actions" *ngIf="d.statut !== 'TERMINE' && d.statut !== 'REJETE'">
+      <ng-container *ngIf="peutValider || peutRejeter; else pasDroitAction">
+        <button class="btn-outline btn-danger" [disabled]="!peutRejeter" (click)="rejeter()"><i class="fa-solid fa-ban"></i> Rejeter</button>
+        <button class="btn-primary" [disabled]="!peutValider" (click)="avancerEtape()"><i class="fa-solid fa-forward"></i> Étape suivante</button>
+      </ng-container>
+      <ng-template #pasDroitAction>
+        <div class="droit-bloque droit-bloque-inline">
+          <i class="fa-solid fa-lock"></i>
+          <span>Ce dossier n'est pas à votre étape, ou vous n'avez pas le droit de le traiter.</span>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VISIONNEUSE BORDEREAU PLEIN ECRAN ============ -->
+<div class="doc-viewer-overlay" *ngIf="bordereauAgrandi" (click)="fermerBordereau()">
+  <div class="doc-viewer" (click)="$event.stopPropagation()">
+    <div class="doc-viewer-header">
+      <span><i class="fa-solid fa-receipt"></i> BORDEREAU DE PAIEMENT — {{ bordereauAgrandi.numeroReference }}</span>
+      <button class="btn-icon" (click)="fermerBordereau()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="doc-viewer-body bordereau-viewer-body">
+      <div class="bordereau-full">
+        <div class="bordereau-full-header">
+          <div class="bordereau-full-title">
+            <i class="fa-solid fa-receipt"></i>
+            <span>BORDEREAU DE PAIEMENT</span>
+          </div>
+          <div class="bordereau-full-qr">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="80" height="80" fill="white"/>
+              <rect x="5" y="5" width="20" height="20" fill="black"/>
+              <rect x="8" y="8" width="14" height="14" fill="white"/>
+              <rect x="11" y="11" width="8" height="8" fill="black"/>
+              <rect x="55" y="5" width="20" height="20" fill="black"/>
+              <rect x="58" y="8" width="14" height="14" fill="white"/>
+              <rect x="61" y="11" width="8" height="8" fill="black"/>
+              <rect x="5" y="55" width="20" height="20" fill="black"/>
+              <rect x="8" y="58" width="14" height="14" fill="white"/>
+              <rect x="11" y="61" width="8" height="8" fill="black"/>
+              <rect x="30" y="5" width="6" height="6" fill="black"/>
+              <rect x="40" y="5" width="6" height="6" fill="black"/>
+              <rect x="30" y="15" width="6" height="6" fill="black"/>
+              <rect x="40" y="15" width="6" height="6" fill="black"/>
+              <rect x="5" y="30" width="6" height="6" fill="black"/>
+              <rect x="15" y="30" width="6" height="6" fill="black"/>
+              <rect x="5" y="40" width="6" height="6" fill="black"/>
+              <rect x="15" y="40" width="6" height="6" fill="black"/>
+              <rect x="30" y="30" width="6" height="6" fill="black"/>
+              <rect x="40" y="30" width="6" height="6" fill="black"/>
+              <rect x="50" y="30" width="6" height="6" fill="black"/>
+              <rect x="30" y="40" width="6" height="6" fill="black"/>
+              <rect x="40" y="40" width="6" height="6" fill="black"/>
+              <rect x="50" y="40" width="6" height="6" fill="black"/>
+              <rect x="55" y="30" width="6" height="6" fill="black"/>
+              <rect x="65" y="30" width="6" height="6" fill="black"/>
+              <rect x="55" y="40" width="6" height="6" fill="black"/>
+              <rect x="65" y="40" width="6" height="6" fill="black"/>
+              <rect x="30" y="50" width="6" height="6" fill="black"/>
+              <rect x="40" y="50" width="6" height="6" fill="black"/>
+              <rect x="50" y="50" width="6" height="6" fill="black"/>
+              <rect x="60" y="50" width="6" height="6" fill="black"/>
+              <rect x="30" y="60" width="6" height="6" fill="black"/>
+              <rect x="40" y="60" width="6" height="6" fill="black"/>
+              <rect x="50" y="60" width="6" height="6" fill="black"/>
+              <rect x="60" y="60" width="6" height="6" fill="black"/>
+              <rect x="40" y="70" width="6" height="6" fill="black"/>
+              <rect x="50" y="70" width="6" height="6" fill="black"/>
+              <rect x="60" y="70" width="6" height="6" fill="black"/>
+            </svg>
+          </div>
+        </div>
+        <div class="bordereau-full-badge" [class.badge-green]="bordereauAgrandi.montantPaye" [class.badge-orange]="!bordereauAgrandi.montantPaye">
+          <i class="fa-solid" [class.fa-circle-check]="bordereauAgrandi.montantPaye" [class.fa-clock]="!bordereauAgrandi.montantPaye"></i>
+          {{ bordereauAgrandi.montantPaye ? '✓ PAYÉ' : '⏳ EN ATTENTE DE PAIEMENT' }}
+        </div>
+        <div class="bordereau-full-body">
+          <div class="bordereau-full-row">
+            <span>N° Bordereau</span>
+            <strong>{{ numeroBordereauFull }}</strong>
+          </div>
+          <div class="bordereau-full-row">
+            <span>Payeur</span>
+            <strong>{{ bordereauAgrandi.utilisateurNom }}</strong>
+          </div>
+          <div class="bordereau-full-row">
+            <span>Téléphone</span>
+            <strong>{{ bordereauAgrandi.utilisateurTelephone }}</strong>
+          </div>
+          <div class="bordereau-full-row">
+            <span>Service</span>
+            <strong>{{ bordereauAgrandi.serviceNom }}</strong>
+          </div>
+          <div class="bordereau-full-row">
+            <span>Formulaire / Objet</span>
+            <strong>{{ bordereauAgrandi.etapeActuelle || 'Demande administrative' }}</strong>
+          </div>
+          <div class="bordereau-full-row">
+            <span>Montant</span>
+            <strong>{{ bordereauAgrandi.montant | number }} BIF</strong>
+          </div>
+          <div class="bordereau-full-row">
+            <span>Date d'émission</span>
+            <strong>{{ bordereauAgrandi.dateSoumission | date: 'dd/MM/yyyy à HH:mm' }}</strong>
+          </div>
+          <div class="bordereau-full-row">
+            <span>Référence dossier</span>
+            <strong>{{ bordereauAgrandi.numeroReference }}</strong>
+          </div>
+          <div class="bordereau-full-row statut-row">
+            <span>Statut du paiement</span>
+            <strong [class.text-green]="bordereauAgrandi.montantPaye" [class.text-orange]="!bordereauAgrandi.montantPaye">
+              {{ bordereauAgrandi.montantPaye ? '✓ Paiement confirmé' : '⏳ En attente de confirmation' }}
+            </strong>
+          </div>
+        </div>
+        <div class="bordereau-full-footer">
+          <div class="bordereau-full-stamp">
+            <div class="stamp-circle-full">
+              <i class="fa-solid fa-stamp"></i>
+              <span>IBLOPAY</span>
+              <span class="stamp-valid">• CERTIFIÉ •</span>
+            </div>
+          </div>
+          <div class="bordereau-full-date">
+            <span>Émis le {{ bordereauAgrandi.dateSoumission | date: 'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VISIONNEUSE DOCUMENT PLEIN ECRAN (LETTRE ADMINISTRATIVE COMPLÈTE) ============ -->
+<div class="doc-viewer-overlay" *ngIf="documentAgrandi && !bordereauAgrandi" (click)="fermerDocument()">
+  <div class="doc-viewer" (click)="$event.stopPropagation()">
+    <div class="doc-viewer-header">
+      <span>{{ documentAgrandi.label }} — Ref: {{ demandeSelectionnee?.numeroReference }}</span>
+      <button class="btn-icon" (click)="fermerDocument()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="doc-viewer-body">
+      <div class="fullscreen-scan-container">
+        <!-- Image si présente -->
+        <img *ngIf="documentAgrandi.apercuUrl" [src]="documentAgrandi.apercuUrl" [alt]="documentAgrandi.label" />
+        
+        <!-- Lettre administrative complète et détaillée -->
+        <div class="official-full-letter" *ngIf="!documentAgrandi.apercuUrl || documentAgrandi.type === 'FICHIER'">
+          <div class="letter-full-header">
+            <div class="letter-full-org">
+              <div class="org-name">RÉPUBLIQUE DU BURUNDI</div>
+              <div class="org-sub">MINISTÈRE DE L'INTÉRIEUR</div>
+              <div class="org-service">DIRECTION GÉNÉRALE DES SERVICES ADMINISTRATIFS</div>
+              <div class="org-divider"></div>
+              <div class="org-address">
+                <span>📍 Avenue de la Démocratie, N° 25</span>
+                <span>📞 (+257) 22 25 14 78</span>
+                <span>✉ contact [at] interieur.gov.bi</span>
+              </div>
+            </div>
+            
+            <div class="letter-full-meta">
+              <div class="meta-row">
+                <span><strong>Référence :</strong> {{ demandeSelectionnee?.numeroReference }}</span>
+                <span><strong>N° Dossier :</strong> {{ demandeSelectionnee?.id }}</span>
+              </div>
+              <div class="meta-row">
+                <span><strong>Date de soumission :</strong> {{ demandeSelectionnee?.dateSoumission | date:'dd/MM/yyyy' }}</span>
+                <span><strong>Statut actuel :</strong> {{ statutLabel(demandeSelectionnee?.statut || '') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="letter-full-body">
+            <div class="letter-full-subject">
+              <strong>OBJET : DEMANDE OFFICIELLE D'ACTE ADMINISTRATIF</strong>
+            </div>
+
+            <div class="letter-full-recipient">
+              <p><strong>À l'attention du :</strong> Chef de Service des Actes Administratifs</p>
+            </div>
+
+            <div class="letter-full-content">
+              <p>
+                Je soussigné(e), <strong>{{ demandeSelectionnee?.utilisateurNom }}</strong>, 
+                résidant au Burundi, agissant en qualité de demandeur, 
+                viens par la présente solliciter l'obtention d'un acte administratif officiel.
+              </p>
+              <p>
+                Le présent dossier, enregistré sous la référence <strong>{{ demandeSelectionnee?.numeroReference }}</strong>, 
+                a été soumis le {{ demandeSelectionnee?.dateSoumission | date:'dd/MM/yyyy' }} 
+                et concerne le service <strong>{{ demandeSelectionnee?.serviceNom }}</strong>.
+              </p>
+              <p>
+                Conformément aux dispositions légales et réglementaires en vigueur, 
+                toutes les pièces justificatives requises ont été fournies et 
+                les frais administratifs s'élevant à <strong>{{ demandeSelectionnee?.montant | number }} BIF</strong> 
+                ont été acquittés (<span [class.text-green]="demandeSelectionnee?.montantPaye">
+                {{ demandeSelectionnee?.montantPaye ? 'Paiement confirmé' : 'En attente de régularisation' }}</span>).
+              </p>
+              <p>
+                Je vous prie, Monsieur le Chef de Service, de bien vouloir examiner 
+                favorablement ma demande et de procéder à la délivrance de l'acte 
+                sollicité dans les meilleurs délais.
+              </p>
+              <p>
+                Dans l'attente de votre réponse, je vous prie d'agréer, 
+                Monsieur le Chef de Service, l'expression de mes salutations 
+                les plus respectueuses.
+              </p>
+            </div>
+
+            <div class="letter-full-footer">
+              <div class="letter-full-signature">
+                <div class="signature-place-date">
+                  Fait à Bujumbura, le {{ demandeSelectionnee?.dateSoumission | date:'dd/MM/yyyy' }}
+                </div>
+                <div class="signature-name-title">
+                  <div class="signature-line-full"></div>
+                  <strong>{{ demandeSelectionnee?.utilisateurNom }}</strong>
+                  <span class="signature-title-full">Demandeur</span>
+                </div>
+              </div>
+              <div class="letter-full-stamp">
+                <div class="official-stamp">
+                  <i class="fa-solid fa-stamp"></i>
+                  <div>
+                    <strong>RÉPUBLIQUE DU BURUNDI</strong>
+                    <span>MINISTÈRE DE L'INTÉRIEUR</span>
+                    <span class="stamp-valid">• VALIDÉ •</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

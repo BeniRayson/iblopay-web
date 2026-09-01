@@ -1,0 +1,13 @@
+<div class="tx-chart" *ngIf="bars.length > 0; else noData">
+  <div class="tx-chart__row" *ngFor="let bar of bars">
+    <span class="tx-chart__label">{{ bar.icon }} {{ bar.label }}</span>
+    <div class="tx-chart__track">
+      <div class="tx-chart__fill" [style.width.%]="bar.widthPercent"></div>
+    </div>
+    <span class="tx-chart__count">{{ bar.count }}</span>
+  </div>
+</div>
+
+<ng-template #noData>
+  <div class="tx-chart tx-chart--empty">No data to chart yet.</div>
+</ng-template>

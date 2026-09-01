@@ -1,0 +1,217 @@
+// ============================================================
+// IBLOPay — Reports List (Commission style)
+// ============================================================
+
+$font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+$font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+$white: #ffffff;
+$gray-50: #f8fafc;
+$gray-100: #f1f5f9;
+$gray-200: #e2e8f0;
+$gray-300: #cbd5e1;
+$gray-400: #94a3b8;
+$gray-500: #64748b;
+$gray-600: #475569;
+$gray-700: #334155;
+$gray-800: #1e293b;
+$gray-900: #0f172a;
+
+$blue-primary: #1a56db;
+$blue-light: #3b82f6;
+
+.reports-page {
+  padding: 24px 28px;
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+// ─── Page Header ────────────────────────────────────
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  &__left {
+    flex: 1;
+  }
+
+  &__title {
+    font-family: $font-body;
+    font-size: 24px;
+    font-weight: 800;
+    color: $gray-900;
+    margin: 0 0 4px;
+    letter-spacing: -0.3px;
+  }
+
+  &__subtitle {
+    font-size: 13px;
+    color: $gray-500;
+    margin: 0;
+    font-weight: 400;
+  }
+}
+
+// ─── Role Toggle ────────────────────────────────────
+.role-toggle {
+  display: flex;
+  background: $gray-100;
+  border-radius: 8px;
+  padding: 3px;
+
+  button {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    color: $gray-500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: $font-body;
+
+    &.active {
+      background: $blue-primary;
+      color: $white;
+    }
+
+    &:hover:not(.active) {
+      color: $gray-700;
+    }
+  }
+}
+
+// ─── Category Title ────────────────────────────────
+.category-title {
+  font-family: $font-body;
+  font-size: 10px;
+  font-weight: 700;
+  color: $gray-500;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0 0 12px 0;
+}
+
+// ─── Reports Grid ──────────────────────────────────
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.report-card {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+
+  &:hover {
+    border-color: $blue-light;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  &__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+
+  &__name {
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: $gray-800;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: $gray-400;
+    margin: 6px 0 0 0;
+    line-height: 1.4;
+  }
+
+  &__arrow {
+    color: $gray-300;
+    font-size: 12px;
+    margin-top: 12px;
+    flex-shrink: 0;
+  }
+}
+
+.report-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.category-badge {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-family: $font-body;
+}
+
+// ─── Empty State ───────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: $gray-400;
+
+  i {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 14px;
+  }
+}
+
+// ─── Responsive ────────────────────────────────────
+@media (max-width: 1100px) {
+  .reports-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+  }
+}

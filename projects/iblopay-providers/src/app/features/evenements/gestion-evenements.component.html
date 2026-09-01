@@ -1,0 +1,421 @@
+<div class="page-header">
+  <div>
+    <h1>Gestion des événements</h1>
+    <p>Créez vos matchs, concerts, conférences et gérez vos organisateurs</p>
+  </div>
+  <button class="btn-primary" *ngIf="vueActive === 'EVENEMENTS'" (click)="ouvrirNouvelEvenement()">
+    <i class="fa-solid fa-plus"></i> Nouvel événement
+  </button>
+  <button class="btn-primary" *ngIf="vueActive === 'ORGANISATEURS'" (click)="ouvrirNouvelOrganisateur()">
+    <i class="fa-solid fa-user-plus"></i> Nouvel organisateur
+  </button>
+</div>
+
+<div class="vue-tabs">
+  <button class="vue-tab" [class.active]="vueActive === 'EVENEMENTS'" (click)="changerVue('EVENEMENTS')">
+    <i class="fa-solid fa-calendar-days"></i> Événements <span class="tab-count">{{ evenements.length }}</span>
+  </button>
+  <button class="vue-tab" [class.active]="vueActive === 'ORGANISATEURS'" (click)="changerVue('ORGANISATEURS')">
+    <i class="fa-solid fa-user-tie"></i> Organisateurs <span class="tab-count">{{ organisateurs.length }}</span>
+  </button>
+</div>
+
+<!-- ============ VUE ÉVÉNEMENTS ============ -->
+<ng-container *ngIf="vueActive === 'EVENEMENTS'">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Rechercher un événement..." [(ngModel)]="recherche" (ngModelChange)="onFiltreChange()" />
+    </div>
+    <select [(ngModel)]="filtreType" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les types</option>
+      <option value="MATCH">Match</option>
+      <option value="CONCERT">Concert</option>
+      <option value="CONFERENCE">Conférence</option>
+      <option value="FESTIVAL">Festival</option>
+      <option value="AUTRE">Autre</option>
+    </select>
+    <select [(ngModel)]="filtreStatutEvenement" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les statuts</option>
+      <option value="PROGRAMME">Programmé</option>
+      <option value="EN_COURS">En cours</option>
+      <option value="TERMINE">Terminé</option>
+      <option value="ANNULE">Annulé</option>
+    </select>
+  </div>
+
+  <div class="cards-grid" *ngIf="!isLoading">
+    <div class="evt-card" *ngFor="let e of evenementsFiltres">
+      <div class="evt-card-header">
+        <div class="evt-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <div class="evt-titre-wrap">
+          <div class="evt-nom">{{ e.nom }}</div>
+          <div class="evt-sous">{{ typeLabel(e.type) }} · {{ nomLieu(e.lieuId) }}</div>
+        </div>
+        <span class="badge" [ngClass]="statutClass(e.statut)">{{ statutLabel(e.statut) }}</span>
+      </div>
+
+      <div class="evt-infos">
+        <div><i class="fa-solid fa-calendar"></i> {{ e.dateDebut | date:'dd/MM/yyyy HH:mm' }}</div>
+        <div><i class="fa-solid fa-user-tie"></i> {{ nomOrganisateur(e.organisateurId) }}</div>
+        <div><i class="fa-solid fa-users"></i> {{ billetsVendus(e) }} / {{ e.capaciteTotale }} places</div>
+        <div><i class="fa-solid fa-sack-dollar"></i> {{ revenuEvenement(e) | number }} BIF</div>
+      </div>
+
+      <div class="mini-progress-wrap">
+        <div class="mini-progress"><div class="mini-progress-fill" [style.width.%]="tauxRemplissage(e)"></div></div>
+        <span>{{ tauxRemplissage(e) }}% rempli</span>
+      </div>
+
+      <div class="evt-actions">
+        <button class="btn-outline-sm" (click)="voirDetailEvenement(e)"><i class="fa-solid fa-eye"></i> Détails</button>
+        <button class="btn-outline-sm" (click)="ouvrirHistorique(e)"><i class="fa-solid fa-clock-rotate-left"></i> Historique</button>
+        <button class="btn-icon btn-indigo" (click)="modifierEvenement(e)" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn-icon btn-red" (click)="supprimerEvenement(e)" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="evenementsFiltres.length === 0">Aucun événement trouvé</div>
+  </div>
+</ng-container>
+
+<!-- ============ VUE ORGANISATEURS ============ -->
+<ng-container *ngIf="vueActive === 'ORGANISATEURS'">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Rechercher un organisateur, une entreprise..." [(ngModel)]="recherche" (ngModelChange)="onFiltreChange()" />
+    </div>
+    <select [(ngModel)]="filtreStatutOrganisateur" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les statuts</option>
+      <option value="ACTIF">Actif</option>
+      <option value="INACTIF">Inactif</option>
+    </select>
+  </div>
+
+  <div class="card table-card" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Organisateur</th>
+          <th>Entreprise</th>
+          <th>Téléphone</th>
+          <th>Événements</th>
+          <th>Revenu généré</th>
+          <th>Statut</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of organisateursFiltres" class="clickable-row" (click)="voirDetailOrganisateur(o)">
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar">{{ o.prenom.charAt(0) }}{{ o.nom.charAt(0) }}</div>
+              <span>{{ o.prenom }} {{ o.nom }}</span>
+            </div>
+          </td>
+          <td>{{ o.entreprise || '—' }}</td>
+          <td class="tel-text">{{ o.telephone }}</td>
+          <td>{{ o.nombreEvenements || 0 }}</td>
+          <td>{{ (o.revenuTotal || 0) | number }} BIF</td>
+          <td><span class="badge" [ngClass]="o.statut === 'ACTIF' ? 'badge-green' : 'badge-gray'">{{ o.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span></td>
+          <td class="actions-col" (click)="$event.stopPropagation()">
+            <div class="row-actions">
+              <button class="btn-icon btn-indigo" title="Modifier" (click)="modifierOrganisateur(o)"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-icon" [ngClass]="o.statut === 'ACTIF' ? 'btn-green-active' : 'btn-gray-inactive'" title="Activer/désactiver" (click)="toggleStatutOrganisateur(o, $event)"><i class="fa-solid fa-power-off"></i></button>
+              <button class="btn-icon btn-red" title="Supprimer" (click)="supprimerOrganisateur(o)"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="organisateursFiltres.length === 0">Aucun organisateur trouvé</div>
+  </div>
+</ng-container>
+
+<div class="loading-state" *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</div>
+
+<!-- ============ MODAL DÉTAIL ÉVÉNEMENT ============ -->
+<div class="modal-overlay" *ngIf="evenementDetailAffiche" (click)="fermerDetailEvenement()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()" *ngIf="evenementDetailAffiche as e">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="evt-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <div>
+          <h3>{{ e.nom }}</h3>
+          <span class="service-code">{{ typeLabel(e.type) }} · <span class="badge" [ngClass]="statutClass(e.statut)">{{ statutLabel(e.statut) }}</span></span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerDetailEvenement()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="evt-desc" *ngIf="e.description">{{ e.description }}</p>
+
+      <div class="detail-infos-grid">
+        <div class="detail-info-item"><i class="fa-solid fa-map-location-dot"></i><div><span class="detail-label">Lieu</span><span class="detail-value">{{ nomLieu(e.lieuId) }}</span></div></div>
+        <div class="detail-info-item"><i class="fa-solid fa-user-tie"></i><div><span class="detail-label">Organisateur</span><span class="detail-value">{{ nomOrganisateur(e.organisateurId) }}</span></div></div>
+        <div class="detail-info-item"><i class="fa-solid fa-calendar"></i><div><span class="detail-label">Début</span><span class="detail-value">{{ e.dateDebut | date:'dd/MM/yyyy HH:mm' }}</span></div></div>
+        <div class="detail-info-item"><i class="fa-solid fa-calendar-check"></i><div><span class="detail-label">Fin</span><span class="detail-value">{{ e.dateFin | date:'dd/MM/yyyy HH:mm' }}</span></div></div>
+      </div>
+
+      <div class="detail-section-title">Catégories de billets</div>
+      <table class="mini-table">
+        <thead><tr><th>Catégorie</th><th>Prix</th><th>Vendus</th><th>Disponibles</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let c of e.categoriesBillets">
+            <td>{{ c.nom }}</td>
+            <td>{{ c.prix | number }} BIF</td>
+            <td>{{ c.quantiteVendue }}</td>
+            <td>{{ c.quantiteDisponible - c.quantiteVendue }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="detail-section-title">Résumé</div>
+      <div class="detail-infos-grid">
+        <div class="detail-info-item"><i class="fa-solid fa-ticket"></i><div><span class="detail-label">Billets vendus</span><span class="detail-value">{{ billetsVendus(e) }} / {{ e.capaciteTotale }}</span></div></div>
+        <div class="detail-info-item"><i class="fa-solid fa-sack-dollar"></i><div><span class="detail-label">Revenu total</span><span class="detail-value">{{ revenuEvenement(e) | number }} BIF</span></div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetailEvenement()">Fermer</button>
+      <button class="btn-outline-modal" (click)="ouvrirHistorique(e); fermerDetailEvenement()"><i class="fa-solid fa-clock-rotate-left"></i> Historique</button>
+      <button class="btn-primary" (click)="modifierEvenement(e); fermerDetailEvenement()"><i class="fa-solid fa-pen"></i> Modifier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DÉTAIL ORGANISATEUR ============ -->
+<div class="modal-overlay" *ngIf="organisateurDetailAffiche" (click)="fermerDetailOrganisateur()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="organisateurDetailAffiche as o">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="user-avatar user-avatar-lg">{{ o.prenom.charAt(0) }}{{ o.nom.charAt(0) }}</div>
+        <div>
+          <h3>{{ o.prenom }} {{ o.nom }}</h3>
+          <span class="service-code">{{ o.entreprise || 'Indépendant' }}</span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerDetailOrganisateur()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row"><span class="detail-key">Statut</span><span class="badge" [ngClass]="o.statut === 'ACTIF' ? 'badge-green' : 'badge-gray'">{{ o.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span></div>
+      <div class="detail-row"><span class="detail-key">Adresse</span><span class="detail-val">{{ o.adresse }}</span></div>
+      <div class="detail-row"><span class="detail-key">Téléphone</span><span class="detail-val">{{ o.telephone }}</span></div>
+      <div class="detail-row" *ngIf="o.email"><span class="detail-key">Email</span><span class="detail-val">{{ o.email }}</span></div>
+      <div class="detail-row"><span class="detail-key">Événements organisés</span><span class="detail-val">{{ o.nombreEvenements || 0 }}</span></div>
+      <div class="detail-row"><span class="detail-key">Revenu total généré</span><span class="detail-val">{{ (o.revenuTotal || 0) | number }} BIF</span></div>
+      <div class="detail-row"><span class="detail-key">Inscrit depuis</span><span class="detail-val">{{ o.dateInscription | date:'dd/MM/yyyy' }}</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetailOrganisateur()">Fermer</button>
+      <button class="btn-primary" (click)="modifierOrganisateur(o); fermerDetailOrganisateur()"><i class="fa-solid fa-pen"></i> Modifier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL HISTORIQUE (PAGINÉ) ============ -->
+<div class="modal-overlay" *ngIf="historiqueOuvert" (click)="fermerHistorique()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ historiqueTitre }}</h3>
+      <button class="btn-close" (click)="fermerHistorique()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="historique-summary">
+        <div class="historique-summary-item"><span class="summary-num">{{ historiqueBilletsTotal }}</span><span class="summary-label">Billets vendus</span></div>
+        <div class="historique-summary-item"><span class="summary-num text-green">{{ historiqueRevenuTotal | number }} BIF</span><span class="summary-label">Revenu total</span></div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table compact-table">
+          <thead><tr><th>Date & heure</th><th>Catégorie</th><th class="text-center">Quantité</th><th class="text-center">Statut</th><th class="text-right">Revenu</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let h of historiquePagine">
+              <td>{{ h.date | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ h.categorieNom }}</td>
+              <td class="text-center">{{ h.quantite }}</td>
+              <td class="text-center"><span class="badge" [ngClass]="h.statut === 'VALIDE' ? 'badge-green' : 'badge-red'">{{ h.statut === 'VALIDE' ? 'Validée' : 'Annulée' }}</span></td>
+              <td class="text-right font-bold">{{ h.statut === 'VALIDE' ? (h.revenu | number) + ' BIF' : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-container" *ngIf="historiqueLignes.length > 0">
+        <span class="pagination-info">Page {{ historiquePage }} / {{ historiqueTotalPages }} — {{ historiqueLignes.length }} ventes</span>
+        <div class="pagination-buttons">
+          <button class="btn-page" [disabled]="historiquePage === 1" (click)="changerPageHistorique(historiquePage - 1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn-page" [disabled]="historiquePage === historiqueTotalPages" (click)="changerPageHistorique(historiquePage + 1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="historiqueLignes.length === 0">Aucune vente dans l'historique</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerHistorique()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL NOUVEAU/MODIFIER ÉVÉNEMENT ============ -->
+<div class="modal-overlay" *ngIf="showEvenementModal" (click)="fermerEvenementModal()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()" *ngIf="evenementForm as f">
+    <div class="modal-header">
+      <h3>{{ f.id ? 'Modifier l\'événement' : 'Nouvel événement' }}</h3>
+      <button class="btn-close" (click)="fermerEvenementModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field">
+          <label>Nom de l'événement <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.nom" placeholder="Ex: Burundi vs Ouganda" />
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <select [(ngModel)]="f.type">
+            <option value="MATCH">Match</option>
+            <option value="CONCERT">Concert</option>
+            <option value="CONFERENCE">Conférence</option>
+            <option value="FESTIVAL">Festival</option>
+            <option value="AUTRE">Autre</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Lieu <span class="required">*</span></label>
+          <input type="text" list="liste-lieux" [(ngModel)]="f.lieuNom" placeholder="Ex: Stade Prince Louis Rwagasore" />
+          <datalist id="liste-lieux">
+            <option *ngFor="let l of lieux" [value]="l.nom"></option>
+          </datalist>
+        </div>
+        <div class="field">
+          <label>Organisateur <span class="required">*</span></label>
+          <input type="text" list="liste-organisateurs" [(ngModel)]="f.organisateurNom" placeholder="Nom de l'organisateur" />
+          <datalist id="liste-organisateurs">
+            <option *ngFor="let o of organisateurs" [value]="o.prenom + ' ' + o.nom"></option>
+          </datalist>
+          <p class="field-hint">Tapez un nom existant ou un nouveau — il sera créé automatiquement.</p>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Date & heure de début</label>
+          <input type="datetime-local" [(ngModel)]="f.dateDebut" />
+        </div>
+        <div class="field">
+          <label>Date & heure de fin</label>
+          <input type="datetime-local" [(ngModel)]="f.dateFin" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea rows="2" [(ngModel)]="f.description" placeholder="Décrivez brièvement l'événement..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Affiche / Photo de l'événement</label>
+        <div class="upload-zone" *ngIf="!f.pieceJointeDataUrl">
+          <input type="file" id="pieceJointeInput" accept="image/*,.pdf" (change)="onFichierSelectionne($event)" hidden />
+          <label for="pieceJointeInput" class="upload-label">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Cliquez pour choisir un fichier depuis votre stockage interne</span>
+            <span class="upload-hint">Image ou PDF — 5 Mo maximum</span>
+          </label>
+        </div>
+        <div class="upload-preview" *ngIf="f.pieceJointeDataUrl">
+          <img *ngIf="pieceJointeEstImage" [src]="f.pieceJointeDataUrl" alt="Aperçu" class="upload-preview-img" />
+          <div class="upload-preview-file" *ngIf="!pieceJointeEstImage">
+            <i class="fa-solid fa-file-pdf"></i>
+          </div>
+          <div class="upload-preview-infos">
+            <span class="upload-preview-nom">{{ f.pieceJointeNom }}</span>
+            <button type="button" class="btn-remove-file" (click)="supprimerPieceJointe()">
+              <i class="fa-solid fa-trash"></i> Retirer
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Capacité totale</label>
+          <input type="number" min="0" [(ngModel)]="f.capaciteTotale" />
+        </div>
+        <div class="field">
+          <label>Statut</label>
+          <select [(ngModel)]="f.statut">
+            <option value="PROGRAMME">Programmé</option>
+            <option value="EN_COURS">En cours</option>
+            <option value="TERMINE">Terminé</option>
+            <option value="ANNULE">Annulé</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Catégories de billets <span class="required">*</span></label>
+        <div class="categories-list">
+          <div class="categorie-item" *ngFor="let c of f.categoriesBillets; let i = index">
+            <span class="cat-nom">{{ c.nom }}</span>
+            <span class="cat-prix">{{ c.prix | number }} BIF</span>
+            <span class="cat-qte">{{ c.quantiteDisponible }} places</span>
+            <button class="btn-mini-red" (click)="supprimerCategorie(i)"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="categorie-add">
+          <input type="text" placeholder="Nom (ex: VIP)" [(ngModel)]="nouvelleCategorieNom" />
+          <input type="number" placeholder="Prix" [(ngModel)]="nouvelleCategoriePrix" />
+          <input type="number" placeholder="Quantité" [(ngModel)]="nouvelleCategorieQuantite" />
+          <button class="btn-outline-sm" (click)="ajouterCategorie()"><i class="fa-solid fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerEvenementModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrerEvenement()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL NOUVEAU/MODIFIER ORGANISATEUR ============ -->
+<div class="modal-overlay" *ngIf="showOrganisateurModal" (click)="fermerOrganisateurModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="organisateurForm as f">
+    <div class="modal-header">
+      <h3>{{ f.id ? 'Modifier l\'organisateur' : 'Nouvel organisateur' }}</h3>
+      <button class="btn-close" (click)="fermerOrganisateurModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field">
+          <label>Nom <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.nom" />
+        </div>
+        <div class="field">
+          <label>Prénom <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.prenom" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Entreprise / Organisation</label>
+        <input type="text" [(ngModel)]="f.entreprise" placeholder="Ex: Burundi Live Events" />
+      </div>
+      <div class="field">
+        <label>Adresse</label>
+        <input type="text" [(ngModel)]="f.adresse" />
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Téléphone <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.telephone" placeholder="+257 79 000 000" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="f.email" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerOrganisateurModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrerOrganisateur()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>

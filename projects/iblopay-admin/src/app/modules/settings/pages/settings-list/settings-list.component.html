@@ -1,0 +1,40 @@
+<div class="settings-list-page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Paramètres Administrateur</h1>
+      <p>Gérez l'ensemble de la plateforme IBLOPAY depuis un seul endroit.</p>
+    </div>
+    <div class="page-header__search">
+      <span class="icon">🔎</span>
+      <input
+        type="text"
+        placeholder="Rechercher une section (ex: cartes, commissions...)"
+        [(ngModel)]="searchTerm"
+        name="settingsSearch"
+      />
+    </div>
+  </header>
+
+  <section class="categories-grid" *ngIf="filteredCategories.length; else empty">
+    <button
+      type="button"
+      class="category-card"
+      *ngFor="let cat of filteredCategories"
+      (click)="goTo(cat)"
+    >
+      <div class="category-card__icon">{{ cat.icon }}</div>
+      <div class="category-card__body">
+        <h2>{{ cat.title }}</h2>
+        <p>{{ cat.description }}</p>
+        <span class="category-card__count">{{ cat.sectionCount }} sections</span>
+      </div>
+      <div class="category-card__chevron">›</div>
+    </button>
+  </section>
+
+  <ng-template #empty>
+    <div class="no-results">
+      <p>Aucune section ne correspond à « {{ searchTerm }} ».</p>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,17 @@
+<div class="stat-card" [class.highlight]="stat.highlight" [class.services]="stat.isService">
+    <div class="stat-top">
+        <div class="stat-icon"
+            [style.background]="'linear-gradient(135deg, ' + getIconColor() + ', ' + getIconColor() + 'dd)'">
+            {{ stat.icon }}
+        </div>
+        <div class="stat-label">{{ stat.label }}</div>
+    </div>
+    <div class="stat-value">{{ formatValue() }}</div>
+    <div class="stat-change" [class]="getChangeClass()">
+        {{ stat.change > 0 ? '+' : '' }}{{ stat.change }}%
+        <span class="stat-change-sub">{{ stat.changeLabel }}</span>
+    </div>
+    <div class="stat-footer">
+        <a [routerLink]="stat.link" class="voir-plus">Voir plus →</a>
+    </div>
+</div>

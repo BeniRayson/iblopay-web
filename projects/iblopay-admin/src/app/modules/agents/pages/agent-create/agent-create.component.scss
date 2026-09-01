@@ -1,0 +1,975 @@
+/*==================================================
+  VARIABLES
+==================================================*/
+
+$primary:#4F46E5;
+$primary-light:#EEF2FF;
+$primary-hover:#4338CA;
+
+$success:#16A34A;
+$danger:#EF4444;
+
+$text:#0F172A;
+$text-light:#64748B;
+
+$border:#E2E8F0;
+$bg:#F4F7FC;
+$white:#FFF;
+
+$radius:18px;
+$transition:.3s ease;
+
+
+/*==================================================
+  RESET
+==================================================*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:host{
+    display:block;
+}
+
+
+/*==================================================
+  PAGE
+==================================================*/
+
+.create-container{
+
+    min-height:100vh;
+
+    padding:32px;
+
+    background:linear-gradient(
+    180deg,
+    #EFF4FF 0%,
+    #F8FAFF 100%);
+
+    font-family:'Inter',sans-serif;
+
+}
+
+
+/*==================================================
+  HEADER
+==================================================*/
+
+.create-header{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+}
+
+.header-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+
+/*==================================================
+  BACK BUTTON
+==================================================*/
+
+.btn-back{
+
+    width:50px;
+
+    height:50px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#fff;
+
+    cursor:pointer;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    transition:$transition;
+
+}
+
+.btn-back:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.btn-back i{
+
+    color:$primary;
+
+    font-size:18px;
+
+}
+
+
+/*==================================================
+  TITLES
+==================================================*/
+
+.header-left h1{
+
+    font-size:32px;
+
+    color:$text;
+
+    margin-bottom:4px;
+
+    font-weight:700;
+
+}
+
+.header-left p{
+
+    color:$text-light;
+
+    font-size:14px;
+
+}
+
+
+/*==================================================
+  STEP
+==================================================*/
+
+.step{
+
+    padding:10px 18px;
+
+    border-radius:30px;
+
+    background:$primary-light;
+
+    color:$primary;
+
+    font-weight:600;
+
+    font-size:14px;
+
+}
+
+
+/*==================================================
+  MAIN CARD
+==================================================*/
+
+.main-card{
+
+    width:100%;
+    max-width:980px;
+
+    margin:40px auto;
+
+    background:#fff;
+
+    border-radius:20px;
+
+    padding:24px;
+
+    box-shadow:0 15px 40px rgba(15,23,42,.08);
+
+}
+
+
+/*==================================================
+  GRID
+==================================================*/
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:18px;
+
+    align-items:start;
+
+}
+
+
+/*==================================================
+  COLUMN
+==================================================*/
+
+.column{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+}
+
+
+/*==================================================
+  CARD
+==================================================*/
+
+.form-section{
+
+    background:#fff;
+
+    border:1px solid #EDF2F7;
+
+    border-radius:15px;
+
+    padding:18px;
+
+    transition:.3s;
+
+}
+
+.form-section:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 12px 28px rgba(0,0,0,.05);
+
+}
+
+
+/*==================================================
+  SECTION TITLE
+==================================================*/
+
+.section-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    margin-bottom:20px;
+
+}
+
+.icon-box{
+
+    width:46px;
+
+    height:46px;
+
+    border-radius:12px;
+
+    background:$primary-light;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-shrink:0;
+
+}
+
+.icon-box i{
+
+    color:$primary;
+
+    font-size:19px;
+
+}
+
+.section-title h3{
+
+    font-size:16px;
+
+    color:$text;
+
+    font-weight:700;
+
+}
+
+.section-title span{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+}
+
+/*==================================================
+  FORM ROW
+==================================================*/
+
+.form-row{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:12px;
+
+    margin-bottom:14px;
+
+}
+
+.form-row:last-child{
+
+    margin-bottom:0;
+
+}
+
+
+/*==================================================
+  FORM GROUP
+==================================================*/
+
+.form-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+/*==================================================
+  LABEL
+==================================================*/
+
+.form-group label{
+
+    font-size:13px;
+
+    font-weight:600;
+
+    color:#334155;
+
+    margin-bottom:7px;
+
+}
+
+
+/*==================================================
+  INPUTS
+==================================================*/
+
+.form-group input,
+.form-group select{
+
+    width:100%;
+
+    height:36px;
+
+    padding:0 14px;
+
+    border:1px solid #D9E2EC;
+
+    border-radius:12px;
+
+    background:#fff;
+
+    font-size:13px;
+
+    color:#0F172A;
+
+    transition:.25s;
+
+}
+
+
+/*==================================================
+  PLACEHOLDER
+==================================================*/
+
+.form-group input::placeholder{
+
+    color:#94A3B8;
+
+}
+
+
+/*==================================================
+  SELECT
+==================================================*/
+
+.form-group select{
+
+    appearance:none;
+
+    cursor:pointer;
+
+    padding-right:40px;
+
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='%2394A3B8' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+
+    background-repeat:no-repeat;
+
+    background-position:right 14px center;
+
+}
+
+
+/*==================================================
+  FOCUS
+==================================================*/
+
+.form-group input:focus,
+.form-group select:focus{
+
+    outline:none;
+
+    border-color:#4F46E5;
+
+    box-shadow:
+
+    0 0 0 4px rgba(79,70,229,.10);
+
+}
+
+
+/*==================================================
+  HOVER
+==================================================*/
+
+.form-group input:hover,
+.form-group select:hover{
+
+    border-color:#BFC9FF;
+
+}
+
+
+/*==================================================
+  INVALID
+==================================================*/
+
+.form-group input.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-touched{
+
+    border-color:#EF4444;
+
+    box-shadow:
+
+    0 0 0 3px rgba(239,68,68,.08);
+
+}
+
+
+/*==================================================
+  SMALL ERROR
+==================================================*/
+
+.form-group small{
+
+    margin-top:6px;
+
+    font-size:12px;
+
+    color:#EF4444;
+
+    font-weight:500;
+
+}
+
+
+/*==================================================
+  DATE
+==================================================*/
+
+input[type="date"]{
+
+    cursor:pointer;
+
+}
+
+
+/*==================================================
+  PASSWORD
+==================================================*/
+
+input[type="password"]{
+
+    letter-spacing:.4px;
+
+}
+
+
+/*==================================================
+  DISABLED
+==================================================*/
+
+input:disabled,
+select:disabled{
+
+    background:#F8FAFC;
+
+    opacity:.75;
+
+    cursor:not-allowed;
+
+}
+
+
+/*==================================================
+  ANIMATION INPUT
+==================================================*/
+
+.form-group input,
+.form-group select{
+
+    transition:
+
+    border-color .25s,
+
+    box-shadow .25s,
+
+    transform .25s;
+
+}
+
+.form-group input:focus,
+.form-group select:focus{
+
+    transform:translateY(-1px);
+
+}
+
+/*==================================================
+  DOCUMENTS
+==================================================*/
+
+.upload-zone{
+
+    position:relative;
+
+    width:100%;
+
+    min-height:80px;
+
+    border:2px dashed #4F46E5;
+
+    border-radius:18px;
+
+    background:linear-gradient(180deg,#FAFBFF,#F3F6FF);
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    transition:.35s;
+
+    overflow:hidden;
+
+}
+
+.upload-zone:hover{
+
+    border-color:#4338CA;
+
+    background:#EEF2FF;
+
+    transform:translateY(-2px);
+
+}
+
+.upload-zone.has-file{
+
+    border-color:#16A34A;
+
+    background:#F0FDF4;
+
+}
+
+.upload-zone input{
+
+    position:absolute;
+
+    inset:0;
+
+    opacity:0;
+
+    cursor:pointer;
+
+}
+
+.upload-icon{
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:#EEF2FF;
+
+    color:#4F46E5;
+
+    font-size:24px;
+
+    margin-bottom:18px;
+
+}
+
+.upload-zone h4{
+
+    font-size:15px;
+
+    font-weight:700;
+
+    color:#0F172A;
+
+    margin-bottom:8px;
+
+}
+
+.upload-zone p{
+
+    font-size:14px;
+
+    color:#64748B;
+
+    margin-bottom:8px;
+
+}
+
+.upload-zone small{
+
+    color:#94A3B8;
+
+    font-size:12px;
+
+}
+
+.file-name{
+
+    margin-top:18px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#16A34A;
+
+    font-weight:600;
+
+}
+
+.file-name i{
+
+    font-size:18px;
+
+}
+
+
+/*==================================================
+  ACTIONS
+==================================================*/
+
+.form-actions{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    align-items:center;
+
+    gap:16px;
+
+    margin-top:30px;
+
+    padding-top:25px;
+
+    border-top:1px solid #EDF2F7;
+
+}
+
+
+/*==================================================
+  ANNULER
+==================================================*/
+
+.btn-cancel{
+
+    height:46px;
+
+    padding:0 24px;
+
+    border:1px solid #D9E2EC;
+
+    border-radius:12px;
+
+    background:#FFF;
+
+    color:#475569;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.btn-cancel:hover{
+
+    background:#F8FAFC;
+
+    transform:translateY(-2px);
+
+}
+
+
+/*==================================================
+  CREER
+==================================================*/
+
+.btn-submit{
+
+    height:46px;
+
+    min-width:176px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:linear-gradient(135deg,#6366F1,#4338CA);
+
+    color:#FFF;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:10px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    box-shadow:0 12px 25px rgba(79,70,229,.25);
+
+}
+
+.btn-submit:hover:not(:disabled){
+
+    transform:translateY(-2px);
+
+    box-shadow:0 18px 35px rgba(79,70,229,.35);
+
+}
+
+.btn-submit:disabled{
+
+    opacity:.7;
+
+    cursor:not-allowed;
+
+}
+
+.btn-submit i{
+
+    font-size:15px;
+
+}
+
+
+/*==================================================
+  SPINNER
+==================================================*/
+
+.spinner{
+
+    width:18px;
+
+    height:18px;
+
+    border:3px solid rgba(255,255,255,.35);
+
+    border-top-color:#FFF;
+
+    border-radius:50%;
+
+    animation:spin .7s linear infinite;
+
+}
+
+@keyframes spin{
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+
+/*==================================================
+  ANIMATIONS
+==================================================*/
+
+.main-card{
+
+    animation:fadeUp .45s ease;
+
+}
+
+.form-section{
+
+    animation:fadeCard .45s ease;
+
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(25px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+@keyframes fadeCard{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+
+/*==================================================
+  RESPONSIVE TABLETTE
+==================================================*/
+
+@media(max-width:1100px){
+
+.form-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.main-card{
+
+    padding:24px;
+
+}
+
+}
+
+
+/*==================================================
+  RESPONSIVE MOBILE
+==================================================*/
+
+@media(max-width:768px){
+
+.create-container{
+
+    padding:18px;
+
+}
+
+.create-header{
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:18px;
+
+}
+
+.header-left h1{
+
+    font-size:26px;
+
+}
+
+.form-row{
+
+    grid-template-columns:1fr;
+
+}
+
+.form-actions{
+
+    flex-direction:column-reverse;
+
+}
+
+.btn-submit,
+.btn-cancel{
+
+    width:100%;
+
+}
+
+.upload-zone{
+
+    min-height:180px;
+
+}
+
+}

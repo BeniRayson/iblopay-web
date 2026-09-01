@@ -1,0 +1,98 @@
+<div class="detail-panel" [class.detail-panel--visible]="visible">
+  <div class="detail-panel__header">
+    <div class="detail-panel__status-row">
+      <span class="pill" [style.background]="detail?.statusColor + '18'" [style.color]="detail?.statusColor">
+        {{ detail?.status }}
+      </span>
+      <span class="detail-panel__tx-id">{{ detail?.transactionId }}</span>
+      <button class="detail-panel__copy">📋</button>
+    </div>
+    <button class="detail-panel__close" (click)="close.emit()">✕</button>
+  </div>
+
+  <div class="detail-panel__body">
+    <div class="detail-panel__timestamp">{{ detail?.timestamp }}</div>
+    <div class="detail-panel__type-tag" [style.background]="(detail?.typeTagColor || '#2f6fed') + '18'" [style.color]="detail?.typeTagColor">
+      {{ detail?.typeTag }}
+    </div>
+
+    <div class="detail-panel__amount-block">
+      <div class="detail-panel__amount-total">{{ detail?.amountTotal }}</div>
+      <div class="detail-panel__amount-breakdown">
+        <div class="breakdown-row"><span>Frais</span><span>{{ detail?.fee }}</span></div>
+        <div class="breakdown-row"><span>Commission</span><span>{{ detail?.commission }}</span></div>
+        <div class="breakdown-row breakdown-row--net"><span>Montant net</span><span>{{ detail?.netAmount }}</span></div>
+      </div>
+    </div>
+
+    <div class="detail-panel__sections">
+      <div class="detail-panel__actor">
+        <div class="detail-panel__actor-title">Expéditeur</div>
+        <div class="detail-panel__actor-avatar">{{ detail?.sender?.initials }}</div>
+        <div class="detail-panel__actor-name">{{ detail?.sender?.name }}</div>
+        <div class="detail-panel__actor-detail">{{ detail?.sender?.phone }}</div>
+        <div class="detail-panel__actor-detail">{{ detail?.sender?.walletId }}</div>
+        <div class="detail-panel__actor-balance">
+          <span>Avant: {{ detail?.sender?.balanceBefore }}</span>
+          <span>Après: {{ detail?.sender?.balanceAfter }}</span>
+        </div>
+        <div class="detail-panel__actor-detail">{{ detail?.sender?.province }} / {{ detail?.sender?.commune }}</div>
+        <div class="detail-panel__actor-detail">{{ detail?.sender?.agency }}</div>
+      </div>
+
+      <div class="detail-panel__arrow">→</div>
+
+      <div class="detail-panel__actor">
+        <div class="detail-panel__actor-title">Destinataire</div>
+        <div class="detail-panel__actor-avatar">{{ detail?.recipient?.initials }}</div>
+        <div class="detail-panel__actor-name">{{ detail?.recipient?.name }}</div>
+        <div class="detail-panel__actor-detail">{{ detail?.recipient?.phone }}</div>
+        <div class="detail-panel__actor-detail">{{ detail?.recipient?.walletId }}</div>
+        <div class="detail-panel__actor-balance">
+          <span>Avant: {{ detail?.recipient?.balanceBefore }}</span>
+          <span>Après: {{ detail?.recipient?.balanceAfter }}</span>
+        </div>
+        <div class="detail-panel__actor-detail">{{ detail?.recipient?.province }} / {{ detail?.recipient?.commune }}</div>
+        <div class="detail-panel__actor-detail">{{ detail?.recipient?.agency }}</div>
+      </div>
+    </div>
+
+    <div class="detail-panel__general-info">
+      <div class="detail-panel__general-title">Informations générales</div>
+      <div class="detail-panel__info-grid">
+        <div class="info-item"><span class="info-label">Canal</span><span class="info-value">{{ detail?.channel }}</span></div>
+        <div class="info-item"><span class="info-label">Référence</span><span class="info-value">{{ detail?.reference }}</span></div>
+        <div class="info-item"><span class="info-label">IP</span><span class="info-value">{{ detail?.ip }}</span></div>
+        <div class="info-item"><span class="info-label">Appareil</span><span class="info-value">{{ detail?.device }}</span></div>
+        <div class="info-item"><span class="info-label">Localisation</span><span class="info-value">{{ detail?.location }}</span></div>
+      </div>
+    </div>
+
+    <div class="detail-panel__validated" *ngIf="detail?.validatedBy">
+      <div class="detail-panel__validated-avatar">{{ detail?.validatedByAvatar }}</div>
+      <div>
+        <div class="detail-panel__validated-name">Validée par {{ detail?.validatedBy }}</div>
+        <div class="detail-panel__validated-time">{{ detail?.validatedAt }}</div>
+      </div>
+    </div>
+
+    <div class="detail-panel__attachments">
+      <div class="detail-panel__attachments-title">Pièces jointes</div>
+      <div class="detail-panel__attachments-list" *ngIf="detail?.attachments?.length; else noAttachments">
+        <div *ngFor="let file of detail?.attachments">{{ file }}</div>
+      </div>
+      <ng-template #noAttachments><span class="detail-panel__attachments-empty">N/A</span></ng-template>
+    </div>
+
+    <div class="detail-panel__actions">
+      <button class="detail-panel__btn detail-panel__btn--primary">
+        Réattribuer e-Money
+        <span class="btn-subtitle">Corriger une transaction</span>
+      </button>
+      <button class="detail-panel__btn detail-panel__btn--outline">
+        Attribuer e-Money (Bordereau)
+        <span class="btn-subtitle">Approvisionner un Super Agent</span>
+      </button>
+    </div>
+  </div>
+</div>

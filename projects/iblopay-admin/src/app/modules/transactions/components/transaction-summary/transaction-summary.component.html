@@ -1,0 +1,18 @@
+<div class="summary-cards" *ngIf="summary; else noSummary">
+  <div class="summary-card">
+    <span class="summary-card__label">Total transactions</span>
+    <span class="summary-card__value">{{ summary.totalCount }}</span>
+  </div>
+  <div class="summary-card">
+    <span class="summary-card__label">Total volume</span>
+    <span class="summary-card__value">{{ formattedTotalAmount }}</span>
+  </div>
+  <div class="summary-card">
+    <span class="summary-card__label">Total fees</span>
+    <span class="summary-card__value">{{ formattedTotalFees }}</span>
+  </div>
+</div>
+
+<ng-template #noSummary>
+  <div class="summary-cards summary-cards--loading">Loading summary…</div>
+</ng-template>

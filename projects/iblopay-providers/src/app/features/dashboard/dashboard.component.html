@@ -1,0 +1,361 @@
+<div class="page-header">
+  <div>
+    <h1>Tableau de bord</h1>
+    <p>Vue d'ensemble de vos services et de leur rendement</p>
+  </div>
+  <div class="header-right">
+    <span class="header-date">
+      <i class="fa-regular fa-calendar"></i>
+      {{ today | date:'EEEE d MMMM yyyy' }}
+    </span>
+    <a class="btn-primary" routerLink="/services/nouveau">
+      <i class="fa-solid fa-plus"></i> Nouveau service
+    </a>
+  </div>
+</div>
+
+<!-- ================ ALERTES ================ -->
+<div class="alert-banner" *ngIf="demandesUrgentes.length > 0">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <span>
+    <strong>{{ demandesUrgentes.length }} demande(s)</strong> en attente depuis plus de 2 jours
+  </span>
+  <a routerLink="/demandes" class="alert-link">Voir les demandes <i class="fa-solid fa-arrow-right"></i></a>
+</div>
+
+<!-- ================ APERÇU PAR MODULE ================ -->
+<div class="modules-grid">
+  <a routerLink="/services" class="module-card">
+    <div class="module-icon icon-blue">
+      <i class="fa-solid fa-layer-group"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ services.length }}</div>
+      <div class="module-label">Services</div>
+      <div class="module-sub" *ngIf="servicesBrouillon > 0">{{ servicesBrouillon }} en brouillon</div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+
+  <a routerLink="/formulaires" class="module-card">
+    <div class="module-icon icon-purple">
+      <i class="fa-solid fa-file-lines"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ formulairesPublies + formulairesBrouillon }}</div>
+      <div class="module-label">Formulaires</div>
+      <div class="module-sub">{{ formulairesPublies }} publiés · {{ formulairesBrouillon }} brouillons</div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+
+  <a routerLink="/demandes" class="module-card">
+    <div class="module-icon icon-orange">
+      <i class="fa-solid fa-inbox"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ demandesEnCours }}</div>
+      <div class="module-label">Demandes en cours</div>
+      <div class="module-sub" *ngIf="demandesUrgentes.length > 0">
+        <span class="urgent-dot"></span> {{ demandesUrgentes.length }} urgentes
+      </div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+
+  <a routerLink="/utilisateurs" class="module-card">
+    <div class="module-icon icon-green">
+      <i class="fa-solid fa-users"></i>
+    </div>
+    <div class="module-body">
+      <div class="module-value">{{ utilisateursDistincts }}</div>
+      <div class="module-label">Utilisateurs servis</div>
+      <div class="module-sub">{{ demandes.length }} demandes totales</div>
+    </div>
+    <div class="module-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+  </a>
+</div>
+
+<!-- ================ STATS PRINCIPALES ================ -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon icon-blue">
+      <i class="fa-solid fa-building"></i>
+    </div>
+    <div>
+      <div class="stat-value">{{ servicesActifs }}</div>
+      <div class="stat-label">Services actifs</div>
+      <div class="stat-trend" *ngIf="services.length > servicesActifs">
+        <i class="fa-solid fa-minus"></i> {{ services.length - servicesActifs }} inactifs
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon icon-purple">
+      <i class="fa-solid fa-inbox"></i>
+    </div>
+    <div>
+      <div class="stat-value">{{ rendement?.demandesRecues ?? '—' }}</div>
+      <div class="stat-label">Demandes reçues</div>
+      <div class="stat-trend" *ngIf="rendement?.demandesRecues">
+        <i class="fa-solid fa-arrow-up" style="color: var(--accent-green);"></i>
+        +{{ rendement?.demandesTraitees ?? 0 }} traitées
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-card-highlight">
+    <div class="stat-icon icon-green">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <div>
+      <div class="stat-value">{{ rendement?.tauxTraitement ?? 0 }}%</div>
+      <div class="stat-label">Taux de traitement</div>
+      <div class="stat-progress">
+        <div class="mini-progress">
+          <div class="mini-progress-fill" [style.width.%]="rendement?.tauxTraitement ?? 0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon icon-orange">
+      <i class="fa-solid fa-coins"></i>
+    </div>
+    <div>
+      <div class="stat-value stat-value-revenue">{{ formatBIFComplet(rendement?.revenusGeneres ?? 0) }}</div>
+      <div class="stat-label">Revenus générés</div>
+      <div class="stat-trend" *ngIf="rendement?.revenusGeneres">
+        <i class="fa-solid fa-arrow-up" style="color: var(--accent-green);"></i>
+        +{{ rendement.revenusGeneres > 0 ? formatBIFComplet(rendement.revenusGeneres * 0.05) : '0 BIF' }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================ CONTENU PRINCIPAL ================ -->
+<div class="content-grid">
+  <!-- RENDEMENT GLOBAL -->
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-chart-simple"></i> Rendement des services
+      </div>
+      <span class="period-badge">Ce mois</span>
+    </div>
+    
+    <div class="rendement-rows" *ngIf="rendement as r">
+      <!-- Vue d'ensemble des stats -->
+      <div class="rendement-summary">
+        <div class="rendement-summary-item">
+          <span class="summary-label">Total demandes</span>
+          <span class="summary-value">{{ r.demandesRecues }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">Traitées</span>
+          <span class="summary-value success">{{ r.demandesTraitees }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">En attente</span>
+          <span class="summary-value warning">{{ r.enAttente }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">Rejetées</span>
+          <span class="summary-value danger">{{ r.rejetees }}</span>
+        </div>
+        <div class="rendement-summary-item">
+          <span class="summary-label">Revenus</span>
+          <span class="summary-value revenue">{{ formatBIFComplet(r.revenusGeneres) }}</span>
+        </div>
+      </div>
+
+      <!-- Barres de progression -->
+      <div class="rendement-row">
+        <div class="rendement-label">
+          <span class="color-dot dot-green"></span>
+          Demandes traitées
+        </div>
+        <div class="rendement-value">
+          <strong>{{ r.demandesTraitees }}</strong>
+          <span class="rendement-percent">{{ (r.demandesTraitees / r.demandesRecues) * 100 | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill fill-green" [style.width.%]="(r.demandesTraitees / r.demandesRecues) * 100"></div>
+      </div>
+
+      <div class="rendement-row">
+        <div class="rendement-label">
+          <span class="color-dot dot-orange"></span>
+          En attente
+        </div>
+        <div class="rendement-value">
+          <strong>{{ r.enAttente }}</strong>
+          <span class="rendement-percent">{{ (r.enAttente / r.demandesRecues) * 100 | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill fill-orange" [style.width.%]="(r.enAttente / r.demandesRecues) * 100"></div>
+      </div>
+
+      <div class="rendement-row">
+        <div class="rendement-label">
+          <span class="color-dot dot-red"></span>
+          Rejetées
+        </div>
+        <div class="rendement-value">
+          <strong>{{ r.rejetees }}</strong>
+          <span class="rendement-percent">{{ (r.rejetees / r.demandesRecues) * 100 | number:'1.0-0' }}%</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill fill-red" [style.width.%]="(r.rejetees / r.demandesRecues) * 100"></div>
+      </div>
+
+      <!-- Footer avec indicateurs -->
+      <div class="rendement-footer">
+        <div class="rendement-stat">
+          <span class="footer-label">⏱ Temps moyen de traitement</span>
+          <span class="footer-value">{{ r.tempsMoyenTraitementJours }} jour(s)</span>
+        </div>
+        <div class="rendement-stat">
+          <span class="footer-label"> Taux global</span>
+          <span class="footer-value">{{ (r.demandesTraitees / r.demandesRecues) * 100 | number:'1.0-0' }}%</span>
+        </div>
+        <div class="rendement-stat">
+          <span class="footer-label"> Revenus totaux</span>
+          <span class="footer-value revenue">{{ formatBIFComplet(r.revenusGeneres) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DERNIÈRES DEMANDES -->
+  <div class="card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-clock-rotate-left"></i> Dernières demandes
+      </div>
+      <a routerLink="/demandes" class="link-see-all">
+        Voir tout <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+    
+    <div class="demande-list">
+      <div class="demande-item" *ngFor="let d of dernieresDemandes">
+        <div class="demande-info">
+          <div class="demande-ref">{{ d.numeroReference }}</div>
+          <div class="demande-service">
+            <span class="service-name">{{ d.serviceNom }}</span>
+            <span class="demande-user">— {{ d.utilisateurNom }}</span>
+          </div>
+        </div>
+        <div class="demande-status">
+          <span class="badge" [ngClass]="statutClass(d.statut)">{{ statutLabel(d.statut) }}</span>
+          <span class="demande-date">{{ d.dateSoumission | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+      
+      <div class="empty-state" *ngIf="!isLoading && dernieresDemandes.length === 0">
+        <i class="fa-regular fa-face-smile"></i>
+        <p>Aucune demande pour le moment</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================ RENDEMENT PAR SERVICE + DERNIERS UTILISATEURS ================ -->
+<div class="double-grid">
+  <!-- RENDEMENT PAR SERVICE -->
+  <div class="card table-card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-table-cells"></i> Rendement par service
+      </div>
+      <span class="period-badge">{{ rendementServices.length }} services</span>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th class="text-center">Demandes</th>
+            <th class="text-center">Traitées</th>
+            <th class="text-center">En attente</th>
+            <th class="text-center">Temps moyen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of rendementServices">
+            <td>
+              <div class="service-cell">
+                <span class="service-dot" [style.background]="getServiceColor(s.serviceNom)"></span>
+                {{ s.serviceNom }}
+              </div>
+            </td>
+            <td class="text-center">{{ s.demandes }}</td>
+            <td class="text-center">
+              <span class="status-badge success">{{ s.traitees }}</span>
+            </td>
+            <td class="text-center">
+              <span class="status-badge warning" *ngIf="s.enAttente > 0; else noWait">{{ s.enAttente }}</span>
+              <ng-template #noWait><span class="status-badge success">0</span></ng-template>
+            </td>
+            <td class="text-center">
+              <span class="time-badge">{{ s.tempsMoyenJours }} j</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="table-footer" *ngIf="rendementServices.length === 0">
+      <i class="fa-regular fa-circle-info"></i>
+      Aucune donnée de rendement disponible
+    </div>
+  </div>
+
+  <!-- DERNIERS UTILISATEURS AVEC LEURS DEMANDES ET REVENUS -->
+  <div class="card table-card">
+    <div class="card-title-row">
+      <div class="card-title">
+        <i class="fa-solid fa-users"></i> Derniers utilisateurs
+      </div>
+      <span class="period-badge">10 derniers</span>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Service demandé</th>
+            <th class="text-center">Montant payé</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of derniersUtilisateurs">
+            <td>
+              <div class="user-cell">
+                <span class="user-avatar">{{ u.utilisateurNom.charAt(0) }}</span>
+                {{ u.utilisateurNom }}
+              </div>
+            </td>
+            <td>{{ u.serviceNom }}</td>
+            <td class="text-center">
+              <span class="amount-badge">{{ formatBIFComplet(u.montant) }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="derniersUtilisateurs.length === 0">
+            <td colspan="3" class="text-center empty-cell">
+              <i class="fa-regular fa-circle-info"></i> Aucun utilisateur récent
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

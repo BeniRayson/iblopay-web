@@ -1,0 +1,994 @@
+// src/app/modules/users/components/users-status/users-status.component.scss
+
+/* ================================================================
+   THEME VARIABLES
+   ================================================================ */
+:host {
+  --status-bg-overlay: rgba(0, 0, 0, 0.5);
+  --status-bg-card: #ffffff;
+  --status-bg-header: #f8fafc;
+  --status-bg-hover: #f1f5f9;
+  --status-bg-input: #f1f5f9;
+  --status-text-primary: #0f172a;
+  --status-text-secondary: #475569;
+  --status-text-muted: #94a3b8;
+  --status-border-color: #e2e8f0;
+  --status-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --status-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --status-radius: 16px;
+  --status-primary: #4f46e5;
+  --status-primary-light: rgba(79, 70, 229, 0.08);
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+  --status-info: #3b82f6;
+  --status-danger-light: rgba(239, 68, 68, 0.08);
+  --status-success-light: rgba(16, 185, 129, 0.1);
+}
+
+.dark-mode :host {
+  --status-bg-card: #1e293b;
+  --status-bg-header: #0f172a;
+  --status-bg-hover: #334155;
+  --status-bg-input: #334155;
+  --status-text-primary: #f1f5f9;
+  --status-text-secondary: #94a3b8;
+  --status-text-muted: #64748b;
+  --status-border-color: #334155;
+  --status-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  --status-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --status-primary-light: rgba(79, 70, 229, 0.15);
+  --status-danger-light: rgba(239, 68, 68, 0.15);
+  --status-success-light: rgba(16, 185, 129, 0.15);
+}
+
+/* ================================================================
+   OVERLAY
+   ================================================================ */
+.status-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--status-bg-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: statusFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes statusFadeIn {
+  from { 
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to { 
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* ================================================================
+   MODAL CARD
+   ================================================================ */
+.status-modal-container {
+  background: var(--status-bg-card);
+  border-radius: var(--status-radius);
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--status-shadow);
+  border: 1px solid var(--status-border-color);
+  animation: statusSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.status-modal-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.status-modal-container::-webkit-scrollbar-track {
+  background: var(--status-bg-hover);
+  border-radius: 4px;
+}
+
+.status-modal-container::-webkit-scrollbar-thumb {
+  background: var(--status-primary);
+  border-radius: 4px;
+}
+
+@keyframes statusSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+.status-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--status-border-color);
+  background: var(--status-bg-header);
+  border-radius: var(--status-radius) var(--status-radius) 0 0;
+}
+
+.status-modal-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--status-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.status-modal-icon i {
+  font-size: 22px;
+  color: var(--status-primary);
+}
+
+.status-modal-icon.verified {
+  background: var(--status-success-light);
+}
+
+.status-modal-icon.verified i {
+  color: var(--status-success);
+}
+
+.status-modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--status-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.status-modal-close:hover {
+  background: var(--status-bg-hover);
+  color: var(--status-danger);
+  transform: rotate(90deg);
+}
+
+/* ================================================================
+   BODY
+   ================================================================ */
+.status-modal-body {
+  padding: 24px;
+}
+
+.status-modal-body h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--status-text-primary);
+  margin: 0 0 6px 0;
+  text-align: center;
+}
+
+.status-modal-subtitle {
+  font-size: 14px;
+  color: var(--status-text-secondary);
+  text-align: center;
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+}
+
+/* ================================================================
+   USER INFO CARD
+   ================================================================ */
+.status-user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--status-bg-hover);
+  border-radius: 12px;
+  margin-bottom: 18px;
+  border: 1px solid var(--status-border-color);
+  transition: all 0.2s ease;
+}
+
+.status-user-info:hover {
+  border-color: var(--status-primary);
+  box-shadow: var(--status-shadow-hover);
+}
+
+.status-avatar-wrapper {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.status-avatar-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--status-border-color);
+}
+
+.status-avatar-initials {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  border: 2px solid var(--status-border-color);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.status-user-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-user-text h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--status-text-primary);
+  margin: 0 0 2px 0;
+}
+
+.status-user-role {
+  font-size: 12px;
+  color: var(--status-text-secondary);
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--status-primary-light);
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.status-user-id {
+  font-size: 11px;
+  color: var(--status-text-muted);
+  margin-left: 8px;
+}
+
+/* ================================================================
+   STATUS CURRENT
+   ================================================================ */
+.status-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--status-bg-hover);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  border: 1px dashed var(--status-border-color);
+}
+
+.status-current-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--status-text-secondary);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.status-badge .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.8);
+  }
+}
+
+.status-badge.status-active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.status-badge.status-active .status-dot { background: #16a34a; }
+
+.status-badge.status-suspended {
+  background: #fef3c7;
+  color: #d97706;
+}
+.status-badge.status-suspended .status-dot { background: #d97706; }
+
+.status-badge.status-frozen {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.status-badge.status-frozen .status-dot { background: #2563eb; }
+
+.status-badge.status-closed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.status-badge.status-closed .status-dot { background: #dc2626; }
+
+:host-context(.dark-mode) .status-badge.status-active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+:host-context(.dark-mode) .status-badge.status-suspended {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+:host-context(.dark-mode) .status-badge.status-frozen {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+:host-context(.dark-mode) .status-badge.status-closed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+/* ================================================================
+   OTP HEADER AVEC CHRONO
+   ================================================================ */
+.status-otp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.status-otp-header label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--status-text-secondary);
+  margin-bottom: 0;
+}
+
+.status-otp-header label .required {
+  color: var(--status-danger);
+  font-weight: 700;
+}
+
+.status-otp-header label .otp-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--status-text-muted);
+  margin-left: 8px;
+}
+
+/* Petit chrono circulaire */
+.status-otp-timer {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.status-otp-timer-svg {
+  transform: rotate(-90deg);
+  width: 36px;
+  height: 36px;
+}
+
+.status-otp-timer-bg {
+  fill: none;
+  stroke: var(--status-border-color);
+  stroke-width: 3;
+}
+
+.status-otp-timer-progress {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+}
+
+.status-otp-timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--status-text-primary);
+  line-height: 1;
+}
+
+.status-otp-timer .expired .status-otp-timer-text {
+  color: var(--status-danger);
+}
+
+/* ================================================================
+   OTP INPUT GROUP
+   ================================================================ */
+.status-otp-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.status-otp-input {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 8px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  padding: 10px 16px;
+}
+
+.status-otp-input::placeholder {
+  letter-spacing: normal;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.status-otp-resend {
+  padding: 10px 14px;
+  background: var(--status-bg-hover);
+  border: 2px solid var(--status-border-color);
+  border-radius: 10px;
+  color: var(--status-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+}
+
+.status-otp-resend:hover:not(:disabled) {
+  border-color: var(--status-primary);
+  color: var(--status-primary);
+}
+
+.status-otp-resend:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   OTP FOOTER
+   ================================================================ */
+.status-otp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.status-otp-footer .otp-help {
+  margin-top: 0;
+  font-size: 11px;
+  color: var(--status-text-muted);
+}
+
+.status-otp-attempts {
+  font-size: 11px;
+  color: var(--status-text-secondary);
+  font-weight: 500;
+}
+
+.status-otp-attempts .attempts-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+
+.status-otp-attempts .attempt-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-border-color);
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.status-otp-attempts .attempt-dot.filled {
+  background: var(--status-danger);
+}
+
+/* ================================================================
+   VERIFIED BADGE
+   ================================================================ */
+.status-verified-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--status-success-light);
+  border: 1px solid var(--status-success);
+  border-radius: 8px;
+  color: var(--status-success);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.status-verified-badge i {
+  font-size: 18px;
+}
+
+/* ================================================================
+   FORM GROUP
+   ================================================================ */
+.status-form-group {
+  margin-bottom: 14px;
+}
+
+.status-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--status-border-color);
+  border-radius: 10px;
+  background: var(--status-bg-hover);
+  color: var(--status-text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.status-input:focus {
+  border-color: var(--status-primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.status-input::placeholder {
+  color: var(--status-text-muted);
+}
+
+.status-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ================================================================
+   ALERTS
+   ================================================================ */
+.status-alert {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: statusAlertIn 0.3s ease;
+}
+
+@keyframes statusAlertIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-alert i {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.status-success {
+  background: var(--status-success-light);
+  border: 1px solid var(--status-success);
+  color: var(--status-success);
+}
+
+.status-error {
+  background: var(--status-danger-light);
+  border: 1px solid var(--status-danger);
+  color: var(--status-danger);
+}
+
+:host-context(.dark-mode) .status-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+:host-context(.dark-mode) .status-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* ================================================================
+   STATUS OPTIONS
+   ================================================================ */
+.status-select-section {
+  margin-bottom: 18px;
+}
+
+.status-select-section label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--status-text-secondary);
+  margin-bottom: 10px;
+}
+
+.status-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 2px solid var(--status-border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  background: var(--status-bg-card);
+}
+
+.status-option:hover:not(.disabled) {
+  border-color: var(--status-primary);
+  background: var(--status-bg-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--status-shadow-hover);
+}
+
+.status-option:active:not(.disabled) {
+  transform: scale(0.97);
+}
+
+.status-option.selected {
+  border-color: var(--status-primary);
+  background: var(--status-primary-light);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.status-option.selected .status-option-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.status-option.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.status-option.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.status-option-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.status-option.selected .status-option-icon {
+  transform: scale(1.05);
+}
+
+.status-option-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-option-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--status-text-primary);
+}
+
+.status-option-current {
+  font-size: 11px;
+  color: var(--status-text-muted);
+}
+
+.status-option-check {
+  color: var(--status-success);
+  font-size: 20px;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================================================
+   BOUTON VÉRIFIER
+   ================================================================ */
+.status-btn-verify {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.status-btn-verify:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(79, 70, 229, 0.35);
+}
+
+.status-btn-verify:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+.status-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--status-border-color);
+}
+
+.status-modal-footer button {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.status-btn-secondary {
+  background: var(--status-bg-input);
+  color: var(--status-text-secondary);
+  border: 1px solid var(--status-border-color);
+}
+
+.status-btn-secondary:hover:not(:disabled) {
+  background: var(--status-bg-hover);
+  border-color: var(--status-text-muted);
+}
+
+.status-btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.status-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+}
+
+.status-btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.status-btn-primary:disabled,
+.status-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.status-btn-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.status-spinner-small {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: statusSpin 0.7s linear infinite;
+}
+
+@keyframes statusSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 640px) {
+  .status-modal-container {
+    max-width: 100%;
+    margin: 10px;
+    max-height: 95vh;
+  }
+  
+  .status-modal-header {
+    padding: 14px 18px;
+  }
+  
+  .status-modal-header h2 {
+    font-size: 16px;
+  }
+  
+  .status-modal-body {
+    padding: 18px;
+  }
+  
+  .status-options-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .status-modal-footer {
+    flex-direction: column;
+  }
+  
+  .status-modal-footer button {
+    width: 100%;
+    padding: 14px;
+  }
+  
+  .status-user-info {
+    flex-wrap: wrap;
+    padding: 14px;
+  }
+  
+  .status-avatar-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .status-avatar-img,
+  .status-avatar-initials {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
+  
+  .status-user-text h4 {
+    font-size: 14px;
+  }
+  
+  .status-option {
+    padding: 10px 12px;
+  }
+  
+  .status-option-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .status-otp-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .status-otp-timer {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .status-otp-timer-svg {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .status-otp-timer-text {
+    font-size: 9px;
+  }
+  
+  .status-otp-input {
+    font-size: 16px;
+    letter-spacing: 6px;
+  }
+  
+  .status-otp-resend {
+    min-width: 40px;
+    height: 40px;
+  }
+  
+  .status-otp-footer {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 380px) {
+  .status-modal-body {
+    padding: 14px;
+  }
+  
+  .status-modal-header {
+    padding: 12px 14px;
+  }
+  
+  .status-user-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .status-current {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+  
+  .status-otp-timer {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .status-otp-timer-svg {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .status-otp-timer-text {
+    font-size: 8px;
+  }
+  
+  .status-otp-input {
+    font-size: 14px;
+    letter-spacing: 4px;
+  }
+}

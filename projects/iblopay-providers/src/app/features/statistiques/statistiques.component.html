@@ -1,0 +1,158 @@
+<div class="page-header">
+  <div>
+    <h1>Statistiques & Suivi</h1>
+    <p>Tableau de bord financier et opérationnel de vos services</p>
+  </div>
+</div>
+
+<!-- 10 CARTES DE STATS AVEC TENDANCES COMPARATIVES -->
+<div class="stats-grid-2rows" *ngIf="rendement as r">
+  <!-- Ligne 1 : Opérations -->
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Demandes reçues</div>
+      <span class="trend-badge positive">+8% ↗</span>
+    </div>
+    <div class="stat-value">{{ r.demandesRecues | number }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Traitées</div>
+      <span class="trend-badge positive">+12% ↗</span>
+    </div>
+    <div class="stat-value text-green">{{ r.demandesTraitees | number }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">En attente</div>
+      <span class="trend-badge negative">-3% ↘</span>
+    </div>
+    <div class="stat-value text-orange">{{ r.enAttente | number }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Rejetées</div>
+      <span class="trend-badge neutral">0% →</span>
+    </div>
+    <div class="stat-value text-red">{{ r.rejetees | number }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Taux traitement</div>
+      <span class="trend-badge positive">+4% ↗</span>
+    </div>
+    <div class="stat-value text-blue">{{ r.tauxTraitement }}%</div>
+  </div>
+
+  <!-- Ligne 2 : Finances & Performance -->
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Revenus du jour</div>
+      <span class="trend-badge positive">+15% ↗</span>
+    </div>
+    <div class="stat-value text-green">145 000 FBU</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Revenus du mois</div>
+      <span class="trend-badge positive">+9% ↗</span>
+    </div>
+    <div class="stat-value text-purple">3 850 000 FBU</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Temps moyen</div>
+      <span class="trend-badge positive">-0.5j ↘</span>
+    </div>
+    <div class="stat-value">{{ r.tempsMoyenTraitementJours }} j</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Délai réponse</div>
+      <span class="trend-badge positive">-20m ↘</span>
+    </div>
+    <div class="stat-value text-cyan">~3h</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header-row">
+      <div class="stat-label">Satisfaction</div>
+      <span class="trend-badge positive">+2% ↗</span>
+    </div>
+    <div class="stat-value text-green">96%</div>
+  </div>
+</div>
+
+<!-- COLONNES PARALLÈLES COMPACTES : GRAPHE SINUSOÏDAL & TABLEAU DÉTAIL -->
+<div class="parallel-grid compact-grid">
+  <!-- Graphique d'évolution sinusoïdale par service -->
+  <div class="card chart-card">
+    <div class="card-title">Évolution des services</div>
+    <div class="chart-wrap-line">
+      <canvas #chartCanvas></canvas>
+    </div>
+  </div>
+
+  <!-- Détail par service avec indicateur de Charge Active (Workload) -->
+  <div class="card table-card">
+    <div class="card-title">Détail par service & Charge active</div>
+    <div class="table-responsive">
+      <table class="data-table compact-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Demandes</th>
+            <th>En attente</th>
+            <th>Charge</th>
+            <th>Taux</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of rendementServices">
+            <td><strong>{{ s.serviceNom }}</strong></td>
+            <td>{{ s.demandes }}</td>
+            <td class="text-orange">{{ s.enAttente }}</td>
+            <td>
+              <span class="workload-badge" [ngClass]="getWorkloadClass(s.enAttente)">
+                {{ getWorkloadLabel(s.enAttente) }}
+              </span>
+            </td>
+            <td>
+              <div class="mini-progress">
+                <div class="mini-progress-fill" [style.width.%]="tauxTraitement(s)"></div>
+              </div>
+              {{ tauxTraitement(s) }}%
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RAPPORT DETAILLE PAR SERVICE ============ -->
+<div class="card detailed-report-card">
+  <div class="report-header">
+    <div class="card-title">Rapport chiffré détaillé par service</div>
+    <select [(ngModel)]="serviceSelectionneId" (ngModelChange)="selectionnerService($event)">
+      <option *ngFor="let s of services" [value]="s.id">{{ s.nom }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="isLoadingIndicateurs" class="loading-note">Chargement du rapport...</div>
+
+  <ng-container *ngIf="!isLoadingIndicateurs && indicateursService as ind">
+    <div class="kpi-grid">
+      <div class="kpi-card" *ngFor="let k of ind.kpis" [ngClass]="colorClass(k.couleur)">
+        <div class="kpi-icon"><i [class]="k.icon"></i></div>
+        <div>
+          <div class="kpi-value">{{ k.valeur }}</div>
+          <div class="kpi-label">{{ k.label }}</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="empty-state" *ngIf="!isLoadingIndicateurs && !indicateursService">
+    Aucun indicateur personnalisé configuré pour ce service pour le moment.
+  </div>
+</div>

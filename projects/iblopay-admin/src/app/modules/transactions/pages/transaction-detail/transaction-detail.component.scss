@@ -1,0 +1,176 @@
+/* ==========================================================
+   VARIABLES DE THÈME POUR LES DÉTAILS DE TRANSACTION
+   ========================================================== */
+:root {
+  /* Mode Lumière (Light) */
+  --detail-bg: var(--bg-light, #f8fafc);
+  --detail-surface: rgba(255, 255, 255, 0.75);
+  --detail-border: var(--border-light, rgba(0, 0, 0, 0.08));
+  --detail-label: #6f737c;
+  --detail-code-bg: #f5f6f8;
+  --detail-code-color: #1c1e26;
+  --detail-code-border: rgba(0, 0, 0, 0.06);
+  --detail-shadow: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'],
+body.dark-theme {
+  /* Mode Sombre (Dark) */
+  --detail-bg: var(--ink, #0b0f19);
+  --detail-surface: rgba(18, 26, 47, 0.65);
+  --detail-border: var(--border-light, rgba(255, 255, 255, 0.12));
+  --detail-label: var(--text-dim, rgba(255, 255, 255, 0.5));
+  --detail-code-bg: rgba(0, 0, 0, 0.3);
+  --detail-code-color: #e2e8f0;
+  --detail-code-border: rgba(255, 255, 255, 0.1);
+  --detail-shadow: rgba(0, 0, 0, 0.3);
+}
+
+
+/* ==========================================================
+   PAGE DÉTAILS DE TRANSACTION (.transaction-detail-page)
+   ========================================================== */
+.transaction-detail-page {
+  padding: 24px 32px;
+  max-width: 720px;
+  background-color: var(--detail-bg);
+  min-height: 100vh;
+  color: var(--text, #ffffff);
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    max-width: 100%;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--detail-border);
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 8px;
+      color: var(--text, #ffffff);
+      letter-spacing: -0.3px;
+    }
+  }
+}
+
+
+/* ==========================================================
+   SECTIONS D'INFORMATION (.info-section)
+   ========================================================== */
+.info-section {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: var(--detail-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--detail-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px var(--detail-shadow);
+  transition: all 0.3s ease;
+
+  h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text, #ffffff);
+  }
+}
+
+
+/* ==========================================================
+   GRILLE D'INFORMATIONS (.info-grid)
+   ========================================================== */
+.info-grid {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  row-gap: 12px;
+  column-gap: 16px;
+  align-items: center;
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+
+  dt {
+    color: var(--detail-label);
+    font-size: 13px;
+    font-weight: 500;
+
+    @media (max-width: 576px) {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  dd {
+    margin: 0;
+    font-size: 14px;
+    word-break: break-all;
+    color: var(--text, #ffffff);
+    font-weight: 500;
+
+    @media (max-width: 576px) {
+      margin-bottom: 8px;
+    }
+  }
+}
+
+
+/* ==========================================================
+   BLOC DE MÉTADONNÉES (.metadata)
+   ========================================================== */
+.metadata {
+  margin-top: 16px;
+
+  summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--detail-label);
+    font-weight: 500;
+    user-select: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--text, #ffffff);
+    }
+  }
+
+  pre {
+    margin-top: 8px;
+    background: var(--detail-code-bg);
+    color: var(--detail-code-color);
+    border: 1px solid var(--detail-code-border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    overflow-x: auto;
+    transition: all 0.3s ease;
+  }
+}
+
+
+/* ==========================================================
+   MESSAGES D'ÉTAT (.state-message)
+   ========================================================== */
+.state-message {
+  color: var(--detail-label);
+  padding: 24px 0;
+  font-size: 14px;
+
+  &--error {
+    color: var(--red, #ef4444);
+    font-weight: 500;
+  }
+}

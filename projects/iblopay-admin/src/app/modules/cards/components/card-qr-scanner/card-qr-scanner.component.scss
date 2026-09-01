@@ -1,0 +1,12 @@
+.qr-placeholder {
+  border: 1px dashed #c7cad1;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  color: #6f737c;
+
+  &__hint {
+    font-size: 12px;
+    margin-top: 6px;
+  }
+}

@@ -1,0 +1,126 @@
+/* ==========================================================
+   CARD PREVIEW (COMPOSANT APERÇU DE CARTE)
+   Adapté aux modes clair et sombre
+   ========================================================== */
+
+.card-preview {
+  position: relative;
+  width: 100%;
+  min-width: 300px;
+  max-width: 360px;
+  border-radius: 20px;
+  padding: 24px;
+
+  /* Arrière-plan premium adaptatif avec effet glassmorphism */
+  background: linear-gradient(135deg,
+      var(--surface-2, rgba(255, 255, 255, 0.08)) 0%,
+      var(--surface, rgba(255, 255, 255, 0.03)) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  /* Contour subtil et visible dans tous les thèmes */
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.15));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+
+  color: var(--text, #ffffff);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  /* Effet de brillance d'arrière-plan */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 70% 20%,
+        rgba(59, 130, 246, 0.12) 0%,
+        transparent 50%);
+    pointer-events: none;
+  }
+
+  &.dimmed {
+    opacity: 0.5;
+    filter: grayscale(60%);
+  }
+
+  /* --- EN-TÊTE DE LA CARTE --- */
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__brand {
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    font-size: 14px;
+    color: var(--text, #ffffff);
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  /* --- NUMÉRO DE CARTE --- */
+  &__pan {
+    margin-top: 32px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text, #ffffff);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* --- BLOC SOLDE --- */
+  &__balance {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__balance-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim, rgba(255, 255, 255, 0.6));
+  }
+
+  &__balance-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text, #ffffff);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- PIED DE CARTE --- */
+  &__bottom {
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__holder {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text-dim, rgba(255, 255, 255, 0.8));
+    text-transform: uppercase;
+    max-width: 60%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

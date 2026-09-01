@@ -1,0 +1,16 @@
+<div class="transaction-card">
+  <div class="transaction-card__icon">{{ typeMeta.icon }}</div>
+
+  <div class="transaction-card__main">
+    <div class="transaction-card__title">
+      {{ typeMeta.label }}
+      <span class="transaction-card__ref" *ngIf="transaction.reference">· {{ transaction.reference }}</span>
+    </div>
+    <div class="transaction-card__date">{{ transaction.createdAt | date: 'medium' }}</div>
+  </div>
+
+  <div class="transaction-card__right">
+    <div class="transaction-card__amount" [class.outbound]="isOutbound">{{ formattedAmount }}</div>
+    <app-transaction-status-badge [status]="transaction.status"></app-transaction-status-badge>
+  </div>
+</div>

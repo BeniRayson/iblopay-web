@@ -1,0 +1,37 @@
+.alerts-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  &__title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    margin-bottom: 12px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+
+  &__icon { font-size: 16px; }
+  &__message { flex: 1; color: #374151; }
+  &__link {
+    color: #2f6fed;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    &:hover { text-decoration: underline; }
+  }
+}

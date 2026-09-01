@@ -1,0 +1,164 @@
+/* ==========================================================
+   VARIABLES DE THÈME POUR LES GRAPHIQUES
+   ========================================================== */
+:root {
+  /* Mode Lumière (Light) */
+  --chart-surface: rgba(255, 255, 255, 0.75);
+  --chart-surface-hover: rgba(255, 255, 255, 0.95);
+  --chart-border: var(--border-light, rgba(0, 0, 0, 0.08));
+  --chart-title: #111827;
+  --chart-label: #9ca3af;
+  --chart-shadow: rgba(0, 0, 0, 0.06);
+
+  /* Tab styles */
+  --tab-bg: #ffffff;
+  --tab-color: #6b7280;
+  --tab-border: #e5e7eb;
+  --tab-hover-bg: #f9fafb;
+  --tab-active-bg: var(--sun, #2f6fed);
+  --tab-active-color: #ffffff;
+}
+
+[data-theme='dark'],
+body.dark-theme {
+  /* Mode Sombre (Dark) */
+  --chart-surface: rgba(18, 26, 47, 0.65);
+  --chart-surface-hover: rgba(26, 37, 66, 0.85);
+  --chart-border: var(--border-light, rgba(255, 255, 255, 0.12));
+  --chart-title: var(--text, #ffffff);
+  --chart-label: var(--text-dim, rgba(255, 255, 255, 0.5));
+  --chart-shadow: rgba(0, 0, 0, 0.35);
+
+  /* Tab styles */
+  --tab-bg: rgba(255, 255, 255, 0.05);
+  --tab-color: var(--text-dim, rgba(255, 255, 255, 0.6));
+  --tab-border: rgba(255, 255, 255, 0.12);
+  --tab-hover-bg: rgba(255, 255, 255, 0.1);
+  --tab-active-bg: var(--sun, #3b82f6);
+  --tab-active-color: #ffffff;
+}
+
+
+/* ==========================================================
+   CARTE CONTENEUR (.chart-card)
+   ========================================================== */
+.chart-card {
+  background: var(--chart-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--chart-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 16px var(--chart-shadow);
+  transition: all 0.3s ease;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--chart-title);
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__body {
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+}
+
+
+/* ==========================================================
+   ONGLETS / TABS (.chart-tab)
+   ========================================================== */
+.chart-tab {
+  padding: 4px 10px;
+  border: 1px solid var(--tab-border);
+  border-radius: 6px;
+  background: var(--tab-bg);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--tab-color);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--tab-hover-bg);
+    color: var(--chart-title);
+  }
+
+  &--active {
+    background: var(--tab-active-bg);
+    color: var(--tab-active-color);
+    border-color: var(--tab-active-bg);
+
+    &:hover {
+      background: var(--tab-active-bg);
+      opacity: 0.9;
+    }
+  }
+}
+
+
+/* ==========================================================
+   GRAPHIQUE À BARRES (.bar-chart)
+   ========================================================== */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 160px;
+
+  &__bar-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 100%;
+  }
+
+  &__bar {
+    width: 100%;
+    max-width: 24px;
+    min-height: 2px;
+    border-radius: 3px 3px 0 0;
+    /* Couleur par défaut avec repli dynamique, personnalisable via style inline dans Angular */
+    background: var(--bar-color, var(--sun, #3b82f6));
+    transition: height 0.3s ease, filter 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      filter: brightness(1.15);
+      transform: scaleY(1.02);
+      transform-origin: bottom;
+    }
+  }
+
+  &__labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  &__label {
+    font-size: 9px;
+    color: var(--chart-label);
+    transform: rotate(-45deg);
+    white-space: nowrap;
+    text-align: center;
+    flex: 1;
+  }
+}

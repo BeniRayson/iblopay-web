@@ -1,0 +1,130 @@
+// ============================================================
+// IBLOPay — Quick Actions
+// Style back-office professionnel (commission style)
+// ============================================================
+
+$font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+$font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+$white: #ffffff;
+$gray-50: #f8fafc;
+$gray-100: #f1f5f9;
+$gray-200: #e2e8f0;
+$gray-300: #cbd5e1;
+$gray-400: #94a3b8;
+$gray-500: #64748b;
+$gray-600: #475569;
+$gray-700: #334155;
+$gray-800: #1e293b;
+$gray-900: #0f172a;
+
+$blue: #3b82f6;
+$blue-50: #eff6ff;
+$green: #22c55e;
+$green-50: #f0fdf4;
+$purple: #7c3aed;
+$purple-50: #f5f3ff;
+
+.quick-actions {
+  margin-bottom: 24px;
+
+  &__label {
+    font-family: $font-body;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: $gray-500;
+    margin-bottom: 12px;
+  }
+
+  &__row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  &__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid $gray-200;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: left;
+    position: relative;
+    transition: all 0.25s ease;
+    min-width: 160px;
+    background: $white;
+    color: $gray-700;
+    font-family: $font-body;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    &--primary {
+      border-color: $blue;
+      background: $blue-50;
+      color: darken($blue, 20%);
+
+      &:hover {
+        background: darken($blue-50, 2%);
+      }
+    }
+
+    &--outline-green {
+      border-color: $green;
+      background: $green-50;
+      color: darken($green, 15%);
+
+      &:hover {
+        background: darken($green-50, 2%);
+      }
+    }
+
+    &--plain {
+      border-color: $purple;
+      background: $purple-50;
+      color: darken($purple, 10%);
+
+      &:hover {
+        background: darken($purple-50, 2%);
+      }
+    }
+
+    &-label {
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    &-subtitle {
+      font-size: 11px;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid $white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+  }
+}

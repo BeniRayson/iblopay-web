@@ -1,0 +1,256 @@
+<!-- src/app/modules/users/components/users-delete/users-delete.component.html -->
+<div class="delete-modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="delete-modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- HEADER -->
+    <div class="delete-modal-header">
+      <div class="delete-modal-icon" [class.verified]="otpVerified">
+        <i class="fas" [class.fa-shield-alt]="!otpVerified" [class.fa-check-circle]="otpVerified"></i>
+      </div>
+      <button class="delete-modal-close" (click)="onClose()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- BODY -->
+    <div class="delete-modal-body">
+      
+      <!-- ================================================================
+           ÉTAPE 1: OTP
+           ================================================================ -->
+      <div *ngIf="showOtpStep">
+        <h2>🔐 Vérification OTP</h2>
+        <p class="delete-modal-subtitle">
+          Pour des raisons de sécurité, veuillez saisir le code OTP envoyé à votre adresse email.
+        </p>
+
+        <!-- Informations de l'utilisateur -->
+        <div class="delete-user-card" *ngIf="user">
+          <div class="delete-user-avatar">
+            <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="delete-user-img" />
+            <div *ngIf="!user.photoUrl" class="delete-user-initials" [style.background]="getAvatarColor(user.id)">
+              {{ getInitials(user.firstName, user.lastName) }}
+            </div>
+          </div>
+          <div class="delete-user-info">
+            <span class="delete-user-name">{{ user.firstName }} {{ user.lastName }}</span>
+            <span class="delete-user-role">{{ getRoleLabel(user.role) }}</span>
+            <span class="delete-user-id">ID: {{ user.id }}</span>
+          </div>
+        </div>
+
+        <!-- Messages OTP -->
+        <div class="delete-alert delete-success" *ngIf="success && !otpVerified">
+          <i class="fas fa-check-circle"></i> {{ success }}
+        </div>
+        <div class="delete-alert delete-error" *ngIf="otpError">
+          <i class="fas fa-exclamation-circle"></i> {{ otpError }}
+        </div>
+
+        <!-- Champ OTP avec chrono intégré -->
+        <div class="delete-form-group">
+          <div class="delete-otp-header">
+            <label for="otpCode">
+              Code OTP <span class="required">*</span>
+              <span class="otp-hint">(Simulation: 123456)</span>
+            </label>
+            <!-- Petit chrono circulaire -->
+            <div class="delete-otp-timer" [class.expired]="otpTimer <= 0">
+              <svg viewBox="0 0 36 36" class="delete-otp-timer-svg">
+                <circle 
+                  cx="18" 
+                  cy="18" 
+                  r="14" 
+                  class="delete-otp-timer-bg"
+                />
+                <circle 
+                  cx="18" 
+                  cy="18" 
+                  r="14" 
+                  class="delete-otp-timer-progress"
+                  [style.stroke-dasharray]="87.96"
+                  [style.stroke-dashoffset]="87.96 - (87.96 * otpTimer / 60)"
+                  [style.stroke]="otpTimer > 15 ? '#4f46e5' : '#ef4444'"
+                />
+              </svg>
+              <span class="delete-otp-timer-text">{{ otpTimer }}</span>
+            </div>
+          </div>
+          
+          <div class="delete-otp-input-group">
+            <input 
+              id="otpCode"
+              type="text" 
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              [(ngModel)]="otpCode"
+              placeholder="••••••"
+              class="delete-input delete-otp-input"
+              [disabled]="isLoading || isOtpLocked || otpTimer <= 0"
+              (keyup.enter)="verifyOtp()"
+            />
+            <button 
+              type="button" 
+              class="delete-otp-resend"
+              (click)="resendOtp()"
+              [disabled]="isOtpLocked || isLoading"
+              title="Renvoyer le code"
+            >
+              <i class="fas fa-redo"></i>
+            </button>
+          </div>
+          
+          <div class="delete-otp-footer">
+            <small class="otp-help" *ngIf="isOtpLocked">
+              🔒 Verrouillé pour {{ getLockRemainingTime() }}
+            </small>
+            <small class="otp-help" *ngIf="!isOtpLocked && otpTimer > 0">
+              ⏱️ Code valable {{ getOtpRemainingTime() }}
+            </small>
+            <small class="otp-help" *ngIf="!isOtpLocked && otpTimer <= 0">
+              ⏳ Le code a expiré
+            </small>
+            <span class="delete-otp-attempts" *ngIf="otpAttempts > 0 && !isOtpLocked">
+              Tentative {{ otpAttempts }}/{{ maxOtpAttempts }}
+              <span class="attempts-dots">
+                <span class="attempt-dot" [class.filled]="i < otpAttempts" *ngFor="let i of [].constructor(maxOtpAttempts); let idx = index"></span>
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Bouton Vérifier -->
+        <button 
+          type="button" 
+          class="delete-btn-verify"
+          (click)="verifyOtp()"
+          [disabled]="!otpCode || otpCode.length < 4 || isOtpLocked || isLoading || otpTimer <= 0"
+        >
+          <i class="fas fa-check"></i> Vérifier le code
+        </button>
+      </div>
+
+      <!-- ================================================================
+           ÉTAPE 2: FORMULAIRE DE SUPPRESSION
+           ================================================================ -->
+      <div *ngIf="showDeleteStep">
+        <div class="delete-verified-badge">
+          <i class="fas fa-check-circle"></i>
+          <span>✅ OTP vérifié avec succès</span>
+        </div>
+
+        <h2>⚠️ Confirmer la suppression</h2>
+        <p class="delete-modal-subtitle">
+          Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est <strong>irréversible</strong>.
+        </p>
+
+        <!-- Informations de l'utilisateur -->
+        <div class="delete-user-card" *ngIf="user">
+          <div class="delete-user-avatar">
+            <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="delete-user-img" />
+            <div *ngIf="!user.photoUrl" class="delete-user-initials" [style.background]="getAvatarColor(user.id)">
+              {{ getInitials(user.firstName, user.lastName) }}
+            </div>
+          </div>
+          <div class="delete-user-info">
+            <span class="delete-user-name">{{ user.firstName }} {{ user.lastName }}</span>
+            <span class="delete-user-role">{{ getRoleLabel(user.role) }}</span>
+            <span class="delete-user-id">ID: {{ user.id }}</span>
+            <span class="delete-user-status" [class]="getStatusClass(user.status)">
+              <span class="delete-status-dot"></span>
+              {{ getStatusLabel(user.status) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Détails de la suppression -->
+        <div class="delete-details">
+          <div class="delete-detail-item">
+            <i class="fas fa-user"></i>
+            <span>Toutes les informations personnelles</span>
+          </div>
+          <div class="delete-detail-item">
+            <i class="fas fa-history"></i>
+            <span>Historique des transactions</span>
+          </div>
+          <div class="delete-detail-item">
+            <i class="fas fa-wallet"></i>
+            <span>Soldes et portefeuilles associés</span>
+          </div>
+          <div class="delete-detail-item">
+            <i class="fas fa-file-alt"></i>
+            <span>Documents et justificatifs</span>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="delete-alert delete-success" *ngIf="success">
+          <i class="fas fa-check-circle"></i> {{ success }}
+        </div>
+        <div class="delete-alert delete-error" *ngIf="error">
+          <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+
+        <!-- Motif de suppression -->
+        <div class="delete-form-group">
+          <label for="deleteReason">
+            Motif de suppression <span class="required">*</span>
+          </label>
+          <select 
+            id="deleteReason" 
+            [(ngModel)]="deleteReason"
+            class="delete-input"
+            [disabled]="isLoading"
+          >
+            <option value="">Sélectionner un motif</option>
+            <option *ngFor="let reason of reasonOptions" [value]="reason">
+              {{ reason }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Confirmation textuelle -->
+        <div class="delete-form-group">
+          <label for="deleteConfirm">
+            Tapez <strong>"supprimer"</strong> pour confirmer <span class="required">*</span>
+          </label>
+          <input 
+            id="deleteConfirm"
+            type="text" 
+            [(ngModel)]="confirmText"
+            placeholder="Tapez 'supprimer'..."
+            class="delete-input"
+            [disabled]="isLoading"
+          />
+        </div>
+
+        <!-- Boutons -->
+        <div class="delete-modal-footer">
+          <button 
+            type="button" 
+            class="delete-btn-secondary" 
+            (click)="goBackToOtp()" 
+            [disabled]="isLoading"
+          >
+            <i class="fas fa-arrow-left"></i> Retour
+          </button>
+          <button 
+            type="button" 
+            class="delete-btn-primary" 
+            [disabled]="!deleteReason || confirmText !== 'supprimer' || isLoading || success"
+            (click)="onConfirmDelete()"
+          >
+            <span *ngIf="!isLoading">
+              <i class="fas fa-trash-alt"></i> Confirmer la suppression
+            </span>
+            <span *ngIf="isLoading" class="delete-btn-loader">
+              <span class="delete-spinner"></span> Suppression...
+            </span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

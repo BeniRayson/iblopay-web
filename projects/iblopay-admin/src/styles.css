@@ -1,0 +1,106 @@
+/* ==========================================================
+   IBLOPAY — Unified Theme Variable Matrix
+   Ajusté pour correspondre au look "Premium Tech Indigo" de l'image
+   ========================================================== */
+
+:root {
+    /* ─── FOND GLOBAL & PAREMENTS ─── */
+    --bg-darkest: #070d19;
+    /* Fond de l'application (légèrement plus noir que les cartes) */
+    --bg-dark: #0b1329;
+    /* Arrière-plan standard */
+    --bg-card: #111c44;
+    /* Fond des cartes et de la sidebar (Bleu nuit profond de la capture) */
+    --bg-card-hover: #1b2559;
+    /* État survolé des lignes et éléments cliquables */
+    --bg-sidebar: #111c44;
+    /* Alignement strict de la sidebar sur les cartes */
+
+    /* ─── BORDURES & SÉPARATEURS ─── */
+    --border-color: rgba(255, 255, 255, 0.05);
+    /* Lignes de délimitation ultra-fines de la capture */
+    --border-light: rgba(255, 255, 255, 0.1);
+    /* Bordures d'éléments actifs ou focus */
+
+    /* ─── TYPOGRAPHIE & HIÉRARCHIE ─── */
+    --text-primary: #ffffff;
+    /* Titres principaux et montants financiers importants */
+    --text-secondary: #a3b1cc;
+    /* Libellés de menus, textes de cartes (haute lisibilité) */
+    --text-muted: #64748b;
+    /* Placeholders, sous-titres discrets, dates */
+
+    /* ─── COULEURS D'ACCENTS ET BADGES (Solides & RGB pour opacités) ─── */
+    --accent-blue: #3b82f6;
+    --accent-blue-rgb: 59, 130, 246;
+
+    --accent-green: #22c55e;
+    --accent-green-rgb: 34, 197, 94;
+
+    --accent-purple: #7c3aed;
+    --accent-purple-rgb: 124, 58, 237;
+
+    --accent-orange: #f97316;
+    --accent-orange-rgb: 249, 115, 22;
+
+    --accent-yellow: #ca8a04;
+    /* Jaune légèrement assombri pour éviter le texte "invisible" */
+    --accent-yellow-rgb: 202, 138, 4;
+
+    --accent-red: #ef4444;
+    --accent-red-rgb: 239, 68, 68;
+
+    --accent-cyan: #06b6d4;
+    --accent-cyan-rgb: 6, 182, 212;
+
+    --accent-pink: #ec4899;
+    --accent-pink-rgb: 236, 72, 153;
+
+    /* Ombres portées diffuses style Dashboard */
+    --shadow-color: rgba(0, 0, 0, 0.25);
+}
+
+/* ─── MODE CLAIR PROFESSIONNEL ─────────────────────────── */
+body.light-mode {
+    /* ─── FOND GLOBAL & PAREMENTS ─── */
+    --bg-darkest: #f8fafc;
+    /* Fond d'application doux (Slate 50) */
+    --bg-dark: #f1f5f9;
+    /* Entre-deux */
+    --bg-card: #ffffff;
+    /* Cartes blanches épurées */
+    --bg-card-hover: #f8fafc;
+    /* Survol discret */
+    --bg-sidebar: #ffffff;
+    /* Sidebar claire */
+
+    /* ─── BORDURES & SÉPARATEURS ─── */
+    --border-color: #e2e8f0;
+    /* Bordures grises subtiles */
+    --border-light: #cbd5e1;
+
+    /* ─── TYPOGRAPHIE & HIÉRARCHIE ─── */
+    --text-primary: #0f172a;
+    /* Slate 900 très profond */
+    --text-secondary: #475569;
+    /* Slate 600 */
+    --text-muted: #94a3b8;
+    /* Slate 400 */
+
+    /* ─── AJUSTEMENT DES ACCENTS POUR MODE CLAIR ─── */
+    --accent-blue: #2563eb;
+    --accent-green: #16a34a;
+    --accent-purple: #6d28d9;
+    --accent-red: #dc2626;
+
+    --shadow-color: rgba(15, 23, 42, 0.05);
+}
+
+/* ─── APPLICATION STRUCTURELLE BASE ───────────────────── */
+body {
+    background-color: var(--bg-darkest);
+    color: var(--text-primary);
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}

@@ -5,6 +5,12 @@
   "scripts": {
     "build": "npx tsc -p .",
     "start": "ng serve iblopay-admin --port 10800 --host 0.0.0.0",
+    "start:public": "ng serve iblopay-public --port 80 --host 0.0.0.0",
+    "start:admin": "ng serve iblopay-admin --port 10800 --host 0.0.0.0",
+    "start:providers": "ng serve iblopay-providers --port 11200 --host 0.0.0.0",
+    "build:public": "ng build iblopay-public",
+    "build:admin": "ng build iblopay-admin",
+    "build:providers": "ng build iblopay-providers",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -21,6 +27,7 @@
     "chart.js": "^4.5.1",
     "express": "^4.18.2",
     "rxjs": "^7.8.1",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.14.0"
   },
   "devDependencies": {

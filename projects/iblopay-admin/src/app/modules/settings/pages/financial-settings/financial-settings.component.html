@@ -1,0 +1,390 @@
+<div class="settings-page">
+  <header class="page-header">
+    
+    <div class="page-header__title">
+      <span class="icon">🏦</span>
+      <div>
+        <h1>Gestion Financière</h1>
+        <p>Bordereaux, comptabilité et rapports financiers</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard KPI -->
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let kpi of getKpiData()">
+      <div class="kpi-card__icon" [style.background]="kpi.color">{{ kpi.icon }}</div>
+      <div class="kpi-card__content">
+        <span class="kpi-card__value">{{ kpi.value }}</span>
+        <span class="kpi-card__label">{{ kpi.label }}</span>
+        <span class="kpi-card__trend" [class]="kpi.trend">
+          {{ kpi.trend === 'up' ? '↑' : kpi.trend === 'down' ? '↓' : '→' }}
+          {{ kpi.trendValue }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation par onglets -->
+  <nav class="tabs-nav">
+    <button
+      class="tab-btn"
+      *ngFor="let tab of tabs"
+      [class.active]="activeTab === tab.key"
+      (click)="setActiveTab(tab.key)"
+    >
+      <span class="tab-btn__icon">{{ tab.icon }}</span>
+      {{ tab.label }}
+      <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
+    </button>
+  </nav>
+
+  <!-- ==================== BORDEREAUX ==================== -->
+  <div *ngIf="activeTab === 'bordereaux'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">📋 Bordereaux de versement</h3>
+      <div class="panel__actions">
+        <button class="btn btn--primary" (click)="openNouveauBordereau()">
+          <span>➕</span> Nouveau bordereau
+        </button>
+        <button class="btn btn--outline" (click)="exportBordereaux()">📊 Export</button>
+        <button class="btn btn--outline" (click)="printBordereaux()">🖨️ Imprimer</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>N° Bordereau</th>
+            <th>Versant</th>
+            <th>Montant</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of getPaginatedBordereaux()">
+            <td><span class="badge badge--mono">{{ b.numero }}</span></td>
+            <td><strong>{{ b.nomVersant }}</strong></td>
+            <td><span class="amount amount--success">{{ b.montant | number:'1.0-0' }} BIF</span></td>
+            <td class="text-muted">{{ b.date }}</td>
+            <td><span class="status-badge" [class]="'status-badge--' + b.statut">{{ getStatutLabel(b.statut) }}</span></td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn" title="Voir détails" (click)="viewBordereau(b)">👁️</button>
+                <button class="action-btn" title="Télécharger" (click)="downloadBordereau(b)">📄</button>
+                <button class="action-btn action-btn--danger" title="Supprimer" (click)="deleteBordereau(b)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" *ngIf="getTotalBordereauxPages() > 1">
+      <button class="pagination__btn" (click)="prevPage('bordereaux')" [disabled]="getCurrentPage('bordereaux') === 1">‹</button>
+      <span class="pagination__info">Page {{ getCurrentPage('bordereaux') }} / {{ getTotalBordereauxPages() }}</span>
+      <button class="pagination__btn" (click)="nextPage('bordereaux')" [disabled]="getCurrentPage('bordereaux') === getTotalBordereauxPages()">›</button>
+      <span class="pagination__total">{{ getBordereaux().length }} bordereaux</span>
+    </div>
+  </div>
+
+  <!-- ==================== COMPTABILITÉ ==================== -->
+  <div *ngIf="activeTab === 'comptabilite'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">🧾 Écritures Comptables</h3>
+      <div class="panel__actions">
+        <button class="btn btn--primary" (click)="openNouvelleEcriture()">✏️ Nouvelle écriture</button>
+        <button class="btn btn--outline" (click)="exportComptabilite()">📊 Export</button>
+        <button class="btn btn--outline" (click)="printComptabilite()">🖨️ Imprimer</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Compte</th>
+            <th>Libellé</th>
+            <th>Débit</th>
+            <th>Crédit</th>
+            <th>Réf.</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of getPaginatedComptabilite()">
+            <td class="text-muted">{{ item.date }}</td>
+            <td><span class="badge badge--compte">{{ item.compte }}</span></td>
+            <td>{{ item.libelle }}</td>
+            <td><span class="amount amount--success" *ngIf="item.debit">{{ item.debit | number:'1.0-0' }} BIF</span></td>
+            <td><span class="amount amount--danger" *ngIf="item.credit">{{ item.credit | number:'1.0-0' }} BIF</span></td>
+            <td class="text-muted">{{ item.reference }}</td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn" title="Voir" (click)="viewEcriture(item)">👁️</button>
+                <button class="action-btn" title="Corriger" (click)="openCorrigerEcriture(item)">🔧</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" *ngIf="getTotalComptabilitePages() > 1">
+      <button class="pagination__btn" (click)="prevPage('comptabilite')" [disabled]="getCurrentPage('comptabilite') === 1">‹</button>
+      <span class="pagination__info">Page {{ getCurrentPage('comptabilite') }} / {{ getTotalComptabilitePages() }}</span>
+      <button class="pagination__btn" (click)="nextPage('comptabilite')" [disabled]="getCurrentPage('comptabilite') === getTotalComptabilitePages()">›</button>
+      <span class="pagination__total">{{ getComptabiliteData().length }} écritures</span>
+    </div>
+  </div>
+
+  <!-- ==================== RAPPORTS ==================== -->
+  <div *ngIf="activeTab === 'rapports'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">📄 Rapports Financiers</h3>
+      <div class="panel__actions">
+        <button class="btn btn--primary" (click)="openGenererRapport()">📄 Générer un rapport</button>
+      </div>
+    </div>
+    <div class="rapports-grid">
+      <div class="rapport-card" *ngFor="let r of getRapports()" (click)="viewRapport(r)">
+        <div class="rapport-card__icon">{{ r.icon }}</div>
+        <div class="rapport-card__info">
+          <div class="rapport-card__title">{{ r.titre }}</div>
+          <div class="rapport-card__desc">{{ r.description }}</div>
+          <div class="rapport-card__meta">
+            <span>📅 {{ r.date }}</span>
+            <span>📄 {{ r.taille }}</span>
+            <span class="rapport-card__type">{{ r.type }}</span>
+          </div>
+        </div>
+        <div class="rapport-card__actions">
+          <button class="action-btn" title="Télécharger" (click)="$event.stopPropagation(); downloadRapport(r)">📥</button>
+          <button class="action-btn" title="Voir" (click)="$event.stopPropagation(); viewRapport(r)">👁️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CONFIGURATION ==================== -->
+  <div *ngIf="activeTab === 'configuration'" class="panel">
+    <div class="panel__header">
+      <h3 class="panel__title">⚙️ Configuration Financière</h3>
+    </div>
+    <div class="config-grid">
+      <div class="config-card" *ngFor="let config of getConfiguration()">
+        <div class="config-card__header">
+          <span class="config-card__icon">{{ config.icon }}</span>
+          <span class="config-card__title">{{ config.nom }}</span>
+        </div>
+        <div class="config-card__body">
+          <div class="config-item" *ngFor="let item of config.items">
+            <span class="config-item__label">{{ item.label }}</span>
+            <span class="config-item__value">{{ item.value }}</span>
+            <button class="action-btn action-btn--sm" title="Modifier" (click)="openModifierConfig(item)">✏️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODALE ==================== -->
+  <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
+  <div class="modal modal--animated" *ngIf="modalOpen">
+    <div class="modal__header">
+      <h2 class="modal__title">{{ modalTitle }}</h2>
+      <button class="modal__close" (click)="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__icon">{{ modalIcon }}</div>
+
+      <!-- Nouveau bordereau -->
+      <div *ngIf="modalType === 'nouveau_bordereau'">
+        <div class="form-group">
+          <label>Nom du versant</label>
+          <input type="text" [(ngModel)]="formData.nomVersant" class="form-control" placeholder="Nom complet" />
+        </div>
+        <div class="form-group">
+          <label>Montant versé (BIF)</label>
+          <input type="number" [(ngModel)]="formData.montant" class="form-control" placeholder="Montant en BIF" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Date de versement</label>
+          <input type="date" [(ngModel)]="formData.date" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="formData.description" class="form-control" placeholder="Motif du versement" />
+        </div>
+      </div>
+
+      <!-- Nouvelle écriture -->
+      <div *ngIf="modalType === 'nouvelle_ecriture' || modalType === 'corriger_ecriture'">
+        <div class="form-group">
+          <label>Compte</label>
+          <select [(ngModel)]="formData.compte" class="form-control">
+            <option value="411001 - Clients">411001 - Clients</option>
+            <option value="512001 - Banque">512001 - Banque</option>
+            <option value="531001 - Caisse">531001 - Caisse</option>
+            <option value="701001 - Ventes">701001 - Ventes</option>
+            <option value="411002 - Agents">411002 - Agents</option>
+            <option value="411003 - Super Agents">411003 - Super Agents</option>
+            <option value="512002 - Trust Account">512002 - Trust Account</option>
+            <option value="706001 - Commissions">706001 - Commissions</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Libellé</label>
+          <input type="text" [(ngModel)]="formData.libelle" class="form-control" placeholder="Description de l'écriture" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Débit</label>
+            <input type="number" [(ngModel)]="formData.debit" class="form-control" placeholder="Montant débit" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Crédit</label>
+            <input type="number" [(ngModel)]="formData.credit" class="form-control" placeholder="Montant crédit" min="0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Type d'écriture</label>
+          <select [(ngModel)]="formData.typeEcriture" class="form-control">
+            <option value="achat">Achat</option>
+            <option value="vente">Vente</option>
+            <option value="transfert">Transfert</option>
+            <option value="ajustement">Ajustement</option>
+            <option value="commission">Commission</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Générer rapport -->
+      <div *ngIf="modalType === 'generer_rapport'">
+        <div class="form-group">
+          <label>Type de rapport</label>
+          <select [(ngModel)]="formData.type" class="form-control">
+            <option value="journalier">📅 Rapport Journalier</option>
+            <option value="hebdomadaire">📅 Rapport Hebdomadaire</option>
+            <option value="mensuel">📅 Rapport Mensuel</option>
+            <option value="commissions">💵 Rapport des Commissions</option>
+            <option value="bordereaux">📋 Rapport des Bordereaux</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Format</label>
+          <select [(ngModel)]="formData.format" class="form-control">
+            <option value="pdf">📑 PDF</option>
+            <option value="txt">📄 Texte</option>
+            <option value="json">🔢 JSON</option>
+          </select>
+        </div>
+        <div class="preview-box">
+          <div class="preview-box__header">📄 Aperçu du rapport</div>
+          <div class="preview-box__body">
+            <div><strong>Type:</strong> {{ formData.type | titlecase }}</div>
+            <div><strong>Période:</strong> {{ getRapportPeriode() }}</div>
+            <div><strong>Format:</strong> {{ formData.format | uppercase }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voir bordereau -->
+      <div *ngIf="modalType === 'voir_bordereau' && selectedItem">
+        <div class="detail-card detail-card--bordered">
+          <div class="detail-card__row">
+            <span class="detail-card__label">N° Bordereau</span>
+            <span class="detail-card__value badge badge--mono">{{ selectedItem.numero }}</span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Versant</span>
+            <span class="detail-card__value"><strong>{{ selectedItem.nomVersant }}</strong></span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Montant</span>
+            <span class="detail-card__value amount--success">{{ selectedItem.montant | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Date</span>
+            <span class="detail-card__value">{{ selectedItem.date }}</span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Statut</span>
+            <span class="detail-card__value">
+              <span class="status-badge" [class]="'status-badge--' + selectedItem.statut">{{ getStatutLabel(selectedItem.statut) }}</span>
+            </span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Description</span>
+            <span class="detail-card__value">{{ selectedItem.description || '—' }}</span>
+          </div>
+          <div class="detail-card__actions">
+            <button class="btn btn--outline" (click)="downloadBordereau(selectedItem)">📄 Télécharger</button>
+            <button class="btn btn--primary" (click)="closeModal()">Fermer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voir rapport -->
+      <div *ngIf="modalType === 'voir_rapport' && selectedItem">
+        <div class="detail-card detail-card--bordered">
+          <div class="detail-card__row">
+            <span class="detail-card__label">Titre</span>
+            <span class="detail-card__value"><strong>{{ selectedItem.titre }}</strong></span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Type</span>
+            <span class="detail-card__value">{{ selectedItem.type }}</span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Date</span>
+            <span class="detail-card__value">{{ selectedItem.date }}</span>
+          </div>
+          <div class="detail-card__row">
+            <span class="detail-card__label">Taille</span>
+            <span class="detail-card__value">{{ selectedItem.taille }}</span>
+          </div>
+          <div class="detail-card__row" style="flex-direction: column; align-items: stretch;">
+            <span class="detail-card__label">Contenu</span>
+            <div class="rapport-content">
+              <pre>{{ rapportPreview }}</pre>
+            </div>
+          </div>
+          <div class="detail-card__actions">
+            <button class="btn btn--outline" (click)="downloadRapport(selectedItem)">📥 Télécharger</button>
+            <button class="btn btn--primary" (click)="closeModal()">Fermer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modifier configuration -->
+      <div *ngIf="modalType === 'modifier_config' && selectedItem">
+        <div class="form-group">
+          <label>Configuration</label>
+          <input type="text" class="form-control" [value]="selectedItem.label" disabled />
+        </div>
+        <div class="form-group">
+          <label>Nouvelle valeur</label>
+          <input type="text" [(ngModel)]="formData.nouvelleValeur" class="form-control" [value]="selectedItem.value" />
+        </div>
+        <div class="form-group">
+          <label>Raison</label>
+          <input type="text" [(ngModel)]="formData.raison" class="form-control" placeholder="Motif de la modification" />
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
+      <button class="btn btn--primary" (click)="confirmModal()" *ngIf="modalType !== 'voir_bordereau' && modalType !== 'voir_rapport'">Confirmer</button>
+    </div>
+  </div>
+
+  <!-- ==================== TOASTS ==================== -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>
+      {{ t.message }}
+      <button class="toast__close" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

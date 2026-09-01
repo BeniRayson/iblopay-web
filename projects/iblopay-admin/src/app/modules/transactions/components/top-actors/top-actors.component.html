@@ -1,0 +1,25 @@
+<div class="top-actors-card">
+  <div class="top-actors-card__header">
+    <span class="top-actors-card__title">{{ title }}</span>
+    <div class="top-actors-card__tabs">
+      <button class="mini-tab" *ngFor="let tab of tabs"
+              [class.mini-tab--active]="selectedTab === tab.key"
+              (click)="setTab(tab.key)">{{ tab.label }}</button>
+    </div>
+  </div>
+
+  <div class="top-actors-card__list">
+    <div class="actor-row" *ngFor="let actor of actors">
+      <span class="actor-row__rank">{{ actor.rank }}</span>
+      <div class="actor-row__info">
+        <span class="actor-row__name">{{ actor.name }}</span>
+        <div class="actor-row__bar-track">
+          <div class="actor-row__bar" [style.width.%]="actor.barPercent"></div>
+        </div>
+      </div>
+      <span class="actor-row__volume">{{ actor.volumeFormatted }}</span>
+    </div>
+  </div>
+
+  <a class="top-actors-card__footer" href="#">Voir le classement complet →</a>
+</div>

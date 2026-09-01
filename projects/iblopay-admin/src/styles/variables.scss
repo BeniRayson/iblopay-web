@@ -1,0 +1,40 @@
+// ==========================================================
+// IBLOPAY — VARIABLES SASS
+// ==========================================================
+
+// ---- Couleurs (fallback pour Sass) ----
+$bg-darkest: #061426;
+$bg-dark: #07182b;
+$bg-card: #0d1a2f;
+$bg-card-hover: #15203a;
+$bg-sidebar: #07182b;
+$border-color: #1a2a45;
+$border-light: #243150;
+$text-primary: #e8edf7;
+$text-secondary: #8896b3;
+$text-muted: #5c6986;
+$accent-blue: #3b82f6;
+$accent-blue-light: #60a5fa;
+$accent-green: #22c55e;
+$accent-purple: #a855f7;
+$accent-orange: #f97316;
+$accent-teal: #14b8a6;
+$accent-yellow: #eab308;
+$accent-red: #ef4444;
+$accent-cyan: #06b6d4;
+$accent-pink: #ec4899;
+$gold: #f5c842;
+
+// ---- Mode clair ----
+$border-color-light: #e2e8f0;
+$bg-card-light: #ffffff;
+$text-primary-light: #0f172a;
+$text-secondary-light: #475569;
+
+// ---- Breakpoints (pour les media queries Sass) ----
+$breakpoint-xl: 1550px;
+$breakpoint-lg: 1050px;
+$breakpoint-tablet: 1024px; // <-- CORRIGÉ : aligné avec layout
+$breakpoint-md: 900px;
+$breakpoint-sm: 560px;
+$breakpoint-mobile: 480px; // <-- AJOUTÉ

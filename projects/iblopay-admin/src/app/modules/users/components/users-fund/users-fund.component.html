@@ -1,0 +1,464 @@
+<!-- src/app/modules/users/components/users-fund/users-fund.component.html -->
+<div class="fund-container" [class.dark-mode]="isDarkMode">
+  
+  <!-- LOADING -->
+  <div class="loading-screen" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement des informations...</p>
+  </div>
+
+  <!-- CONTENU -->
+  <div class="fund-content" *ngIf="!isLoading && user">
+    
+    <!-- HEADER -->
+    <div class="fund-header">
+      <div class="header-left">
+        
+        <div class="avatar-wrapper">
+          <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="avatar-img" />
+          <div *ngIf="!user.photoUrl" class="avatar-initials" [style.background]="getAvatarColor(user.id)">
+            {{ getInitials(user.firstName, user.lastName) }}
+          </div>
+        </div>
+        <div class="user-header-info">
+          <h1>{{ user.firstName }} {{ user.lastName }}</h1>
+          <div class="header-tags">
+            <span class="user-id">ID: {{ user.id }}</span>
+            <span class="user-role" [class]="getRoleClass(user.role)">
+              <i class="fas" [class.fa-user]="user.role === 'CLIENT'"
+                       [class.fa-user-tie]="user.role === 'AGENT'"
+                       [class.fa-user-cog]="user.role === 'SUPER_AGENT'"></i>
+              {{ getRoleLabel(user.role) }}
+            </span>
+            <span class="status-badge" [class]="getStatusClass(user.status)">
+              <span class="status-dot"></span>
+              {{ getStatusLabel(user.status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-theme" (click)="toggleTheme()">
+          <i class="fas" [class.fa-moon]="!isDarkMode" [class.fa-sun]="isDarkMode"></i>
+        </button>
+        <div class="header-balance">
+          <span class="balance-label">Solde actuel</span>
+          <span class="balance-value">{{ formatCurrency(user.walletBalance) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS RAPIDES -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <i class="fas fa-wallet"></i>
+        <div>
+          <span class="stat-value">{{ formatCurrency(user.walletBalance) }}</span>
+          <span class="stat-label">Solde e-Money</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-exchange-alt"></i>
+        <div>
+          <span class="stat-value">{{ allTransactions.length }}</span>
+          <span class="stat-label">Transactions</span>
+        </div>
+      </div>
+      <div class="stat-item" *ngIf="user.role === 'AGENT' || user.role === 'SUPER_AGENT'">
+        <i class="fas fa-percent"></i>
+        <div>
+          <span class="stat-value">{{ formatCurrency(totalCommissions) }}</span>
+          <span class="stat-label">Commissions reçues</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-coins"></i>
+        <div>
+          <span class="stat-value">{{ formatCurrency(totalFunds) }}</span>
+          <span class="stat-label">Total approvisionnements</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENU PRINCIPAL: COLONNES -->
+    <div class="fund-columns">
+      
+      <!-- COLONNE GAUCHE -->
+      <div class="fund-left-column">
+        
+        <!-- CARTE APPROVISIONNEMENT -->
+        <div class="fund-card card-fund">
+          <div class="fund-card-header">
+            <div class="header-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div>
+              <h3>Approvisionnement du wallet</h3>
+              <p *ngIf="user.role === 'CLIENT'">
+                Créditez le compte en cas de <strong>perte</strong>, <strong>fuite</strong> ou <strong>erreur de rechargement</strong>
+              </p>
+              <p *ngIf="user.role === 'AGENT' || user.role === 'SUPER_AGENT'">
+                Réapprovisionnez le wallet après une <strong>perte</strong>, une <strong>fuite</strong> ou une <strong>erreur de transaction</strong>
+              </p>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div class="alert alert-success" *ngIf="fundSuccess">
+            <i class="fas fa-check-circle"></i> {{ fundSuccess }}
+          </div>
+          <div class="alert alert-error" *ngIf="fundError">
+            <i class="fas fa-exclamation-circle"></i> {{ fundError }}
+          </div>
+
+          <!-- Aperçu du solde -->
+          <div class="balance-preview">
+            <div class="balance-item">
+              <span class="label">Solde actuel</span>
+              <span class="value">{{ formatCurrency(user.walletBalance) }}</span>
+            </div>
+            <div class="balance-arrow">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="balance-item highlight">
+              <span class="label">Nouveau solde</span>
+              <span class="value">{{ formatCurrency(user.walletBalance + (fundForm.get('amount')?.value || 0)) }}</span>
+            </div>
+          </div>
+
+          <form [formGroup]="fundForm" (ngSubmit)="onSubmitFund()" class="fund-form">
+            
+            <div class="form-group" [class.has-error]="getFieldError('amount')">
+              <label for="fund-amount">
+                <i class="fas fa-money-bill-wave"></i> Montant (Fbu) *
+              </label>
+              <input 
+                type="number" 
+                id="fund-amount" 
+                formControlName="amount" 
+                placeholder="Ex: 100000"
+                class="form-input fund-input-lg"
+              />
+              <span class="field-error" *ngIf="getFieldError('amount')">{{ getFieldError('amount') }}</span>
+            </div>
+
+            <div class="form-group" [class.has-error]="getFieldError('reason')">
+              <label for="fund-reason">
+                <i class="fas fa-tag"></i> Motif *
+              </label>
+              <select id="fund-reason" formControlName="reason" class="form-input">
+                <option value="">Sélectionner un motif</option>
+                <option value="Perte de fonds">💰 Perte de fonds</option>
+                <option value="Fuite de transaction">🔒 Fuite de transaction</option>
+                <option value="Erreur de rechargement">🔄 Erreur de rechargement</option>
+                <option value="Ajustement commission">📊 Ajustement commission</option>
+                <option value="Autre">📝 Autre</option>
+              </select>
+              <span class="field-error" *ngIf="getFieldError('reason')">{{ getFieldError('reason') }}</span>
+            </div>
+
+            <div class="form-group">
+              <label for="fund-description">
+                <i class="fas fa-sticky-note"></i> Description
+              </label>
+              <textarea 
+                id="fund-description" 
+                formControlName="description" 
+                placeholder="Informations complémentaires..."
+                class="form-input fund-textarea"
+                rows="2"
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn-fund" [disabled]="fundForm.invalid || fundLoading">
+              <span *ngIf="!fundLoading">
+                <i class="fas fa-check"></i> Créditer le wallet
+              </span>
+              <span *ngIf="fundLoading" class="btn-loader">
+                <span class="spinner-small"></span> Traitement...
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <!-- CARTE TRANSACTIONS -->
+        <div class="fund-card card-transactions">
+          <div class="fund-card-header">
+            <div class="header-icon">
+              <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div>
+              <h3>Transactions</h3>
+              <p>Historique des dépôts, retraits et transferts</p>
+            </div>
+            <div class="header-badge">
+              <span class="badge-count">{{ filteredTransactions.length }}</span>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="transactionFilter" 
+                placeholder="Rechercher une transaction..."
+              />
+            </div>
+          </div>
+
+          <div class="transaction-list">
+            <div class="transaction-item" *ngFor="let txn of filteredTransactions">
+              <div class="txn-icon" [class]="getTransactionTypeClass(txn.type)">
+                <i class="fas" [class.fa-arrow-right]="txn.type === 'TRANSFER'"
+                             [class.fa-arrow-down]="txn.type === 'DEPOSIT'"
+                             [class.fa-arrow-up]="txn.type === 'WITHDRAWAL'"
+                             [class.fa-coins]="txn.type === 'FUND'"></i>
+              </div>
+              <div class="txn-info">
+                <div class="txn-description">{{ txn.description }}</div>
+                <div class="txn-meta">
+                  <span class="txn-ref">{{ txn.reference }}</span>
+                  <span class="txn-date">{{ formatDate(txn.date) }}</span>
+                  <span *ngIf="txn.from" class="txn-from">De: {{ txn.from }}</span>
+                  <span *ngIf="txn.to" class="txn-to">Vers: {{ txn.to }}</span>
+                  <span *ngIf="txn.commission" class="txn-commission">Com: {{ formatCurrency(txn.commission) }}</span>
+                </div>
+              </div>
+              <div class="txn-amount" [class.positive]="txn.type === 'DEPOSIT' || txn.type === 'FUND'"
+                                         [class.negative]="txn.type === 'WITHDRAWAL' || txn.type === 'TRANSFER'">
+                {{ txn.type === 'DEPOSIT' || txn.type === 'FUND' ? '+' : '-' }}
+                {{ formatCurrency(txn.amount) }}
+              </div>
+              <div class="txn-status" [class]="getTransactionStatusClass(txn.status)">
+                {{ getTransactionStatusLabel(txn.status) }}
+              </div>
+            </div>
+            <div class="empty-state" *ngIf="filteredTransactions.length === 0">
+              <i class="fas fa-exchange-alt"></i>
+              <p>Aucune transaction trouvée</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARTE COMMISSIONS (pour AGENT et SUPER_AGENT) -->
+        <div class="fund-card card-commissions" *ngIf="user.role === 'AGENT' || user.role === 'SUPER_AGENT'">
+          <div class="fund-card-header">
+            <div class="header-icon">
+              <i class="fas fa-percent"></i>
+            </div>
+            <div>
+              <h3>Commissions reçues</h3>
+              <p>Total: <strong>{{ formatCurrency(totalCommissions) }}</strong> sur {{ commissions.length }} opérations</p>
+            </div>
+            <div class="header-badge">
+              <span class="badge-count">{{ filteredCommissions.length }}</span>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input 
+                type="text" 
+                [(ngModel)]="commissionFilter" 
+                placeholder="Rechercher une commission..."
+              />
+            </div>
+          </div>
+
+          <div class="commission-list">
+            <div class="commission-item" *ngFor="let com of filteredCommissions">
+              <div class="com-icon">
+                <i class="fas fa-percent"></i>
+              </div>
+              <div class="com-info">
+                <div class="com-description">Commission de {{ com.from }}</div>
+                <div class="com-meta">
+                  <span class="com-ref">{{ com.forTransaction }}</span>
+                  <span class="com-date">{{ formatDate(com.date) }}</span>
+                </div>
+              </div>
+              <div class="com-amount positive">
+                +{{ formatCurrency(com.amount) }}
+              </div>
+              <div class="com-status" [class]="getCommissionStatusClass(com.status)">
+                {{ getCommissionStatusLabel(com.status) }}
+              </div>
+            </div>
+            <div class="empty-state" *ngIf="filteredCommissions.length === 0">
+              <i class="fas fa-percent"></i>
+              <p>Aucune commission trouvée</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE: HISTORIQUE COMPLET -->
+      <div class="fund-right-column">
+        <div class="fund-card card-history">
+          <div class="fund-card-header">
+            <div class="header-icon">
+              <i class="fas fa-history"></i>
+            </div>
+            <div>
+              <h3>Historique des opérations</h3>
+              <p>Dépôts, retraits, transferts et approvisionnements</p>
+            </div>
+          </div>
+
+          <div class="history-list">
+            <!-- Dépôts -->
+            <div class="history-section">
+              <div class="history-section-title">
+                <i class="fas fa-arrow-down"></i> Dépôts
+                <span class="history-count">{{ getDeposits().length }}</span>
+              </div>
+              <div class="history-item" *ngFor="let item of getDeposits()">
+                <div class="history-icon deposit">
+                  <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="history-info">
+                  <div class="history-description">{{ item.description }}</div>
+                  <div class="history-meta">
+                    <span class="history-ref">{{ item.reference }}</span>
+                    <span class="history-date">{{ formatDate(item.date) }}</span>
+                    <span *ngIf="item.from" class="history-from">De: {{ item.from }}</span>
+                  </div>
+                </div>
+                <div class="history-amount positive">
+                  +{{ formatCurrency(item.amount) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Retraits -->
+            <div class="history-section">
+              <div class="history-section-title">
+                <i class="fas fa-arrow-up"></i> Retraits
+                <span class="history-count">{{ getWithdrawals().length }}</span>
+              </div>
+              <div class="history-item" *ngFor="let item of getWithdrawals()">
+                <div class="history-icon withdrawal">
+                  <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="history-info">
+                  <div class="history-description">{{ item.description }}</div>
+                  <div class="history-meta">
+                    <span class="history-ref">{{ item.reference }}</span>
+                    <span class="history-date">{{ formatDate(item.date) }}</span>
+                    <span *ngIf="item.to" class="history-to">Vers: {{ item.to }}</span>
+                  </div>
+                </div>
+                <div class="history-amount negative">
+                  -{{ formatCurrency(item.amount) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Transferts (pour AGENT et SUPER_AGENT) -->
+            <div class="history-section" *ngIf="user.role === 'AGENT' || user.role === 'SUPER_AGENT'">
+              <div class="history-section-title">
+                <i class="fas fa-exchange-alt"></i> Transferts
+                <span class="history-count">{{ getTransfers().length }}</span>
+              </div>
+              <div class="history-item" *ngFor="let item of getTransfers()">
+                <div class="history-icon transfer">
+                  <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="history-info">
+                  <div class="history-description">{{ item.description }}</div>
+                  <div class="history-meta">
+                    <span class="history-ref">{{ item.reference }}</span>
+                    <span class="history-date">{{ formatDate(item.date) }}</span>
+                    <span *ngIf="item.from" class="history-from">De: {{ item.from }}</span>
+                    <span *ngIf="item.to" class="history-to">Vers: {{ item.to }}</span>
+                    <span *ngIf="item.commission" class="history-commission">Com: {{ formatCurrency(item.commission) }}</span>
+                  </div>
+                </div>
+                <div class="history-amount negative">
+                  -{{ formatCurrency(item.amount) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Approvisionnements -->
+            <div class="history-section">
+              <div class="history-section-title">
+                <i class="fas fa-coins"></i> Approvisionnements
+                <span class="history-count">{{ fundHistory.length }}</span>
+              </div>
+              <div class="history-item" *ngFor="let item of fundHistory">
+                <div class="history-icon fund">
+                  <i class="fas fa-coins"></i>
+                </div>
+                <div class="history-info">
+                  <div class="history-description">{{ getFundReasonLabel(item.reason) }}</div>
+                  <div class="history-meta">
+                    <span class="history-ref">#{{ item.id }}</span>
+                    <span class="history-date">{{ formatDate(item.date) }}</span>
+                    <span class="history-admin">Par: {{ item.adminName }}</span>
+                  </div>
+                  <div class="history-detail" *ngIf="item.description">
+                    {{ item.description }}
+                  </div>
+                </div>
+                <div class="history-amount positive">
+                  +{{ formatCurrency(item.amount) }}
+                </div>
+                <div class="history-status" [class]="getFundStatusClass(item.status)">
+                  {{ getFundStatusLabel(item.status) }}
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-state" *ngIf="allTransactions.length === 0 && fundHistory.length === 0">
+              <i class="fas fa-history"></i>
+              <p>Aucune opération trouvée</p>
+            </div>
+          </div>
+
+          <!-- Résumé des opérations -->
+          <div class="history-summary">
+            <div class="summary-item">
+              <span class="label">Total dépôts</span>
+              <span class="value">{{ formatCurrency(getTotalDeposits()) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Total retraits</span>
+              <span class="value">{{ formatCurrency(getTotalWithdrawals()) }}</span>
+            </div>
+            <div class="summary-item" *ngIf="user.role === 'AGENT' || user.role === 'SUPER_AGENT'">
+              <span class="label">Total transferts</span>
+              <span class="value">{{ formatCurrency(getTotalTransfers()) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Total approvisionnements</span>
+              <span class="value">{{ formatCurrency(totalFunds) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOUTONS D'ACTION -->
+    <div class="actions-bar">
+      <button class="action-btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Retour
+      </button>
+      <button class="action-btn-fund" (click)="onFund()">
+        <i class="fas fa-coins"></i> Approvisionner
+      </button>
+    </div>
+  </div>
+
+  <!-- ERREUR -->
+  <div class="error-state" *ngIf="!isLoading && !user">
+    <i class="fas fa-user-slash"></i>
+    <h3>Utilisateur non trouvé</h3>
+    <p>L'utilisateur que vous recherchez n'existe pas ou a été supprimé.</p>
+    <button class="btn-back" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i> Retour à la liste
+    </button>
+  </div>
+</div>

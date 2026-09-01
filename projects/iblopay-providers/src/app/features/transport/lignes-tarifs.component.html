@@ -1,0 +1,366 @@
+<div class="page-header">
+  <div>
+    <h1>Trajets & Tarifs</h1>
+    <p>Configurez les trajets de bus et les zones de tarification des taxis</p>
+  </div>
+  <button class="btn-primary" *ngIf="vueActive === 'LIGNES'" (click)="ouvrirNouvelleLigne()">
+    <i class="fa-solid fa-plus"></i> Nouveau trajet
+  </button>
+  <button class="btn-primary" *ngIf="vueActive === 'ZONES'" (click)="ouvrirNouvelleZone()">
+    <i class="fa-solid fa-plus"></i> Nouvelle zone
+  </button>
+</div>
+
+<div class="vue-tabs">
+  <button class="vue-tab" [class.active]="vueActive === 'LIGNES'" (click)="changerVue('LIGNES')">
+    <i class="fa-solid fa-bus"></i> Trajets de bus <span class="tab-count">{{ lignes.length }}</span>
+  </button>
+  <button class="vue-tab" [class.active]="vueActive === 'ZONES'" (click)="changerVue('ZONES')">
+    <i class="fa-solid fa-taxi"></i> Zones taxi <span class="tab-count">{{ zones.length }}</span>
+  </button>
+</div>
+
+<!-- ============ TRAJETS DE BUS ============ -->
+<div class="cards-grid" *ngIf="vueActive === 'LIGNES' && !isLoading">
+  <div class="ligne-card" *ngFor="let l of lignes">
+    <div class="ligne-card-header">
+      <div class="ligne-icon"><i class="fa-solid fa-bus"></i></div>
+      <div>
+        <div class="ligne-nom">{{ l.nom }}</div>
+        <div class="ligne-code">{{ l.code }}</div>
+      </div>
+      <div class="badges-col">
+        <span class="badge" [ngClass]="l.statut === 'ACTIVE' ? 'badge-green' : 'badge-gray'">{{ l.statut === 'ACTIVE' ? 'Active' : 'Inactive' }}</span>
+        <span class="badge statut-live" [ngClass]="ligneEnCours(l.id) ? 'badge-purple' : 'badge-gray'">
+          <span class="live-dot" *ngIf="ligneEnCours(l.id)"></span>
+          {{ ligneEnCours(l.id) ? 'En cours' : 'Terminé' }}
+        </span>
+      </div>
+    </div>
+    <div class="ligne-arrets">
+      <span class="arret-chip" *ngFor="let a of l.arrets; let last = last">{{ a }}<i class="fa-solid fa-arrow-right" *ngIf="!last"></i></span>
+    </div>
+    <div class="ligne-infos">
+      <div><i class="fa-solid fa-money-bill"></i> {{ l.tarif | number }} BIF <i class="fa-solid fa-landmark tarif-etat-icon" title="Tarif fixé par l'État"></i></div>
+      <div><i class="fa-solid fa-road"></i> {{ l.distanceKm }} km</div>
+      <div><i class="fa-solid fa-clock"></i> ~{{ l.dureeMinutesEstimee }} min</div>
+      <div><i class="fa-solid fa-rotate"></i> toutes les {{ l.frequenceMinutes }} min</div>
+    </div>
+    <div class="ligne-actions">
+      <button class="btn-outline-sm" (click)="voirDetailLigne(l)">
+        <i class="fa-solid fa-eye"></i> Détails
+      </button>
+      <button class="btn-outline-sm" (click)="ouvrirHistoriqueLigne(l)">
+        <i class="fa-solid fa-clock-rotate-left"></i> Historique
+      </button>
+      <button class="btn-icon btn-indigo" (click)="modifierLigne(l)" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+      <button class="btn-icon btn-red" (click)="supprimerLigne(l)" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  </div>
+  <div class="empty-state" *ngIf="lignes.length === 0">Aucun trajet configuré</div>
+</div>
+
+<!-- ============ ZONES TAXI ============ -->
+<div class="cards-grid" *ngIf="vueActive === 'ZONES' && !isLoading">
+  <div class="ligne-card" *ngFor="let z of zones">
+    <div class="ligne-card-header">
+      <div class="ligne-icon icon-taxi"><i class="fa-solid fa-taxi"></i></div>
+      <div>
+        <div class="ligne-nom">{{ z.nom }}</div>
+        <div class="ligne-code">{{ z.tarification === 'COMPTEUR' ? 'Au compteur' : 'Forfait' }}</div>
+      </div>
+      <div class="badges-col">
+        <span class="badge" [ngClass]="z.statut === 'ACTIVE' ? 'badge-green' : 'badge-gray'">{{ z.statut === 'ACTIVE' ? 'Active' : 'Inactive' }}</span>
+        <span class="badge statut-live" [ngClass]="zoneEnCours(z.id) ? 'badge-purple' : 'badge-gray'">
+          <span class="live-dot" *ngIf="zoneEnCours(z.id)"></span>
+          {{ zoneEnCours(z.id) ? 'En cours' : 'Terminé' }}
+        </span>
+      </div>
+    </div>
+    <div class="ligne-infos">
+      <div><i class="fa-solid fa-money-bill"></i> Prise en charge : {{ z.tarifBase | number }} BIF</div>
+      <div *ngIf="z.tarification === 'COMPTEUR'"><i class="fa-solid fa-gauge"></i> {{ z.tarifParKm | number }} BIF/km</div>
+      <div *ngIf="z.tarification === 'FORFAIT'"><i class="fa-solid fa-tag"></i> Forfait moyen : {{ z.forfaitMoyen | number }} BIF</div>
+    </div>
+    <div class="ligne-actions">
+      <button class="btn-outline-sm" (click)="voirDetailZone(z)">
+        <i class="fa-solid fa-eye"></i> Détails
+      </button>
+      <button class="btn-outline-sm" (click)="ouvrirHistoriqueZone(z)">
+        <i class="fa-solid fa-clock-rotate-left"></i> Historique
+      </button>
+      <button class="btn-icon btn-indigo" (click)="modifierZone(z)" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+      <button class="btn-icon btn-red" (click)="supprimerZone(z)" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  </div>
+  <div class="empty-state" *ngIf="zones.length === 0">Aucune zone configurée</div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</div>
+
+<!-- ============ MODAL DÉTAIL TRAJET (BUS) ============ -->
+<div class="modal-overlay" *ngIf="ligneDetailAffichee" (click)="fermerDetailLigne()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()" *ngIf="ligneDetailAffichee as l">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="ligne-icon"><i class="fa-solid fa-bus"></i></div>
+        <div>
+          <h3>{{ l.nom }}</h3>
+          <span class="service-code">{{ l.code }} · <span [ngClass]="ligneEnCours(l.id) ? 'text-purple' : 'text-muted'">{{ ligneEnCours(l.id) ? 'En cours' : 'Terminé' }}</span></span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerDetailLigne()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-infos-grid">
+        <div class="detail-info-item"><i class="fa-solid fa-money-bill"></i><div><span class="detail-label">Tarif</span><span class="detail-value">{{ l.tarif | number }} BIF</span></div></div>
+        <div class="detail-info-item"><i class="fa-solid fa-road"></i><div><span class="detail-label">Distance</span><span class="detail-value">{{ l.distanceKm }} km</span></div></div>
+        <div class="detail-info-item"><i class="fa-solid fa-clock"></i><div><span class="detail-label">Durée estimée</span><span class="detail-value">{{ l.dureeMinutesEstimee }} min</span></div></div>
+        <div class="detail-info-item"><i class="fa-solid fa-rotate"></i><div><span class="detail-label">Fréquence</span><span class="detail-value">{{ l.frequenceMinutes }} min</span></div></div>
+      </div>
+
+      <div class="detail-section-title">Arrêts du trajet</div>
+      <div class="arrets-timeline">
+        <div class="arret-timeline-item" *ngFor="let a of l.arrets; let i = index; let last = last">
+          <div class="arret-timeline-marker" [class.marker-last]="last">{{ i + 1 }}</div>
+          <div class="arret-timeline-label">{{ a }}</div>
+        </div>
+      </div>
+
+      <div class="detail-section-title">Véhicules & chauffeurs assignés</div>
+      <div class="vehicules-assignes-list" *ngIf="vehiculesDeLaLigne(l.id).length > 0; else aucunVehiculeLigne">
+        <div class="vehicule-assigne-item" *ngFor="let v of vehiculesDeLaLigne(l.id)">
+          <div class="vehicule-assigne-icon"><i class="fa-solid fa-bus"></i></div>
+          <div class="vehicule-assigne-infos">
+            <div class="vehicule-assigne-matricule">{{ v.matricule }} — {{ v.marqueModele }}</div>
+            <div class="vehicule-assigne-chauffeur"><i class="fa-solid fa-id-card"></i> {{ nomChauffeur(v.chauffeurId) }}</div>
+          </div>
+          <span class="badge" [ngClass]="v.statut === 'EN_SERVICE' ? 'badge-green' : (v.statut === 'EN_PANNE' ? 'badge-red' : 'badge-gray')">{{ v.statut }}</span>
+        </div>
+      </div>
+      <ng-template #aucunVehiculeLigne>
+        <div class="empty-hint-inline">Aucun véhicule n'est actuellement assigné à ce trajet.</div>
+      </ng-template>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetailLigne()">Fermer</button>
+      <button class="btn-primary" (click)="ouvrirHistoriqueLigne(l); fermerDetailLigne()">
+        <i class="fa-solid fa-clock-rotate-left"></i> Voir l'historique
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DÉTAIL ZONE (TAXI) ============ -->
+<div class="modal-overlay" *ngIf="zoneDetailAffichee" (click)="fermerDetailZone()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()" *ngIf="zoneDetailAffichee as z">
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="ligne-icon icon-taxi"><i class="fa-solid fa-taxi"></i></div>
+        <div>
+          <h3>{{ z.nom }}</h3>
+          <span class="service-code">{{ z.tarification === 'COMPTEUR' ? 'Au compteur' : 'Forfait' }} · <span [ngClass]="zoneEnCours(z.id) ? 'text-purple' : 'text-muted'">{{ zoneEnCours(z.id) ? 'En cours' : 'Terminé' }}</span></span>
+        </div>
+      </div>
+      <button class="btn-close" (click)="fermerDetailZone()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-infos-grid">
+        <div class="detail-info-item"><i class="fa-solid fa-money-bill"></i><div><span class="detail-label">Prise en charge</span><span class="detail-value">{{ z.tarifBase | number }} BIF</span></div></div>
+        <div class="detail-info-item" *ngIf="z.tarification === 'COMPTEUR'"><i class="fa-solid fa-gauge"></i><div><span class="detail-label">Prix / km</span><span class="detail-value">{{ z.tarifParKm | number }} BIF</span></div></div>
+        <div class="detail-info-item" *ngIf="z.tarification === 'FORFAIT'"><i class="fa-solid fa-tag"></i><div><span class="detail-label">Forfait moyen</span><span class="detail-value">{{ z.forfaitMoyen | number }} BIF</span></div></div>
+      </div>
+
+      <div class="detail-section-title">Véhicules & chauffeurs de cette zone</div>
+      <div class="vehicules-assignes-list" *ngIf="vehiculesDeLaZone(z.id).length > 0; else aucunVehiculeZone">
+        <div class="vehicule-assigne-item" *ngFor="let v of vehiculesDeLaZone(z.id)">
+          <div class="vehicule-assigne-icon icon-taxi"><i class="fa-solid fa-taxi"></i></div>
+          <div class="vehicule-assigne-infos">
+            <div class="vehicule-assigne-matricule">{{ v.matricule }} — {{ v.marqueModele }}</div>
+            <div class="vehicule-assigne-chauffeur"><i class="fa-solid fa-id-card"></i> {{ nomChauffeur(v.chauffeurId) }}</div>
+          </div>
+          <span class="badge" [ngClass]="v.statut === 'DISPONIBLE' ? 'badge-green' : (v.statut === 'EN_COURSE' ? 'badge-blue' : 'badge-gray')">{{ v.statut }}</span>
+        </div>
+      </div>
+      <ng-template #aucunVehiculeZone>
+        <div class="empty-hint-inline">Aucun véhicule n'est actuellement assigné à cette zone.</div>
+      </ng-template>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetailZone()">Fermer</button>
+      <button class="btn-primary" (click)="ouvrirHistoriqueZone(z); fermerDetailZone()">
+        <i class="fa-solid fa-clock-rotate-left"></i> Voir l'historique
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL HISTORIQUE (PAGINÉ) ============ -->
+<div class="modal-overlay" *ngIf="historiqueOuvert" (click)="fermerHistorique()">
+  <div class="modal-card modal-wide" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ historiqueTitre }}</h3>
+      <button class="btn-close" (click)="fermerHistorique()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="historique-summary">
+        <div class="historique-summary-item">
+          <span class="summary-num">{{ historiqueLignes.length }}</span>
+          <span class="summary-label">Trajets au total</span>
+        </div>
+        <div class="historique-summary-item">
+          <span class="summary-num text-green">{{ historiqueTrajetsTermines }}</span>
+          <span class="summary-label">Terminés</span>
+        </div>
+        <div class="historique-summary-item">
+          <span class="summary-num text-blue">{{ historiqueRevenuTotal | number }} BIF</span>
+          <span class="summary-label">Revenu total apporté</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table compact-table">
+          <thead>
+            <tr>
+              <th>Date & heure</th>
+              <th>Véhicule</th>
+              <th>Chauffeur</th>
+              <th class="text-center">Passagers</th>
+              <th class="text-center">Durée</th>
+              <th class="text-center">Statut</th>
+              <th class="text-right">Revenu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of historiquePagine">
+              <td>{{ h.date | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="font-mono">véhicule #{{ h.vehiculeId }}</td>
+              <td>{{ nomChauffeur(h.chauffeurId) }}</td>
+              <td class="text-center">{{ h.passagers }}</td>
+              <td class="text-center">{{ h.dureeMinutes }} min</td>
+              <td class="text-center"><span class="badge" [ngClass]="h.statut === 'TERMINE' ? 'badge-green' : 'badge-red'">{{ h.statut === 'TERMINE' ? 'Terminé' : 'Annulé' }}</span></td>
+              <td class="text-right font-bold">{{ h.statut === 'TERMINE' ? (h.revenu | number) + ' BIF' : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-container" *ngIf="historiqueLignes.length > 0">
+        <span class="pagination-info">Page {{ historiquePage }} / {{ historiqueTotalPages }} — {{ historiqueLignes.length }} trajets</span>
+        <div class="pagination-buttons">
+          <button class="btn-page" [disabled]="historiquePage === 1" (click)="changerPageHistorique(historiquePage - 1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn-page" [disabled]="historiquePage === historiqueTotalPages" (click)="changerPageHistorique(historiquePage + 1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="historiqueLignes.length === 0">Aucun trajet dans l'historique</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerHistorique()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL NOUVEAU/MODIFIER TRAJET ============ -->
+<div class="modal-overlay" *ngIf="showLigneModal" (click)="fermerLigneModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="ligneForm as f">
+    <div class="modal-header">
+      <h3>{{ f.id ? 'Modifier le trajet' : 'Nouveau trajet de bus' }}</h3>
+      <button class="btn-close" (click)="fermerLigneModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field">
+          <label>Nom du trajet <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.nom" placeholder="Ex: Ligne A — Centre-ville" />
+        </div>
+        <div class="field">
+          <label>Code <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.code" placeholder="Ex: LGA" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Arrêts (dans l'ordre) <span class="required">*</span></label>
+        <div class="arrets-list">
+          <div class="arret-item" *ngFor="let a of f.arrets; let i = index">
+            <span class="arret-num">{{ i + 1 }}</span>
+            <span class="arret-nom">{{ a }}</span>
+            <button class="btn-mini-red" (click)="supprimerArret(i)"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="arret-add">
+          <input type="text" placeholder="Nom de l'arrêt..." [(ngModel)]="nouvelArret" (keyup.enter)="ajouterArret()" />
+          <button class="btn-outline-sm" (click)="ajouterArret()"><i class="fa-solid fa-plus"></i> Ajouter</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field">
+          <label>Distance (km)</label>
+          <input type="number" min="0" [(ngModel)]="f.distanceKm" (ngModelChange)="recalculerTarifEtat()" />
+        </div>
+        <div class="field">
+          <label>Tarif <span class="badge-etat"><i class="fa-solid fa-landmark"></i> Fixé par l'État</span></label>
+          <div class="tarif-readonly"><i class="fa-solid fa-lock"></i> {{ f.tarif | number }} BIF</div>
+          <p class="field-hint">Calculé automatiquement selon le barème officiel ({{ tarifParKmEtat }} BIF/km) — non modifiable.</p>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Durée estimée (min)</label>
+          <input type="number" min="0" [(ngModel)]="f.dureeMinutesEstimee" />
+        </div>
+        <div class="field">
+          <label>Fréquence de passage (min)</label>
+          <input type="number" min="0" [(ngModel)]="f.frequenceMinutes" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerLigneModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrerLigne()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL ZONE TAXI ============ -->
+<div class="modal-overlay" *ngIf="showZoneModal" (click)="fermerZoneModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="zoneForm as f">
+    <div class="modal-header">
+      <h3>{{ f.id ? 'Modifier la zone' : 'Nouvelle zone taxi' }}</h3>
+      <button class="btn-close" (click)="fermerZoneModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nom de la zone <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="f.nom" placeholder="Ex: Zone Centre-ville" />
+      </div>
+      <div class="field">
+        <label>Mode de tarification</label>
+        <select [(ngModel)]="f.tarification">
+          <option value="COMPTEUR">Au compteur (base + prix/km)</option>
+          <option value="FORFAIT">Forfait fixe</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Prise en charge (BIF)</label>
+          <input type="number" min="0" [(ngModel)]="f.tarifBase" />
+        </div>
+        <div class="field" *ngIf="f.tarification === 'COMPTEUR'">
+          <label>Prix par km (BIF)</label>
+          <input type="number" min="0" [(ngModel)]="f.tarifParKm" />
+        </div>
+        <div class="field" *ngIf="f.tarification === 'FORFAIT'">
+          <label>Forfait moyen (BIF)</label>
+          <input type="number" min="0" [(ngModel)]="f.forfaitMoyen" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerZoneModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrerZone()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>

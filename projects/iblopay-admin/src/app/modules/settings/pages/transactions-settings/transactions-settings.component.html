@@ -1,0 +1,504 @@
+<div class="settings-page">
+  <header class="page-header">
+    
+    <div class="page-header__title">
+      <span class="icon">💸</span>
+      <div>
+        <h1>Gestion des Transactions</h1>
+        <p>Historique, filtres, types et actions sur les transactions.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Statistiques -->
+<div class="stats-grid">
+  <!-- Carte 1 : Total Transactions -->
+  <div class="stat-card" (click)="setActiveTab('toutes')" [class.active]="activeTab === 'toutes'">
+    <span class="stat-card__icon">📊</span>
+    <div class="stat-card__content">
+      <span class="stat-card__value">{{ getAllTransactions().length }}</span>
+      <span class="stat-card__label">Total Transactions</span>
+      <span class="stat-card__sub">{{ getTransactionsByStatut('effectuee').length }} effectuées</span>
+    </div>
+  </div>
+
+  <!-- Carte 2 : Montant Total -->
+  <div class="stat-card" (click)="setActiveTab('toutes')" [class.active]="activeTab === 'toutes'">
+    <span class="stat-card__icon">💰</span>
+    <div class="stat-card__content">
+      <span class="stat-card__value">{{ getMontantTotal() | number:'1.0-0' }} BIF</span>
+      <span class="stat-card__label">Montant Total</span>
+      <span class="stat-card__sub">{{ getMontantMoyen() | number:'1.0-0' }} BIF moyen</span>
+    </div>
+  </div>
+
+  <!-- Carte 3 : Types de transactions -->
+  <div class="stat-card" (click)="setActiveTab('types')" [class.active]="activeTab === 'types'">
+    <span class="stat-card__icon">🔀</span>
+    <div class="stat-card__content">
+      <span class="stat-card__value">{{ getTypesCount() }}</span>
+      <span class="stat-card__label">Types de transactions</span>
+      <span class="stat-card__sub">Différents types</span>
+    </div>
+  </div>
+
+  <!-- Carte 4 : En attente (avec classe stat-card--total) -->
+  <div class="stat-card stat-card--total" (click)="setActiveTab('toutes')" [class.active]="activeTab === 'toutes'">
+    <span class="stat-card__icon">⏳</span>
+    <div class="stat-card__content">
+      <span class="stat-card__value">{{ getTransactionsEnAttente().length }}</span>
+      <span class="stat-card__label">En attente</span>
+      <span class="stat-card__sub">{{ getTransactionsEchouees().length }} échouées</span>
+    </div>
+  </div>
+</div>
+
+  <!-- Barre d'outils -->
+  <div class="toolbar">
+    <div class="search-bar">
+      <div class="search-bar__input">
+        <span class="search-bar__icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Rechercher par ID, utilisateur, agent, type..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          class="search-bar__field"
+        />
+      </div>
+      <div class="search-bar__filters">
+        <select [(ngModel)]="filterStatut" (ngModelChange)="onFilterChange()" class="filter-select">
+          <option value="tous">Tous les statuts</option>
+          <option value="effectuee">✅ Effectuée</option>
+          <option value="en_attente">⏳ En attente</option>
+          <option value="annulee">❌ Annulée</option>
+          <option value="echouee">⚠️ Échouée</option>
+        </select>
+        <select [(ngModel)]="filterType" (ngModelChange)="onFilterChange()" class="filter-select">
+          <option value="tous">Tous les types</option>
+          <option value="depot">💰 Dépôt</option>
+          <option value="retrait">💳 Retrait</option>
+          <option value="transfert">🔄 Transfert</option>
+          <option value="paiement">💳 Paiement</option>
+          <option value="achat">🛍️ Achat</option>
+          <option value="commission">💵 Commission</option>
+        </select>
+        <select [(ngModel)]="filterPeriode" (ngModelChange)="onFilterChange()" class="filter-select">
+          <option value="today">📅 Aujourd'hui</option>
+          <option value="week">📅 Cette semaine</option>
+          <option value="month">📅 Ce mois</option>
+          <option value="all">📅 Toutes</option>
+        </select>
+      </div>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="btn-sm" (click)="exportExcel()">📊 Exporter</button>
+      <button type="button" class="btn-sm" (click)="printList()">🖨️ Imprimer</button>
+      <button type="button" class="btn-sm btn-primary" (click)="openAction('exporter')">📤 Exporter avancé</button>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <nav class="tabs">
+    <button type="button" class="tab" [class.active]="activeTab === 'toutes'" (click)="setActiveTab('toutes')">
+      <span class="tab__icon">📋</span>
+      Toutes
+      <span class="tab__count">{{ getFilteredTransactions().length }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab === 'types'" (click)="setActiveTab('types')">
+      <span class="tab__icon">🔀</span>
+      Types
+      <span class="tab__count">{{ getTypes().length }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab === 'filtres'" (click)="setActiveTab('filtres')">
+      <span class="tab__icon">🧮</span>
+      Filtres
+      <span class="tab__count">{{ getFiltres().length }}</span>
+    </button>
+    <button type="button" class="tab" [class.active]="activeTab === 'analytique'" (click)="setActiveTab('analytique')">
+      <span class="tab__icon">📈</span>
+      Analytique
+      <span class="tab__count">{{ getAnalyticsData().length }}</span>
+    </button>
+  </nav>
+
+  <!-- Section Toutes les transactions -->
+  <div *ngIf="activeTab === 'toutes'" class="table-wrapper">
+    <div class="table-header">
+      <h3>Liste des Transactions ({{ getFilteredTransactions().length }})</h3>
+      <div class="table-actions">
+        <button type="button" class="btn-sm" (click)="openAction('voir')">👁️ Voir toutes</button>
+        <button type="button" class="btn-sm btn-danger" (click)="openAction('annuler_selection')">❌ Annuler sélection</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="transactions-table" id="transactionsTable">
+        <thead>
+          <tr>
+            <th><input type="checkbox" (change)="toggleAll($event)" [checked]="isAllSelected()"/></th>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Utilisateur</th>
+            <th>Montant</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of getPaginatedFilteredTransactions()" [class.selected]="isSelected(t.id)">
+            <td><input type="checkbox" (change)="toggleSelection(t.id)" [checked]="isSelected(t.id)"/></td>
+            <td class="cell-mono">{{ t.id }}</td>
+            <td><span class="type-badge" [class]="'type-' + getTypeClass(t.type)">{{ t.typeLabel }}</span></td>
+            <td>
+              <div class="cell-name">{{ t.utilisateur }}</div>
+              <div class="cell-sub">{{ t.agent || 'N/A' }}</div>
+            </td>
+            <td class="cell-mono" [class]="t.type === 'depot' ? 'montant-credit' : 'montant-debit'">{{ t.montant | number:'1.0-0' }} BIF</td>
+            <td class="cell-mono">{{ t.date }}</td>
+            <td><span class="statut-badge" [class]="'statut-' + t.statut">{{ getStatutLabel(t.statut) }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <button type="button" class="btn-icon" title="Voir détails" (click)="openTransactionDetails(t)">👁️</button>
+                <button type="button" class="btn-icon" title="Télécharger reçu" (click)="openAction('telecharger_reçu', t)">📄</button>
+                <button type="button" class="btn-icon" title="Corriger" (click)="openAction('corriger', t)">🔧</button>
+                <button type="button" class="btn-icon" title="Réattribuer" (click)="openAction('reattribuer', t)">🔄</button>
+                <button type="button" class="btn-icon btn-icon--danger" title="Annuler" (click)="openAction('annuler', t)">❌</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" *ngIf="getTotalFilteredPages() > 1">
+      <div class="pagination__controls">
+        <button type="button" class="pagination__btn" (click)="previousPage()" [disabled]="getCurrentPage() === 1">‹</button>
+        <span class="pagination__info">Page {{ getCurrentPage() }} / {{ getTotalFilteredPages() }}</span>
+        <button type="button" class="pagination__btn" (click)="nextPage()" [disabled]="getCurrentPage() === getTotalFilteredPages()">›</button>
+      </div>
+      <span class="pagination__total">{{ getFilteredTransactions().length }} transactions</span>
+    </div>
+  </div>
+
+  <!-- Section Types -->
+  <div *ngIf="activeTab === 'types'" class="table-wrapper">
+    <div class="table-header">
+      <h3>Types de Transactions ({{ getTypes().length }})</h3>
+    </div>
+    <div class="types-grid">
+      <div class="type-card" *ngFor="let type of getTypes()" (click)="filterByType(type.key)">
+        <div class="type-card__icon">{{ type.icon }}</div>
+        <div class="type-card__content">
+          <div class="type-card__name">{{ type.label }}</div>
+          <div class="type-card__count">{{ type.count }} transactions</div>
+        </div>
+        <div class="type-card__total">{{ type.total | number:'1.0-0' }} BIF</div>
+        <div class="type-card__statut">
+          <span class="statut-badge statut-effectuee">{{ type.effectuees || 0 }} ✅</span>
+          <span class="statut-badge statut-en_attente">{{ type.enAttente || 0 }} ⏳</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Filtres -->
+  <div *ngIf="activeTab === 'filtres'" class="table-wrapper">
+    <div class="table-header">
+      <h3>Filtres disponibles</h3>
+    </div>
+    <div class="filters-grid">
+      <div class="filter-card" *ngFor="let filter of getFiltres()" (click)="openFilter(filter)">
+        <div class="filter-card__icon">{{ filter.icon }}</div>
+        <div class="filter-card__content">
+          <div class="filter-card__name">{{ filter.label }}</div>
+          <div class="filter-card__desc">{{ filter.description }}</div>
+          <div class="filter-card__value" *ngIf="filter.value">{{ filter.value }}</div>
+        </div>
+        <span class="filter-card__arrow">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Analytique -->
+  <div *ngIf="activeTab === 'analytique'" class="table-wrapper">
+    <div class="table-header">
+      <h3>📈 Analyse des Transactions</h3>
+    </div>
+    <div class="analytics-grid">
+      <div class="analytics-card" *ngFor="let data of getAnalyticsData()">
+        <div class="analytics-card__icon">{{ data.icon }}</div>
+        <div class="analytics-card__content">
+          <div class="analytics-card__label">{{ data.label }}</div>
+          <div class="analytics-card__value">{{ data.value }}</div>
+          <div class="analytics-card__sub">{{ data.sub }}</div>
+        </div>
+        <div class="analytics-card__trend" [class]="data.trend">
+          {{ data.trend === 'up' ? '📈' : data.trend === 'down' ? '📉' : '➡️' }}
+          {{ data.trendValue || '' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE DÉTAILS TRANSACTION -->
+  <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
+  <div class="modal modal--transaction" *ngIf="modalOpen && selectedTransaction">
+    <div class="modal__header">
+      <h2>📄 Détails de la transaction</h2>
+      <div class="modal__header-actions">
+        <button type="button" class="btn-icon-sm" title="Imprimer" (click)="printTransaction()">🖨️</button>
+        <button type="button" class="btn-icon-sm" title="Télécharger reçu" (click)="openAction('telecharger_reçu', selectedTransaction)">📄</button>
+        <button type="button" class="btn-icon-sm" title="Partager" (click)="openAction('partager', selectedTransaction)">📤</button>
+        <button type="button" class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal__body" id="transactionDetailPrint">
+      <div class="transaction-detail">
+        <div class="transaction-detail__header">
+          <div class="transaction-detail__id">{{ selectedTransaction.id }}</div>
+          <span class="statut-badge" [class]="'statut-' + selectedTransaction.statut">{{ getStatutLabel(selectedTransaction.statut) }}</span>
+        </div>
+        <div class="transaction-detail__body">
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">Type</span>
+            <span class="transaction-detail__value">{{ selectedTransaction.typeLabel }}</span>
+          </div>
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">Montant</span>
+            <span class="transaction-detail__value" [class]="selectedTransaction.type === 'depot' ? 'montant-credit' : 'montant-debit'">{{ selectedTransaction.montant | number:'1.0-0' }} BIF</span>
+          </div>
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">Utilisateur</span>
+            <span class="transaction-detail__value">{{ selectedTransaction.utilisateur }}</span>
+          </div>
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">Agent</span>
+            <span class="transaction-detail__value">{{ selectedTransaction.agent || 'N/A' }}</span>
+          </div>
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">Date</span>
+            <span class="transaction-detail__value">{{ selectedTransaction.date }}</span>
+          </div>
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">Description</span>
+            <span class="transaction-detail__value">{{ selectedTransaction.description || 'Aucune description' }}</span>
+          </div>
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">Référence</span>
+            <span class="transaction-detail__value">{{ selectedTransaction.reference || 'N/A' }}</span>
+          </div>
+          <div class="transaction-detail__item">
+            <span class="transaction-detail__label">IP</span>
+            <span class="transaction-detail__value">{{ selectedTransaction.ip || 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="transaction-detail__footer">
+          <button type="button" class="btn-sm" (click)="openAction('telecharger_reçu', selectedTransaction)">📄 Reçu</button>
+          <button type="button" class="btn-sm" (click)="openAction('corriger', selectedTransaction)">🔧 Corriger</button>
+          <button type="button" class="btn-sm" (click)="openAction('reattribuer', selectedTransaction)">🔄 Réattribuer</button>
+          <button type="button" class="btn-sm btn-danger" (click)="openAction('annuler', selectedTransaction)">❌ Annuler</button>
+          <button type="button" class="btn-sm" (click)="openAction('partager', selectedTransaction)">📤 Partager</button>
+          <button type="button" class="btn-sm" (click)="printTransaction()">🖨️ Imprimer</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn-primary" (click)="closeModal()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- MODALE ACTION -->
+  <div class="modal-overlay" *ngIf="actionModalOpen" (click)="closeActionModal()"></div>
+  <div class="modal modal--action" *ngIf="actionModalOpen">
+    <div class="modal__header">
+      <h2>{{ actionModalTitle }}</h2>
+      <button type="button" class="close-btn" (click)="closeActionModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="action-card">
+        <div class="action-card__icon">{{ getActionIcon() }}</div>
+        <div class="action-card__title">{{ actionModalTitle }}</div>
+        <div class="action-card__sub" *ngIf="selectedTransaction">Transaction: {{ selectedTransaction.id }}</div>
+
+        <!-- Corriger -->
+        <div class="form-group" *ngIf="actionModalType === 'corriger'">
+          <label>Raison de la correction</label>
+          <input type="text" [(ngModel)]="formData.raison" class="form-control" placeholder="Motif de la correction" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'corriger'">
+          <label>Nouveau montant (BIF)</label>
+          <input type="number" [(ngModel)]="formData.montant" class="form-control" placeholder="Nouveau montant" min="0" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'corriger'">
+          <label>Nouveau type</label>
+          <select [(ngModel)]="formData.type" class="form-control">
+            <option value="depot">💰 Dépôt</option>
+            <option value="retrait">💳 Retrait</option>
+            <option value="transfert">🔄 Transfert</option>
+            <option value="paiement">💳 Paiement</option>
+            <option value="achat">🛍️ Achat</option>
+            <option value="commission">💵 Commission</option>
+          </select>
+        </div>
+
+        <!-- Annuler -->
+        <div class="form-group" *ngIf="actionModalType === 'annuler' || actionModalType === 'annuler_selection'">
+          <label>Raison de l'annulation</label>
+          <input type="text" [(ngModel)]="formData.raison" class="form-control" placeholder="Motif de l'annulation" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'annuler_selection'">
+          <label>Nombre de transactions sélectionnées</label>
+          <input type="text" class="form-control" [value]="getSelectedCount() + ' transactions'" disabled />
+        </div>
+
+        <!-- Télécharger reçu -->
+        <div class="form-group" *ngIf="actionModalType === 'telecharger_reçu'">
+          <div class="receipt-preview">
+            <div class="receipt-preview__header">
+              <span class="receipt-preview__title">📄 IBLOPAY - Reçu de transaction</span>
+            </div>
+            <div class="receipt-preview__body">
+              <div><strong>ID:</strong> {{ selectedTransaction?.id }}</div>
+              <div><strong>Type:</strong> {{ selectedTransaction?.typeLabel }}</div>
+              <div><strong>Montant:</strong> {{ selectedTransaction?.montant | number:'1.0-0' }} BIF</div>
+              <div><strong>Utilisateur:</strong> {{ selectedTransaction?.utilisateur }}</div>
+              <div><strong>Date:</strong> {{ selectedTransaction?.date }}</div>
+              <div><strong>Statut:</strong> {{ getStatutLabel(selectedTransaction?.statut || '') }}</div>
+            </div>
+            <div class="receipt-preview__footer">
+              <span>IBLOPAY - {{ currentDate }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exporter -->
+        <div class="form-group" *ngIf="actionModalType === 'exporter'">
+          <label>Format d'export</label>
+          <select [(ngModel)]="formData.format" class="form-control">
+            <option value="excel">📊 Excel</option>
+            <option value="csv">📄 CSV</option>
+            <option value="pdf">📑 PDF</option>
+            <option value="json">🔢 JSON</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'exporter'">
+          <label>Période</label>
+          <select [(ngModel)]="formData.periode" class="form-control">
+            <option value="today">📅 Aujourd'hui</option>
+            <option value="week">📅 Cette semaine</option>
+            <option value="month">📅 Ce mois</option>
+            <option value="custom">📅 Personnalisée</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'exporter' && formData.periode === 'custom'">
+          <label>Date de début</label>
+          <input type="date" [(ngModel)]="formData.dateDebut" class="form-control" />
+          <label>Date de fin</label>
+          <input type="date" [(ngModel)]="formData.dateFin" class="form-control" />
+        </div>
+
+        <!-- Réattribuer -->
+        <div class="form-group" *ngIf="actionModalType === 'reattribuer'">
+          <label>Nouvel utilisateur</label>
+          <input type="text" [(ngModel)]="formData.nouvelUtilisateur" class="form-control" placeholder="ID du nouvel utilisateur" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'reattribuer'">
+          <label>Nouvel agent</label>
+          <input type="text" [(ngModel)]="formData.nouvelAgent" class="form-control" placeholder="ID du nouvel agent" />
+        </div>
+
+        <!-- Frauduleuse -->
+        <div class="form-group" *ngIf="actionModalType === 'frauduleuse'">
+          <label>Raison du signalement</label>
+          <input type="text" [(ngModel)]="formData.raison" class="form-control" placeholder="Motif du signalement" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'frauduleuse'">
+          <label>Niveau de risque</label>
+          <select [(ngModel)]="formData.risque" class="form-control">
+            <option value="faible">🟢 Faible</option>
+            <option value="moyen">🟡 Moyen</option>
+            <option value="eleve">🔴 Élevé</option>
+            <option value="critique">⛔ Critique</option>
+          </select>
+        </div>
+
+        <!-- Partager -->
+        <div class="form-group" *ngIf="actionModalType === 'partager'">
+          <label>Méthode de partage</label>
+          <select [(ngModel)]="formData.methode" class="form-control">
+            <option value="email">📧 Email</option>
+            <option value="whatsapp">💬 WhatsApp</option>
+            <option value="sms">📱 SMS</option>
+            <option value="lien">🔗 Lien</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'partager'">
+          <label>Destinataire</label>
+          <input type="text" [(ngModel)]="formData.destinataire" class="form-control" placeholder="Email ou numéro de téléphone" />
+        </div>
+        <div class="form-group" *ngIf="actionModalType === 'partager'">
+          <label>Message</label>
+          <textarea [(ngModel)]="formData.message" class="form-control" rows="3" placeholder="Message optionnel"></textarea>
+        </div>
+
+        <!-- Filtres -->
+        <div class="form-group" *ngIf="actionModalType === 'date' || actionModalType === 'heure'">
+          <label>Valeur</label>
+          <input type="datetime-local" [(ngModel)]="formData.valeur" class="form-control" />
+        </div>
+
+        <div class="form-group" *ngIf="actionModalType === 'montant'">
+          <label>Montant minimum</label>
+          <input type="number" [(ngModel)]="formData.min" class="form-control" placeholder="Min" min="0" />
+          <label>Montant maximum</label>
+          <input type="number" [(ngModel)]="formData.max" class="form-control" placeholder="Max" min="0" />
+        </div>
+
+        <div class="form-group" *ngIf="actionModalType === 'type' || actionModalType === 'statut' || actionModalType === 'utilisateur' || actionModalType === 'agent' || actionModalType === 'super_agent' || actionModalType === 'province' || actionModalType === 'commune'">
+          <label>Sélectionner</label>
+          <select [(ngModel)]="formData.selection" class="form-control">
+            <option value="">-- Choisir --</option>
+            <option *ngFor="let option of getFilterOptions(actionModalType)" [value]="option">{{ option }}</option>
+          </select>
+        </div>
+
+        <!-- Voir toutes -->
+        <div class="form-group" *ngIf="actionModalType === 'voir'">
+          <div class="view-stats">
+            <div class="view-stat">
+              <span class="view-stat__label">Total transactions</span>
+              <span class="view-stat__value">{{ getAllTransactions().length }}</span>
+            </div>
+            <div class="view-stat">
+              <span class="view-stat__label">Montant total</span>
+              <span class="view-stat__value">{{ getMontantTotal() | number:'1.0-0' }} BIF</span>
+            </div>
+            <div class="view-stat">
+              <span class="view-stat__label">En attente</span>
+              <span class="view-stat__value">{{ getTransactionsEnAttente().length }}</span>
+            </div>
+            <div class="view-stat">
+              <span class="view-stat__label">Échouées</span>
+              <span class="view-stat__value">{{ getTransactionsEchouees().length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer" *ngIf="actionModalType !== 'telecharger_reçu' && actionModalType !== 'voir'">
+      <button type="button" class="btn-secondary" (click)="closeActionModal()">Annuler</button>
+      <button type="button" class="btn-primary" (click)="confirmAction()">Confirmer</button>
+    </div>
+    <div class="modal__footer" *ngIf="actionModalType === 'telecharger_reçu' || actionModalType === 'voir'">
+      <button type="button" class="btn-primary" (click)="closeActionModal()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-stack">
+    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
+      {{ t.message }}
+      <button type="button" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

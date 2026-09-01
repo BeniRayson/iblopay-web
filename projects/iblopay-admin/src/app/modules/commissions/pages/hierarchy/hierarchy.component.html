@@ -1,0 +1,91 @@
+<div class="commission-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-header__title">Hiérarchie Super Agents</h1>
+      <p class="page-header__subtitle">Visualisez la structure hiérarchique et les contributions de chaque agent</p>
+    </div>
+    <div class="page-header__right">
+      <div class="view-toggle">
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'agent'" (click)="onViewChange('agent')"><i class="bi bi-person"></i> Agent</button>
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'super_agent'" (click)="onViewChange('super_agent')"><i class="bi bi-people"></i> Super Agent</button>
+        <button class="view-toggle__btn" [class.view-toggle__btn--active]="activeView === 'admin'" (click)="onViewChange('admin')"><i class="bi bi-shield"></i> Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <span>Chargement de la hiérarchie...</span>
+  </div>
+
+  <!-- Hierarchy List -->
+  <div class="hierarchy-list" *ngIf="!isLoading">
+    <div class="hierarchy-card" *ngFor="let h of hierarchies">
+      <!-- Super Agent Header -->
+      <div class="hierarchy-card__header" (click)="toggleSuperAgent(h.superAgentId)">
+        <div class="hierarchy-card__header-left">
+          <i class="bi bi-chevron-right hierarchy-card__chevron" [class.hierarchy-card__chevron--open]="expandedSuperAgent === h.superAgentId"></i>
+          <div class="hierarchy-card__avatar">
+            <span>{{ h.superAgentName.charAt(0) }}{{ h.superAgentName.split(' ')[1]?.charAt(0) || '' }}</span>
+          </div>
+          <div class="hierarchy-card__info">
+            <span class="hierarchy-card__name">{{ h.superAgentName }}</span>
+            <span class="hierarchy-card__role">Super Agent</span>
+          </div>
+        </div>
+        <div class="hierarchy-card__header-right">
+          <div class="hierarchy-card__stat">
+            <span class="hierarchy-card__stat-value">{{ formatBif(h.totalCommissions) }}</span>
+            <span class="hierarchy-card__stat-label">Total commissions</span>
+          </div>
+          <div class="hierarchy-card__stat">
+            <span class="hierarchy-card__stat-value">{{ h.agents.length }}</span>
+            <span class="hierarchy-card__stat-label">Agents</span>
+          </div>
+          <i class="bi bi-three-dots-vertical hierarchy-card__menu"></i>
+        </div>
+      </div>
+
+      <!-- Agents List (expanded) -->
+      <div class="hierarchy-card__body" *ngIf="expandedSuperAgent === h.superAgentId">
+        <div class="hierarchy-card__agent" *ngFor="let agent of h.agents">
+          <div class="hierarchy-card__agent-header" (click)="toggleAgent(agent.agentId)">
+            <i class="bi bi-chevron-right hierarchy-card__chevron hierarchy-card__chevron--small" [class.hierarchy-card__chevron--open]="expandedAgent === agent.agentId"></i>
+            <div class="hierarchy-card__agent-avatar">
+              <span>{{ agent.agentName.charAt(0) }}{{ agent.agentName.split(' ')[1]?.charAt(0) || '' }}</span>
+            </div>
+            <div class="hierarchy-card__info">
+              <span class="hierarchy-card__agent-name">{{ agent.agentName }}</span>
+              <span class="hierarchy-card__agent-count">{{ agent.transactionCount }} transactions</span>
+            </div>
+            <div class="hierarchy-card__agent-total">{{ formatBif(agent.totalCommissions) }}</div>
+          </div>
+
+          <!-- Agent Commissions (expanded) -->
+          <div class="hierarchy-card__commissions" *ngIf="expandedAgent === agent.agentId">
+            <div class="hierarchy-card__commission" *ngFor="let c of agent.commissions">
+              <div class="hierarchy-card__commission-info">
+                <span class="hierarchy-card__commission-ref">{{ c.transactionReference }}</span>
+                <span class="hierarchy-card__commission-date">{{ formatDate(c.createdAt) }}</span>
+              </div>
+              <div class="hierarchy-card__commission-details">
+                <span class="hierarchy-card__commission-rate">{{ c.rate }}%</span>
+                <span class="badge" [ngClass]="getStatusClass(c.status)">{{ statusLabel(c.status) }}</span>
+                <span class="hierarchy-card__commission-amount">{{ formatBif(c.amount) }}</span>
+              </div>
+            </div>
+            <div class="hierarchy-card__commission-empty" *ngIf="agent.commissions.length === 0">
+              Aucune commission
+            </div>
+          </div>
+        </div>
+
+        <div class="hierarchy-card__agent-empty" *ngIf="h.agents.length === 0">
+          Aucun agent assigné
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

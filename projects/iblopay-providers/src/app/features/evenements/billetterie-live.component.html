@@ -1,0 +1,186 @@
+<div class="page-header">
+  <div>
+    <h1>Billetterie en temps réel</h1>
+    <p>Suivez les ventes et validations de billets pour tous vos événements</p>
+  </div>
+  <div class="header-actions">
+    <div class="live-indicator" *ngIf="vueActive === 'TEMPS_REEL'"><span class="live-dot"></span> Mise à jour en direct</div>
+    <div class="vue-switch">
+      <button class="vue-switch-btn" [class.active]="vueActive === 'HISTORIQUE'" (click)="changerVue('HISTORIQUE')">
+        <i class="fa-solid fa-clock-rotate-left"></i> Historique
+      </button>
+      <button class="vue-switch-btn" [class.active]="vueActive === 'TEMPS_REEL'" (click)="changerVue('TEMPS_REEL')">
+        <i class="fa-solid fa-satellite-dish"></i> Suivi en temps réel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- VUE : SUIVI EN TEMPS RÉEL                                        -->
+<!-- ================================================================ -->
+<ng-container *ngIf="vueActive === 'TEMPS_REEL'">
+
+  <div class="stats-inline">
+    <div class="stat-item"><span class="stat-num text-orange">{{ reservesCount }}</span><span class="stat-label">Réservés</span></div>
+    <div class="stat-item"><span class="stat-num text-blue">{{ payesCount }}</span><span class="stat-label">Payés</span></div>
+    <div class="stat-item"><span class="stat-num text-green">{{ utilisesCount }}</span><span class="stat-label">Utilisés (entrées)</span></div>
+    <div class="stat-item"><span class="stat-num text-purple">{{ formatBIF(revenuTotal) }}</span><span class="stat-label">Revenu encaissé</span></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" placeholder="Rechercher un n° de billet..." [(ngModel)]="filtreNumero" (ngModelChange)="onFiltreChange()" />
+    </div>
+    <select [(ngModel)]="filtreEvenement" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les événements</option>
+      <option *ngFor="let e of evenements" [value]="e.id">{{ e.nom }}</option>
+    </select>
+    <select [(ngModel)]="filtreStatut" (ngModelChange)="onFiltreChange()">
+      <option value="">Tous les statuts</option>
+      <option value="RESERVE">Réservé</option>
+      <option value="PAYE">Payé</option>
+      <option value="UTILISE">Utilisé</option>
+      <option value="ANNULE">Annulé</option>
+    </select>
+    <span class="toolbar-count" *ngIf="filtered.length > 0">{{ filtered.length }} billet(s)</span>
+  </div>
+
+  <div class="billets-grid" *ngIf="!isLoading">
+    <div class="billet-card" *ngFor="let b of filteredPagines" (click)="ouvrirDetail(b)">
+      <div class="billet-header">
+        <div class="billet-icon"><i class="fa-solid fa-ticket"></i></div>
+        <div class="billet-ref">
+          <div class="ref-num">{{ b.numeroReference }}</div>
+          <div class="ref-time">Il y a {{ minutesEcoulees(b.dateAchat) }} min</div>
+        </div>
+        <span class="badge" [ngClass]="statutClass(b.statut)">{{ statutLabel(b.statut) }}</span>
+      </div>
+
+      <div class="billet-evt">{{ nomEvenement(b.evenementId) }}</div>
+      <div class="billet-cat"><i class="fa-solid fa-layer-group"></i> {{ b.categorieNom }}</div>
+
+      <div class="billet-infos">
+        <div><i class="fa-solid fa-user"></i> {{ b.clientNom }}</div>
+        <div class="montant-paye"><i class="fa-solid fa-money-bill-wave"></i> {{ b.prix | number }} BIF</div>
+      </div>
+
+      <div class="billet-actions" (click)="$event.stopPropagation()">
+        <button class="btn-outline-sm" *ngIf="b.statut === 'RESERVE'" (click)="confirmerPaiement(b, $event)"><i class="fa-solid fa-check"></i> Confirmer paiement</button>
+        <button class="btn-outline-sm btn-green-sm" *ngIf="b.statut === 'PAYE'" (click)="validerEntree(b, $event)"><i class="fa-solid fa-door-open"></i> Valider l'entrée</button>
+        <button class="btn-icon btn-red" *ngIf="b.statut !== 'ANNULE' && b.statut !== 'UTILISE'" (click)="annulerBillet(b, $event)" title="Annuler"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="filtered.length === 0">Aucun billet trouvé</div>
+  </div>
+
+  <div class="pagination-container" *ngIf="!isLoading && filtered.length > 0">
+    <span class="pagination-info">Affichage de {{ ((currentPage - 1) * pageSize) + 1 }} à {{ (currentPage * pageSize) > filtered.length ? filtered.length : (currentPage * pageSize) }} sur {{ filtered.length }} billets</span>
+    <div class="pagination-buttons">
+      <button class="btn-page" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)"><i class="fa-solid fa-chevron-left"></i> Précédent</button>
+      <span class="page-indicator">Page {{ currentPage }} / {{ totalPages }}</span>
+      <button class="btn-page" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">Suivant <i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</div>
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- VUE : HISTORIQUE (billets confirmés par événement & catégorie)   -->
+<!-- ================================================================ -->
+<ng-container *ngIf="vueActive === 'HISTORIQUE'">
+
+  <div class="stats-inline">
+    <div class="stat-item"><span class="stat-num">{{ historiqueFiltre.length }}</span><span class="stat-label">Ventes confirmées</span></div>
+    <div class="stat-item"><span class="stat-num text-green">{{ historiqueBilletsTotal | number }}</span><span class="stat-label">Billets confirmés</span></div>
+    <div class="stat-item"><span class="stat-num text-purple">{{ formatBIF(historiqueRevenuTotal) }}</span><span class="stat-label">Revenu confirmé</span></div>
+  </div>
+
+  <div class="toolbar">
+    <select [(ngModel)]="historiqueFiltreEvenement" (ngModelChange)="historiqueFiltreCategorie = ''; appliquerFiltresHistorique()">
+      <option value="">Tous les événements</option>
+      <option *ngFor="let e of evenements" [value]="e.id">{{ e.nom }}</option>
+    </select>
+    <select [(ngModel)]="historiqueFiltreCategorie" (ngModelChange)="appliquerFiltresHistorique()">
+      <option value="">Toutes les catégories</option>
+      <option *ngFor="let cat of categoriesHistoriqueDisponibles" [value]="cat">{{ cat }}</option>
+    </select>
+    <button class="btn-icon-reset" title="Réinitialiser les filtres" (click)="reinitialiserFiltresHistorique()">
+      <i class="fa-solid fa-rotate-left"></i>
+    </button>
+    <span class="toolbar-count" *ngIf="historiqueFiltre.length > 0">{{ historiqueFiltre.length }} entrée(s)</span>
+  </div>
+
+  <div class="card table-card" *ngIf="!isLoadingHistorique">
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Événement</th>
+            <th>Catégorie</th>
+            <th class="text-center">Billets confirmés</th>
+            <th class="text-right">Revenu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let h of historiquePagine">
+            <td>{{ h.date | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ nomEvenement(h.evenementId) }}</td>
+            <td><span class="badge badge-blue">{{ h.categorieNom }}</span></td>
+            <td class="text-center">{{ h.quantite }}</td>
+            <td class="text-right font-bold">{{ h.revenu | number }} BIF</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-container" *ngIf="historiqueFiltre.length > 0">
+      <span class="pagination-info">Page {{ historiquePage }} / {{ historiqueTotalPages }} — {{ historiqueFiltre.length }} entrées</span>
+      <div class="pagination-buttons">
+        <button class="btn-page" [disabled]="historiquePage === 1" (click)="changerPageHistorique(historiquePage - 1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="btn-page" [disabled]="historiquePage === historiqueTotalPages" (click)="changerPageHistorique(historiquePage + 1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="historiqueFiltre.length === 0">Aucune vente confirmée pour ces critères</div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoadingHistorique"><i class="fa-solid fa-spinner fa-spin"></i> Chargement de l'historique...</div>
+</ng-container>
+
+<!-- ============ MODAL DÉTAIL ÉPURÉ ============ -->
+<div class="modal-overlay" *ngIf="billetDetailAffiche" (click)="fermerDetail()">
+  <div class="modal-carte" (click)="$event.stopPropagation()" *ngIf="billetDetailAffiche as b">
+    <div class="carte-header">
+      <div class="carte-header-left">
+        <div class="billet-icon"><i class="fa-solid fa-ticket"></i></div>
+        <div>
+          <div class="carte-ref">{{ b.numeroReference }}</div>
+          <div class="carte-sous-titre">{{ nomEvenement(b.evenementId) }}</div>
+        </div>
+      </div>
+      <span class="badge" [ngClass]="statutClass(b.statut)">{{ statutLabel(b.statut) }}</span>
+      <button class="btn-close" (click)="fermerDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="carte-montant">
+      <span><i class="fa-solid fa-money-bill-wave"></i> Montant payé</span>
+      <strong>{{ b.prix | number }} BIF</strong>
+    </div>
+
+    <div class="carte-section">
+      <div class="detail-row"><span class="detail-key">Catégorie</span><span class="detail-val">{{ b.categorieNom }}</span></div>
+      <div class="detail-row"><span class="detail-key">Client</span><span class="detail-val">{{ b.clientNom }}</span></div>
+      <div class="detail-row"><span class="detail-key">Téléphone</span><span class="detail-val">{{ b.clientTelephone }}</span></div>
+      <div class="detail-row"><span class="detail-key">Acheté le</span><span class="detail-val">{{ b.dateAchat | date:'dd/MM/yyyy HH:mm' }}</span></div>
+      <div class="detail-row" *ngIf="b.dateUtilisation"><span class="detail-key">Entrée validée le</span><span class="detail-val">{{ b.dateUtilisation | date:'dd/MM/yyyy HH:mm' }}</span></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetail()">Fermer</button>
+    </div>
+  </div>
+</div>

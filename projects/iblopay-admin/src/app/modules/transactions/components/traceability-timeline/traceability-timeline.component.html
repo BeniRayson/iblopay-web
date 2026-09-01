@@ -1,0 +1,30 @@
+<div class="timeline-card">
+  <div class="timeline-card__title">Traçabilité complète (Parcours de l'argent)</div>
+
+  <div class="timeline" *ngIf="data">
+    <div class="timeline__step" *ngFor="let step of data.steps; let i = index">
+      <div class="timeline__step-icon">{{ step.icon }}</div>
+      <div class="timeline__step-line" *ngIf="i < data.steps.length - 1"></div>
+      <div class="timeline__step-content">
+        <div class="timeline__step-time">{{ step.timestamp }}</div>
+        <div class="timeline__step-desc">{{ step.description }}</div>
+        <div class="timeline__step-amount" [class.positive]="step.signedAmount.startsWith('+')">
+          {{ step.signedAmount }}
+        </div>
+        <div class="timeline__step-ref">{{ step.reference }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline-card__footer" *ngIf="data">
+    <div class="timeline-card__stat"><span>Montant initial</span><strong>{{ data.initialAmount }}</strong></div>
+    <div class="timeline-card__stat"><span>Montant actuel</span><strong>{{ data.currentAmount }}</strong></div>
+    <div class="timeline-card__stat"><span>Étapes</span><strong>{{ data.stepCount }}</strong></div>
+    <div class="timeline-card__stat"><span>Durée totale</span><strong>{{ data.totalDuration }}</strong></div>
+    <div class="timeline-card__stat">
+      <span>Statut</span>
+      <strong class="pill" [style.background]="data.statusColor + '18'" [style.color]="data.statusColor">{{ data.status }}</strong>
+    </div>
+    <button class="timeline-card__btn">Voir tout le parcours</button>
+  </div>
+</div>

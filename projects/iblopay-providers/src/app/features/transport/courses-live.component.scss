@@ -1,0 +1,436 @@
+@use '../../core/shared' as *;
+
+.page-header { @include page-header; }
+.card { @include card; margin-bottom: 16px; }
+.data-table { @include data-table; width: 100%; }
+.btn-outline { @include btn-outline; }
+.btn-primary { @include btn-primary; }
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  animation: pulse-dot 1.6s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(22,163,74,0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+}
+
+.stats-inline {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.stat-item { display: flex; flex-direction: column; }
+.stat-num { font-size: 20px; font-weight: 800; line-height: 1.1; }
+.stat-label { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
+.text-purple { color: #7c3aed; }
+.text-orange { color: #ea580c; }
+.text-green { color: #16a34a; }
+
+.toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  cursor: pointer;
+  &:focus { outline: none; border-color: #3b82f6; }
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.course-card {
+  @include card;
+  padding: 16px;
+}
+
+.course-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.course-type-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  flex-shrink: 0;
+
+  &.icon-bus { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+  &.icon-taxi { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+}
+
+.course-ref { flex: 1; }
+.ref-num { font-size: 13px; font-weight: 700; color: var(--text-primary); font-family: monospace; }
+.ref-time { font-size: 10.5px; color: var(--text-muted); }
+
+.badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.badge-orange { background: rgba(234, 88, 12, 0.12); color: #ea580c; }
+.badge-blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.badge-purple { background: rgba(124, 58, 237, 0.12); color: #7c3aed; }
+.badge-green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.badge-red { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+
+.course-trajet {
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+.trajet-point {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  i { font-size: 8px; }
+  .point-depart { color: #2563eb; }
+  .point-arrivee { color: #dc2626; font-size: 11px; }
+}
+
+.trajet-line {
+  width: 1px;
+  height: 12px;
+  background: var(--border-color);
+  margin-left: 3px;
+}
+
+.course-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bg-card-hover);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #a855f7);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.progress-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+
+.course-infos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+
+  i { width: 14px; color: var(--accent-blue, #2563eb); margin-right: 4px; }
+}
+
+.course-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-outline-sm {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  &:hover { background: var(--bg-card-hover); }
+  &.btn-green-sm { color: #16a34a; border-color: rgba(22,163,74,0.4); &:hover { background: rgba(22,163,74,0.08); } }
+}
+
+.btn-icon {
+  width: 30px; height: 30px; border-radius: 8px; border: none; cursor: pointer; font-size: 11px;
+  display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;
+  &.btn-red { background: #ef4444; }
+  &:hover { opacity: 0.85; }
+}
+
+.empty-state, .loading-state { text-align: center; padding: 50px 20px; color: var(--text-muted); grid-column: 1 / -1; }
+
+/* ============= MODAL ============= */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+.modal-card { background: var(--bg-card, #fff); border: 1px solid var(--border-color); border-radius: 14px; width: 100%; max-width: 440px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-color); h3 { margin: 0; font-size: 14px; color: var(--text-primary); } }
+.btn-close { background: transparent; border: none; font-size: 16px; color: var(--text-muted); cursor: pointer; &:hover { color: var(--text-primary); } }
+.modal-body { padding: 20px; }
+.modal-desc { font-size: 12.5px; color: var(--text-secondary); margin: 0 0 16px; }
+
+.field {
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+  .required { color: #dc2626; font-weight: 700; }
+  select {
+    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-color);
+    background: var(--bg-darkest); color: var(--text-primary); font-size: 13px; box-sizing: border-box;
+    &:focus { outline: none; border-color: var(--accent-blue); }
+  }
+  .field-hint { font-size: 11px; color: #dc2626; margin: 8px 0 0; }
+}
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border-color); background: var(--bg-card-hover, rgba(0,0,0,0.01)); }
+.btn-secondary { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-primary); font-size: 12px; cursor: pointer; &:hover { background: var(--bg-card-hover); } }
+.btn-primary { @include btn-primary; }
+
+/* ============= CARTE CLIQUABLE ============= */
+.course-card { cursor: pointer; }
+.montant-paye { font-weight: 700; color: #16a34a !important; }
+.montant-paye i { color: #16a34a !important; }
+.btn-voir-carte { color: var(--accent-blue, #2563eb); border-color: rgba(37,99,235,0.35); }
+.btn-voir-carte:hover { background: rgba(37,99,235,0.08); }
+
+.toolbar-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ============= PAGINATION ============= */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pagination-buttons { display: flex; align-items: center; gap: 10px; }
+
+.btn-page {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:not(:disabled):hover { border-color: #3b82f6; color: #3b82f6; }
+}
+
+.page-indicator { font-weight: 600; color: var(--text-secondary); }
+
+/* ============================================================
+   MODAL DE DÉTAIL — DESIGN ÉPURÉ (sans cartes imbriquées)
+   ============================================================ */
+.modal-carte {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+  overflow: hidden;
+  animation: modalPop 0.18s ease-out;
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.carte-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.carte-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.carte-ref { font-size: 15px; font-weight: 800; color: var(--text-primary); font-family: monospace; }
+.carte-sous-titre { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+.carte-header .btn-close {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  &:hover { color: var(--text-primary); }
+}
+
+.carte-section {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-color);
+  overflow-y: auto;
+
+  &:last-of-type { border-bottom: none; }
+}
+
+.carte-montant {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: rgba(22, 163, 74, 0.06);
+  border-bottom: 1px solid var(--border-color);
+
+  span {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i { font-size: 14px; }
+  }
+
+  strong { font-size: 19px; font-weight: 800; color: #16a34a; }
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border-color);
+  font-size: 12.5px;
+
+  &:last-child { border-bottom: none; }
+}
+
+.detail-key { color: var(--text-muted); flex-shrink: 0; }
+.detail-val { color: var(--text-primary); font-weight: 700; text-align: right; word-break: break-word; }
+
+.text-green { color: #16a34a; }
+.text-muted { color: var(--text-muted); }
+
+/* ============= TRAJET / SUIVI (dans .carte-section, pas de fond gris superflu) ============= */
+.route-visual {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.route-point { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 90px; flex-shrink: 0; }
+.route-point-dot { width: 14px; height: 14px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px currentColor; }
+.dot-depart { background: #2563eb; color: #2563eb; }
+.dot-arrivee { background: #dc2626; color: #dc2626; }
+.route-point-label { font-size: 10.5px; text-align: center; color: var(--text-secondary); line-height: 1.3; }
+
+.route-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-color);
+  position: relative;
+  margin: 0 4px;
+}
+
+.route-track-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  transition: width 1s linear;
+}
+
+.route-vehicule-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #7c3aed;
+  color: #7c3aed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.35);
+  transition: left 1s linear;
+}
+
+.route-progress-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  i { margin-right: 5px; color: var(--accent-blue, #2563eb); }
+  strong { color: var(--text-primary); }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  background: var(--bg-card-hover, rgba(0,0,0,0.01));
+}
+
+.btn-secondary {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  &:hover { background: var(--bg-card-hover); }
+}

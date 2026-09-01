@@ -1,0 +1,140 @@
+<div class="page-header">
+  <div>
+    <h1>Lieux & Salles</h1>
+    <p>Gérez les stades, salles et espaces où se déroulent vos événements</p>
+  </div>
+  <button class="btn-primary" (click)="ouvrirNouveau()">
+    <i class="fa-solid fa-plus"></i> Nouveau lieu
+  </button>
+</div>
+
+<div class="card filters-card">
+  <div class="filters-title"><i class="fa-solid fa-filter"></i> Filtrer les lieux</div>
+  <div class="filters-grid">
+    <div class="filter-group filter-group-search">
+      <label><i class="fa-solid fa-search"></i> Recherche</label>
+      <input type="text" placeholder="Nom du lieu, ville..." [(ngModel)]="recherche" (ngModelChange)="appliquerFiltres()" />
+    </div>
+    <div class="filter-group">
+      <label><i class="fa-solid fa-tag"></i> Type</label>
+      <select [(ngModel)]="filtreType" (ngModelChange)="appliquerFiltres()">
+        <option value="">Tous les types</option>
+        <option *ngFor="let t of typesDisponibles" [value]="t">{{ t }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label><i class="fa-solid fa-circle-check"></i> Statut</label>
+      <select [(ngModel)]="filtreStatut" (ngModelChange)="appliquerFiltres()">
+        <option value="">Tous les statuts</option>
+        <option value="ACTIF">Actif</option>
+        <option value="INACTIF">Inactif</option>
+      </select>
+    </div>
+    <div class="filter-group filter-group-reset">
+      <button class="btn-icon-reset" title="Réinitialiser les filtres" (click)="reinitialiserFiltres()">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="cards-grid" *ngIf="!isLoading">
+  <div class="lieu-card" *ngFor="let l of lieuxFiltres" (click)="voirDetail(l)">
+    <div class="lieu-card-header">
+      <div class="lieu-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+      <div class="lieu-titre-wrap">
+        <div class="lieu-nom">{{ l.nom }}</div>
+        <div class="lieu-ville">{{ l.ville }}</div>
+      </div>
+      <span class="badge" [ngClass]="l.statut === 'ACTIF' ? 'badge-green' : 'badge-gray'">{{ l.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span>
+    </div>
+    <div class="lieu-infos">
+      <div><i class="fa-solid fa-tag"></i> {{ typeLabel(l.type) }}</div>
+      <div><i class="fa-solid fa-users"></i> {{ l.capaciteMax | number }} places</div>
+      <div><i class="fa-solid fa-calendar-days"></i> {{ evenementsDuLieu(l.id).length }} événement(s) à venir</div>
+    </div>
+    <div class="lieu-actions" (click)="$event.stopPropagation()">
+      <button class="btn-outline-sm" (click)="toggleStatut(l)"><i class="fa-solid fa-power-off"></i> {{ l.statut === 'ACTIF' ? 'Désactiver' : 'Activer' }}</button>
+      <button class="btn-icon btn-indigo" (click)="modifier(l)" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+      <button class="btn-icon btn-red" (click)="supprimer(l)" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  </div>
+  <div class="empty-state" *ngIf="lieuxFiltres.length === 0">Aucun lieu configuré</div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> Chargement...</div>
+
+<!-- ============ MODAL DÉTAIL ============ -->
+<div class="modal-overlay" *ngIf="lieuDetailAffiche" (click)="fermerDetail()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="lieuDetailAffiche as l">
+    <div class="modal-header">
+      <h3>{{ l.nom }}</h3>
+      <button class="btn-close" (click)="fermerDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row"><span class="detail-key">Type</span><span class="detail-val">{{ typeLabel(l.type) }}</span></div>
+      <div class="detail-row"><span class="detail-key">Ville</span><span class="detail-val">{{ l.ville }}</span></div>
+      <div class="detail-row"><span class="detail-key">Adresse</span><span class="detail-val">{{ l.adresse }}</span></div>
+      <div class="detail-row"><span class="detail-key">Capacité maximale</span><span class="detail-val">{{ l.capaciteMax | number }} places</span></div>
+      <div class="detail-row"><span class="detail-key">Statut</span><span class="badge" [ngClass]="l.statut === 'ACTIF' ? 'badge-green' : 'badge-gray'">{{ l.statut === 'ACTIF' ? 'Actif' : 'Inactif' }}</span></div>
+
+      <div class="detail-section-title">Événements programmés ici</div>
+      <div class="evt-mini-list" *ngIf="evenementsDuLieu(l.id).length > 0; else aucunEvt">
+        <div class="evt-mini-item" *ngFor="let e of evenementsDuLieu(l.id)">
+          <span>{{ e.nom }}</span>
+          <span class="text-muted">{{ e.dateDebut | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+      <ng-template #aucunEvt><div class="empty-hint-inline">Aucun événement programmé pour le moment.</div></ng-template>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerDetail()">Fermer</button>
+      <button class="btn-primary" (click)="modifier(l); fermerDetail()"><i class="fa-solid fa-pen"></i> Modifier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL FORMULAIRE ============ -->
+<div class="modal-overlay" *ngIf="showModal" (click)="fermerModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="form as f">
+    <div class="modal-header">
+      <h3>{{ f.id ? 'Modifier le lieu' : 'Nouveau lieu' }}</h3>
+      <button class="btn-close" (click)="fermerModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nom du lieu <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="f.nom" placeholder="Ex: Stade Prince Louis Rwagasore" />
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Ville <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="f.ville" />
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <div class="type-with-add">
+            <select [(ngModel)]="f.type">
+              <option *ngFor="let t of typesDisponibles" [value]="t">{{ t }}</option>
+            </select>
+            <button type="button" class="btn-add-type" title="Ajouter un nouveau type" (click)="ajouterType()">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Adresse</label>
+        <input type="text" [(ngModel)]="f.adresse" />
+      </div>
+      <div class="field">
+        <label>Capacité maximale</label>
+        <input type="number" min="0" [(ngModel)]="f.capaciteMax" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="fermerModal()">Annuler</button>
+      <button class="btn-primary" (click)="enregistrer()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>

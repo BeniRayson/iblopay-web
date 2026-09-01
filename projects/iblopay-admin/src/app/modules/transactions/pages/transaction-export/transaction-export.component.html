@@ -1,0 +1,20 @@
+<div class="export-page">
+  <h1>Export transactions</h1>
+  <p class="export-page__hint">Exports as CSV. PDF export is not built yet.</p>
+
+  <div class="export-form">
+    <div class="export-form__field">
+      <label>From</label>
+      <input type="date" [(ngModel)]="dateFrom" name="dateFrom" />
+    </div>
+    <div class="export-form__field">
+      <label>To</label>
+      <input type="date" [(ngModel)]="dateTo" name="dateTo" />
+    </div>
+    <button class="btn btn--primary" (click)="export()" [disabled]="isExporting">
+      {{ isExporting ? "Exporting…" : "Export CSV" }}
+    </button>
+  </div>
+
+  <div class="state-message state-message--error" *ngIf="errorMessage">{{ errorMessage }}</div>
+</div>

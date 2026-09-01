@@ -1,0 +1,519 @@
+<div class="page-header">
+  <div>
+    <h1>
+      Constructeur de formulaire
+      <span class="statut-badge" [ngClass]="{
+        'statut-publie': formulaire.statut === 'PUBLIE',
+        'statut-brouillon': formulaire.statut === 'BROUILLON',
+        'statut-archive': formulaire.statut === 'ARCHIVE'
+      }">
+        <i class="fa-solid" [class.fa-circle-check]="formulaire.statut === 'PUBLIE'" [class.fa-pen]="formulaire.statut === 'BROUILLON'" [class.fa-box-archive]="formulaire.statut === 'ARCHIVE'"></i>
+        {{ formulaire.statut === 'PUBLIE' ? 'Publié' : (formulaire.statut === 'ARCHIVE' ? 'Archivé' : 'Brouillon') }}
+      </span>
+    </h1>
+    <p *ngIf="etape === 'infos'">Étape 1 — Renseignez les informations générales du formulaire</p>
+    <p *ngIf="etape === 'champs'">Étape 2 — Créez les champs qui composeront votre formulaire</p>
+    <p *ngIf="etape === 'finalisation'">Étape 3 — Vérifiez et finalisez votre formulaire</p>
+  </div>
+  <div class="header-actions">
+    <a routerLink="/formulaires" class="btn-outline">Annuler</a>
+    <ng-container *ngIf="etape === 'finalisation'">
+      <button class="btn-outline" [disabled]="isSaving" (click)="enregistrer(false)">
+        <i class="fa-regular fa-floppy-disk"></i> Brouillon
+      </button>
+      <button class="btn-primary" [disabled]="isSaving" (click)="enregistrer(true)">
+        <i class="fa-solid fa-upload"></i> Publier
+      </button>
+    </ng-container>
+  </div>
+</div>
+
+<!-- ============ INDICATEUR D'ETAPES ============ -->
+<div class="steps-indicator">
+  <div class="step-pill" [class.active]="etape === 'infos'" [class.done]="etape === 'champs' || etape === 'finalisation'">
+    <span class="step-num"><i class="fa-solid fa-check" *ngIf="etape === 'champs' || etape === 'finalisation'"></i><ng-container *ngIf="etape !== 'champs' && etape !== 'finalisation'">1</ng-container></span>
+    Informations
+  </div>
+  <div class="step-separator"></div>
+  <div class="step-pill" [class.active]="etape === 'champs'" [class.done]="etape === 'finalisation'">
+    <span class="step-num"><i class="fa-solid fa-check" *ngIf="etape === 'finalisation'"></i><ng-container *ngIf="etape !== 'finalisation'">2</ng-container></span>
+    Créer les champs
+  </div>
+  <div class="step-separator"></div>
+  <div class="step-pill" [class.active]="etape === 'finalisation'">
+    <span class="step-num">3</span>
+    Finaliser
+  </div>
+</div>
+
+<div class="notification" *ngIf="notification" [ngClass]="notification.type">
+  <i class="fa-solid fa-lg" [class.fa-circle-check]="notification.type === 'success'" [class.fa-circle-exclamation]="notification.type === 'error'"></i>
+  {{ notification.message }}
+</div>
+
+<!-- ================================================================ -->
+<!-- ÉTAPE 1 — INFORMATIONS DU FORMULAIRE                            -->
+<!-- ================================================================ -->
+<ng-container *ngIf="etape === 'infos'">
+
+  <div class="step-container">
+    <div class="info-card">
+      <div class="info-card-header">
+        <div class="info-card-icon">
+          <i class="fa-solid fa-file-pen"></i>
+        </div>
+        <h2>Informations du formulaire</h2>
+        <p>Renseignez les informations générales avant de créer vos champs</p>
+      </div>
+
+      <div class="info-card-body">
+        <div class="field-group">
+          <div class="field">
+            <label>Nom du formulaire <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formulaire.nom" placeholder="Ex: Demande de certificat de résidence" />
+          </div>
+          <div class="field">
+            <label>Code <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formulaire.code" placeholder="Ex: FORM-CERT-001" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Service rattaché <span class="required">*</span></label>
+          <select [(ngModel)]="formulaire.serviceId">
+            <option [value]="0" disabled selected>Sélectionner un service</option>
+            <option *ngFor="let s of services" [value]="s.id">{{ s.nom }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Description <span class="optional">optionnel</span></label>
+          <textarea [(ngModel)]="description" rows="3" placeholder="Décrivez brièvement l'objectif de ce formulaire..."></textarea>
+        </div>
+      </div>
+
+      <div class="info-card-footer">
+        <button class="btn-primary btn-next" [disabled]="!formulaire.nom || !formulaire.code || !formulaire.serviceId" (click)="allerAuxChamps()">
+          Suivant <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- ÉTAPE 2 — CRÉATION DES CHAMPS                                    -->
+<!-- ================================================================ -->
+<ng-container *ngIf="etape === 'champs'">
+
+  <div class="info-banner" *ngIf="formulaire.champs.length === 0">
+    <i class="fa-solid fa-circle-info"></i>
+    Glissez des champs depuis la palette à gauche ou utilisez le bouton <strong>+</strong> pour ajouter un champ rapidement.
+  </div>
+
+  <div class="builder-layout">
+
+    <!-- PALETTE -->
+    <aside class="panel palette-panel">
+      <div class="panel-title">
+        Champs disponibles
+        <button class="btn-add-field" (click)="ouvrirAjoutRapide()" title="Ajouter un champ rapidement">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+
+      <div class="quick-add" *ngIf="showQuickAdd">
+        <input 
+          type="text" 
+          [(ngModel)]="nouveauChampNom" 
+          placeholder="Nom du champ..."
+          (keyup.enter)="ajouterChampRapide()"
+          autofocus
+        />
+        <button class="btn-icon confirm-add" (click)="ajouterChampRapide()" [disabled]="!nouveauChampNom.trim()">
+          <i class="fa-solid fa-check"></i>
+        </button>
+        <button class="btn-icon cancel-add" (click)="fermerAjoutRapide()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="palette-item"
+           *ngFor="let item of palette"
+           draggable="true"
+           (dragstart)="onPaletteDragStart(item.type)">
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </div>
+    </aside>
+
+    <!-- CANVAS -->
+    <section class="panel canvas-panel">
+      <div class="panel-title">
+        Structure du formulaire
+        <div class="layout-controls">
+          <button class="btn-icon layout-btn" [class.active]="nbColonnes === 1" (click)="changerNbColonnes(1)" title="1 colonne">
+            <i class="fa-solid fa-grip-lines"></i> 1
+          </button>
+          <button class="btn-icon layout-btn" [class.active]="nbColonnes === 2" (click)="changerNbColonnes(2)" title="2 colonnes">
+            <i class="fa-solid fa-grip-lines"></i> 2
+          </button>
+          <button class="btn-icon layout-btn" [class.active]="nbColonnes === 3" (click)="changerNbColonnes(3)" title="3 colonnes">
+            <i class="fa-solid fa-grip-lines"></i> 3
+          </button>
+          <button class="btn-icon layout-btn" [class.active]="nbColonnes === 4" (click)="changerNbColonnes(4)" title="4 colonnes">
+            <i class="fa-solid fa-grip-lines"></i> 4
+          </button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <div class="canvas-drop-zone" 
+             (dragover)="$event.preventDefault()"
+             (drop)="onCanvasDropZone($event)">
+          
+          <div class="canvas-empty" *ngIf="formulaire.champs.length === 0">
+            <i class="fa-solid fa-arrow-left-long"></i>
+            <p>Glissez des champs depuis la palette</p>
+          </div>
+
+          <div class="champs-grid" [class.col-1]="nbColonnes === 1" [class.col-2]="nbColonnes === 2" [class.col-3]="nbColonnes === 3" [class.col-4]="nbColonnes === 4">
+            <div class="champ-card-wrapper" *ngFor="let champ of formulaire.champs; let i = index">
+              <div class="champ-card"
+                   [class.selected]="champSelectionne?.id === champ.id"
+                   draggable="true"
+                   (dragstart)="onChampDragStart(i, $event)"
+                   (dragend)="onChampDragEnd()"
+                   (click)="selectionnerChamp(champ)">
+                
+                <div class="champ-card-header">
+                  <div class="champ-card-left">
+                    <div class="cf-drag-handle"><i class="fa-solid fa-grip-vertical"></i></div>
+                    <div class="cf-order">
+                      <span class="order-number">{{ i + 1 }}</span>
+                    </div>
+                    <div class="cf-icon"><i [class]="iconePourType(champ.typeChamp)"></i></div>
+                    <div class="cf-label" title="{{ champ.label }}">
+                      {{ champ.label }}
+                      <span class="required-mark" *ngIf="champ.obligatoire">*</span>
+                    </div>
+                  </div>
+                  <div class="champ-card-actions">
+                    <button class="btn-icon" (click)="deplacerChamp(i, -1)" title="Monter" [disabled]="i === 0">
+                      <i class="fa-solid fa-chevron-up"></i>
+                    </button>
+                    <button class="btn-icon" (click)="deplacerChamp(i, 1)" title="Descendre" [disabled]="i === formulaire.champs.length - 1">
+                      <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <button class="btn-icon" (click)="dupliquerChamp(champ, $event)" title="Dupliquer"><i class="fa-regular fa-copy"></i></button>
+                    <button class="btn-icon btn-delete" (click)="supprimerChamp(champ, $event)" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                </div>
+
+                <div class="champ-card-body">
+                  <div class="cf-preview">
+                    <input *ngIf="['TEXTE','NOMBRE','EMAIL','TELEPHONE','ADRESSE'].includes(champ.typeChamp)" type="text" disabled [placeholder]="labelPourType(champ.typeChamp)" />
+                    <input *ngIf="champ.typeChamp === 'DATE'" type="text" disabled placeholder="jj/mm/aaaa" />
+                    <select *ngIf="champ.typeChamp === 'SELECT'" disabled>
+                      <option>{{ champ.configuration?.options?.[0] || 'Sélectionner...' }}</option>
+                    </select>
+                    <label *ngIf="champ.typeChamp === 'CHECKBOX'" class="checkbox-preview"><input type="checkbox" disabled /> Option</label>
+                    <div *ngIf="champ.typeChamp === 'FICHIER'" class="file-preview"><i class="fa-solid fa-paperclip"></i> Joindre un fichier</div>
+                  </div>
+                  <div class="champ-type-badge">{{ labelPourType(champ.typeChamp) }}</div>
+                </div>
+              </div>
+
+              <div class="drop-indicator" 
+                   [class.active]="dragOverIndex === i + 1"
+                   (dragover)="onDragOver(i + 1, $event)"
+                   (drop)="onDrop(i + 1, $event)"></div>
+            </div>
+          </div>
+
+          <div class="drop-indicator" 
+               [class.active]="dragOverIndex === 0"
+               (dragover)="onDragOver(0, $event)"
+               (drop)="onDrop(0, $event)"></div>
+        </div>
+
+        <div class="canvas-footer">
+          <button class="btn-primary btn-preview" (click)="ouvrirApercu()" [disabled]="formulaire.champs.length === 0">
+            <i class="fa-solid fa-eye"></i> Visualiser le formulaire
+          </button>
+          <button class="btn-outline" (click)="retournerInfos()">
+            <i class="fa-solid fa-arrow-left"></i> Retour
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIGURATION DU CHAMP -->
+    <aside class="panel config-panel" *ngIf="champSelectionne">
+      <div class="panel-title">Configuration du champ</div>
+
+      <div class="field">
+        <label>Label</label>
+        <input type="text" [(ngModel)]="champSelectionne.label" placeholder="Nom du champ" />
+      </div>
+      <div class="field">
+        <label>Code (identifiant)</label>
+        <input type="text" [(ngModel)]="champSelectionne.code" placeholder="Code unique" />
+      </div>
+
+      <div class="field field-inline">
+        <label class="checkbox-inline">
+          <input type="checkbox" [(ngModel)]="champSelectionne.obligatoire" />
+          Champ obligatoire
+        </label>
+      </div>
+
+      <!-- Configuration pour SELECT -->
+      <div class="field config-options" *ngIf="champSelectionne.typeChamp === 'SELECT'">
+        <label>Options du menu déroulant</label>
+        <div class="options-container">
+          <div class="option-row" *ngFor="let opt of champSelectionne.configuration?.options; let i = index">
+            <span class="option-number">{{ i + 1 }}</span>
+            <input type="text" [(ngModel)]="champSelectionne.configuration!.options![i]" placeholder="Option {{ i + 1 }}" />
+            <button class="btn-icon" (click)="supprimerOption(i)"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <button class="btn-outline btn-sm" (click)="ajouterOption()">
+          <i class="fa-solid fa-plus"></i> Ajouter une option
+        </button>
+        <div class="options-hint">
+          <i class="fa-solid fa-circle-info"></i> Les options apparaîtront dans le menu déroulant
+        </div>
+      </div>
+
+      <div class="field" *ngIf="champSelectionne.typeChamp === 'CHECKBOX'">
+        <label>Texte de la case à cocher</label>
+        <input type="text" [(ngModel)]="champSelectionne.configuration!.aide" placeholder="Ex: J'accepte les conditions..." />
+      </div>
+
+      <div class="field" *ngIf="champSelectionne.typeChamp === 'FICHIER'">
+        <label>Formats acceptés</label>
+        <input type="text" [(ngModel)]="champSelectionne.configuration!.aide" placeholder="Ex: PDF, JPG, PNG (max 5MB)" />
+      </div>
+
+      <div class="field" *ngIf="champSelectionne.typeChamp !== 'CHECKBOX' && champSelectionne.typeChamp !== 'SELECT' && champSelectionne.typeChamp !== 'FICHIER'">
+        <label>Texte d'aide</label>
+        <input type="text" [(ngModel)]="champSelectionne.configuration!.aide" placeholder="Facultatif" />
+      </div>
+
+      <div class="config-empty-note">
+        <i class="fa-solid fa-circle-info"></i>
+        Type de champ : <strong>{{ labelPourType(champSelectionne.typeChamp) }}</strong>
+      </div>
+    </aside>
+
+    <aside class="panel config-panel config-placeholder" *ngIf="!champSelectionne">
+      <i class="fa-solid fa-hand-pointer"></i>
+      <p>Sélectionnez un champ pour le configurer</p>
+    </aside>
+  </div>
+
+  <div class="step-footer">
+    <button class="btn-primary btn-lg" [disabled]="formulaire.champs.length === 0" (click)="allerVersFinalisation()">
+      Finaliser le formulaire <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- ÉTAPE 3 — FINALISATION                                           -->
+<!-- ================================================================ -->
+<ng-container *ngIf="etape === 'finalisation'">
+
+  <div class="finalisation-container">
+    <div class="panel preview-panel">
+      <div class="panel-title">
+        <i class="fa-solid fa-eye"></i> Aperçu du formulaire
+        <span class="statut-badge" [ngClass]="{
+          'statut-publie': formulaire.statut === 'PUBLIE',
+          'statut-brouillon': formulaire.statut === 'BROUILLON',
+          'statut-archive': formulaire.statut === 'ARCHIVE'
+        }">
+          <i class="fa-solid" [class.fa-circle-check]="formulaire.statut === 'PUBLIE'" [class.fa-pen]="formulaire.statut === 'BROUILLON'" [class.fa-box-archive]="formulaire.statut === 'ARCHIVE'"></i>
+          {{ formulaire.statut === 'PUBLIE' ? 'Publié' : (formulaire.statut === 'ARCHIVE' ? 'Archivé' : 'Brouillon') }}
+        </span>
+        <span class="disposition-badge">{{ nbColonnes }} colonne(s)</span>
+        <button class="btn-outline btn-sm" (click)="retournerAuxChamps()">
+          <i class="fa-solid fa-arrow-left"></i> Modifier
+        </button>
+      </div>
+
+      <!-- AFFICHAGE IDENTIQUE À L'ÉTAPE DE CONSTRUCTION -->
+      <div class="preview-card">
+        <!-- En-tête du formulaire -->
+        <div class="preview-card-header">
+          <div class="preview-card-icon">
+            <i class="fa-solid fa-file-lines"></i>
+          </div>
+          <h3 class="preview-card-title">{{ formulaire.nom || 'Nom du formulaire' }}</h3>
+          <p class="preview-card-subtitle">Tous les champs marqués <span class="required-star">*</span> sont obligatoires</p>
+          <div class="preview-card-divider"></div>
+        </div>
+
+        <!-- Corps du formulaire avec la même grille que la construction -->
+        <div class="preview-card-body">
+          <!-- MÊME GRILLE QUE DANS LA CONSTRUCTION -->
+          <div class="preview-grid" 
+               [class.col-1]="nbColonnes === 1" 
+               [class.col-2]="nbColonnes === 2" 
+               [class.col-3]="nbColonnes === 3" 
+               [class.col-4]="nbColonnes === 4">
+            
+            <div class="preview-field" *ngFor="let champ of formulaire.champs">
+              <label>
+                {{ champ.label }}
+                <span class="required-mark" *ngIf="champ.obligatoire">*</span>
+              </label>
+
+              <!-- CHAMPS TEXTE -->
+              <input *ngIf="champ.typeChamp === 'TEXTE'" 
+                     type="text" 
+                     [placeholder]="champ.configuration?.aide || 'Saisir du texte...'" />
+
+              <!-- CHAMPS ADRESSE -->
+              <input *ngIf="champ.typeChamp === 'ADRESSE'" 
+                     type="text" 
+                     [placeholder]="champ.configuration?.aide || 'Saisir une adresse...'" />
+
+              <!-- CHAMPS NOMBRE -->
+              <input *ngIf="champ.typeChamp === 'NOMBRE'" 
+                     type="number" 
+                     [placeholder]="champ.configuration?.aide || 'Saisir un nombre...'" />
+
+              <!-- CHAMPS EMAIL -->
+              <input *ngIf="champ.typeChamp === 'EMAIL'" 
+                     type="email" 
+                     [placeholder]="champ.configuration?.aide || 'nom@exemple.com'" />
+
+              <!-- CHAMPS TELEPHONE -->
+              <input *ngIf="champ.typeChamp === 'TELEPHONE'" 
+                     type="tel" 
+                     [placeholder]="champ.configuration?.aide || '+257 00 00 00 00'" />
+
+              <!-- CHAMPS DATE -->
+              <input *ngIf="champ.typeChamp === 'DATE'" 
+                     type="date" />
+
+              <!-- CHAMPS SELECT -->
+              <select *ngIf="champ.typeChamp === 'SELECT'">
+                <option value="" disabled selected>-- Sélectionner une option --</option>
+                <option *ngFor="let opt of champ.configuration?.options" [value]="opt">{{ opt }}</option>
+              </select>
+
+              <!-- CHAMPS CHECKBOX -->
+              <label class="preview-checkbox" *ngIf="champ.typeChamp === 'CHECKBOX'">
+                <input type="checkbox" /> 
+                {{ champ.configuration?.aide || 'Cocher pour confirmer' }}
+              </label>
+
+              <!-- CHAMPS FICHIER -->
+              <div class="preview-file" *ngIf="champ.typeChamp === 'FICHIER'">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>{{ champ.configuration?.aide || 'Cliquer ou déposer un fichier' }}</span>
+              </div>
+
+              <!-- TEXTE D'AIDE -->
+              <div class="preview-aide" *ngIf="champ.configuration?.aide && champ.typeChamp !== 'CHECKBOX' && champ.typeChamp !== 'FICHIER'">
+                <i class="fa-regular fa-circle-question"></i> {{ champ.configuration?.aide }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pied du formulaire -->
+        <div class="preview-card-footer">
+          <div class="preview-actions">
+            <button class="btn-outline" (click)="retournerAuxChamps()">
+              <i class="fa-solid fa-arrow-left"></i> Modifier
+            </button>
+            <button class="btn-outline" [disabled]="isSaving" (click)="enregistrer(false)">
+              <i class="fa-regular fa-floppy-disk"></i> Enregistrer en brouillon
+            </button>
+            <button class="btn-primary" [disabled]="isSaving" (click)="enregistrer(true)">
+              <i class="fa-solid fa-upload"></i> Valider et publier le service
+            </button>
+          </div>
+          <p class="preview-footer-note">
+            <i class="fa-regular fa-clock"></i> Aperçu non interactif - {{ formulaire.champs.length }} champ(s)
+          </p>
+          <p class="preview-footer-note" *ngIf="formulaire.serviceId">
+            <i class="fa-solid fa-circle-info"></i> La publication active définitivement le service dans son ensemble (service + workflow + formulaire).
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ng-container>
+
+<!-- ================================================================ -->
+<!-- MODAL APERÇU                                                     -->
+<!-- ================================================================ -->
+<div class="modal-overlay" *ngIf="showApercu" (click)="fermerApercu()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-eye"></i> Aperçu du formulaire</h2>
+      <button class="btn-icon" (click)="fermerApercu()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-card preview-card-full">
+        <div class="preview-card-header">
+          <div class="preview-card-icon">
+            <i class="fa-solid fa-file-lines"></i>
+          </div>
+          <h3 class="preview-card-title">{{ formulaire.nom || 'Nom du formulaire' }}</h3>
+          <p class="preview-card-subtitle">Champs marqués <span class="required-star">*</span> obligatoires</p>
+          <div class="preview-card-divider"></div>
+        </div>
+
+        <div class="preview-card-body">
+          <!-- MÊME GRILLE QUE DANS LA CONSTRUCTION -->
+          <div class="preview-grid" [class.col-1]="nbColonnes === 1" [class.col-2]="nbColonnes === 2" [class.col-3]="nbColonnes === 3" [class.col-4]="nbColonnes === 4">
+            <div class="preview-field" *ngFor="let champ of formulaire.champs">
+              <label>
+                {{ champ.label }}
+                <span class="required-mark" *ngIf="champ.obligatoire">*</span>
+              </label>
+
+              <input *ngIf="['TEXTE','ADRESSE'].includes(champ.typeChamp)" type="text" [placeholder]="champ.configuration?.aide || ''" />
+              <input *ngIf="champ.typeChamp === 'NOMBRE'" type="number" [placeholder]="champ.configuration?.aide || ''" />
+              <input *ngIf="champ.typeChamp === 'EMAIL'" type="email" [placeholder]="champ.configuration?.aide || 'nom@exemple.com'" />
+              <input *ngIf="champ.typeChamp === 'TELEPHONE'" type="tel" [placeholder]="champ.configuration?.aide || '+257 ...'" />
+              <input *ngIf="champ.typeChamp === 'DATE'" type="date" />
+
+              <select *ngIf="champ.typeChamp === 'SELECT'">
+                <option value="" disabled selected>Sélectionner...</option>
+                <option *ngFor="let opt of champ.configuration?.options">{{ opt }}</option>
+              </select>
+
+              <label class="preview-checkbox" *ngIf="champ.typeChamp === 'CHECKBOX'">
+                <input type="checkbox" /> {{ champ.configuration?.aide || 'Cocher pour confirmer' }}
+              </label>
+
+              <div class="preview-file" *ngIf="champ.typeChamp === 'FICHIER'">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>{{ champ.configuration?.aide || 'Cliquer ou déposer un fichier' }}</span>
+              </div>
+
+              <div class="preview-aide" *ngIf="champ.configuration?.aide && champ.typeChamp !== 'CHECKBOX' && champ.typeChamp !== 'FICHIER'">
+                {{ champ.configuration?.aide }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-card-footer">
+          <button class="preview-submit" type="button" disabled>
+            <i class="fa-solid fa-paper-plane"></i> Soumettre la demande
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

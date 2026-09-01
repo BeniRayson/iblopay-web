@@ -1,0 +1,147 @@
+<div class="report-detail">
+
+  <!-- ─── HEADER ─────────────────────────────────── -->
+  <div class="detail-header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Retour aux rapports</span>
+    </button>
+    <h1 class="detail-title">{{ reportDef?.name || 'Rapport' }}</h1>
+    <p class="detail-desc">{{ reportDef?.description }}</p>
+  </div>
+
+  <!-- ─── KPI CARDS (stats above filters) ─────────── -->
+  <div class="kpi-grid">
+    <div class="kpi-card" *ngFor="let kpi of kpis">
+      <div class="kpi__label">{{ kpi.label }}</div>
+      <div class="kpi__value">{{ kpi.prefix || '' }}{{ (kpi.value | number:'1.0-0':'fr-FR') || kpi.value }}{{ kpi.suffix || '' }}</div>
+      <div class="kpi__footer">
+        <span class="kpi__change" *ngIf="kpi.change !== undefined"
+              [class.kpi__change--up]="kpi.change >= 0"
+              [class.kpi__change--down]="kpi.change < 0"
+              [class.kpi__change--neutral]="kpi.change === 0">
+          <i class="fa-solid" [class.fa-arrow-up]="kpi.change >= 0" [class.fa-arrow-down]="kpi.change < 0"></i>
+          {{ kpi.change >= 0 ? '' : '-' }}{{ Math.abs(kpi.change) }}% {{ kpi.changeLabel || '' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FILTERS ─────────────────────────────────── -->
+  <div class="filters-card">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>Du</label>
+        <input type="date" [(ngModel)]="dateFrom" (change)="applyFilters()" />
+      </div>
+      <div class="filter-group">
+        <label>Au</label>
+        <input type="date" [(ngModel)]="dateTo" (change)="applyFilters()" />
+      </div>
+      <div class="filter-group" *ngIf="agentOptions.length > 1 && (reportType === 'commissions' || reportType === 'cash-management')">
+        <label>Agent</label>
+        <select [(ngModel)]="selectedAgent" (change)="applyFilters()">
+          <option *ngFor="let a of agentOptions" [value]="a.id">{{ a.name }}</option>
+        </select>
+      </div>
+      <div class="filter-group" *ngIf="typeOptions.length > 0">
+        <label>Type</label>
+        <select [(ngModel)]="selectedType" (change)="applyFilters()">
+          <option *ngFor="let t of typeOptions" [value]="t">{{ t === 'TOUS' ? 'Tous les types' : t }}</option>
+        </select>
+      </div>
+      <div class="filter-group" *ngIf="statusOptions.length > 0">
+        <label>Statut</label>
+        <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+          <option *ngFor="let s of statusOptions" [value]="s">{{ s === 'TOUS' ? 'Tous les statuts' : s }}</option>
+        </select>
+      </div>
+      <div class="filter-group filter-actions">
+        <button class="btn-reset" (click)="resetFilters()">
+          <i class="fa-solid fa-rotate-left"></i> Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CHARTS ──────────────────────────────────── -->
+  <div class="charts-row">
+    <div class="chart-card chart-card-wide">
+      <div class="chart-card-header">
+        <span class="chart-card-title">Tendance</span>
+        <div class="chart-legend">
+          <span class="legend-dot" [style.background]="'#3b82f6'"></span> Principal
+          <span *ngIf="chartTrend.length > 0 && chartTrend[0]?.secondary !== undefined" class="legend-dot" [style.background]="'#22c55e'"></span> Période préc.
+        </div>
+      </div>
+      <div class="chart-canvas-wrap">
+        <canvas #trendCanvas></canvas>
+      </div>
+    </div>
+    <div class="chart-card" *ngIf="chartBreakdown.length > 0">
+      <div class="chart-card-header">
+        <span class="chart-card-title">Répartition</span>
+      </div>
+      <div class="chart-canvas-wrap">
+        <canvas #breakdownCanvas></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DATA TABLE ───────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <div class="table-card-title">
+        <span>{{ tableColumns.length }} colonnes · {{ filteredRows.length }} lignes</span>
+      </div>
+      <div class="table-actions">
+        <button class="btn-export" (click)="exportCSV()" [disabled]="exporting">
+          <i class="fa-solid fa-file-csv"></i> CSV
+        </button>
+        <button class="btn-export" (click)="exportPDF()" [disabled]="exporting">
+          <i class="fa-solid fa-file-pdf"></i> PDF
+        </button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th *ngFor="let col of tableColumns" (click)="setSort(col.key)" [class.sortable]="col.sortable">
+              {{ col.label }}
+              <i *ngIf="col.sortable" [class]="getSortIcon(col.key)" style="margin-left: 6px; font-size: 11px; opacity: 0.5;"></i>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of pagedRows; let i = index" (mouseenter)="hoveredRowIndex = i" (mouseleave)="hoveredRowIndex = null" [class.hovered]="hoveredRowIndex === i">
+            <td *ngFor="let col of tableColumns">
+              <ng-container *ngIf="col.format === 'currency'">{{ formatCurrency(row[col.key]) }}</ng-container>
+              <ng-container *ngIf="col.format === 'date'">{{ formatDate(row[col.key]) }}</ng-container>
+              <ng-container *ngIf="col.format === 'percent'">{{ row[col.key] }}%</ng-container>
+              <ng-container *ngIf="col.format === 'status'">
+                <span class="status-badge" [class]="getStatusClass(row[col.key])">{{ row[col.key] }}</span>
+              </ng-container>
+              <ng-container *ngIf="!col.format">{{ row[col.key] }}</ng-container>
+            </td>
+          </tr>
+          <tr *ngIf="pagedRows.length === 0">
+            <td [attr.colspan]="tableColumns.length" class="empty-row">Aucune donnée trouvée</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button class="page-btn" *ngFor="let p of getPageNumbers()" [class.active]="p === currentPage" (click)="currentPage = p">
+        {{ p }}
+      </button>
+      <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      <span class="page-info">Page {{ currentPage }} / {{ totalPages }}</span>
+    </div>
+  </div>
+</div>

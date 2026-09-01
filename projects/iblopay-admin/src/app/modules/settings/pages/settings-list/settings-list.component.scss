@@ -1,0 +1,158 @@
+// ---------------------------------------------------------------
+// Variables de design partagées du module Settings IBLOPAY
+// (dupliquées volontairement dans chaque composant pour rester
+// autonomes — à extraire dans un fichier _settings-theme.scss
+// partagé si votre pipeline SCSS le permet)
+// ---------------------------------------------------------------
+:host {
+  --ib-primary: #0F6E5B;
+  --ib-primary-dark: #0A4F42;
+  --ib-primary-light: #E6F4F1;
+  --ib-accent: #F2A93B;
+  --ib-danger: #D64545;
+  --ib-danger-light: #FBEAEA;
+  --ib-bg: #F6F8F9;
+  --ib-surface: #FFFFFF;
+  --ib-border: #E3E8EA;
+  --ib-text: #1C2B2A;
+  --ib-text-muted: #6B7B79;
+  --ib-radius: 14px;
+  --ib-shadow: 0 2px 10px rgba(15, 110, 91, 0.08);
+
+  display: block;
+  background: var(--ib-bg);
+  min-height: 100%;
+  padding: 32px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: var(--ib-text);
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+
+  &__text {
+    h1 {
+      margin: 0 0 4px;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ib-primary-dark);
+    }
+    p {
+      margin: 0;
+      color: var(--ib-text-muted);
+      font-size: 14px;
+    }
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ib-surface);
+    border: 1px solid var(--ib-border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    min-width: 320px;
+    box-shadow: var(--ib-shadow);
+
+    input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 14px;
+      background: transparent;
+      color: var(--ib-text);
+
+      &::placeholder {
+        color: var(--ib-text-muted);
+      }
+    }
+  }
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  background: var(--ib-surface);
+  border: 1px solid var(--ib-border);
+  border-radius: var(--ib-radius);
+  padding: 18px;
+  cursor: pointer;
+  box-shadow: var(--ib-shadow);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--ib-primary);
+    box-shadow: 0 6px 18px rgba(15, 110, 91, 0.14);
+  }
+
+  &__icon {
+    font-size: 26px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ib-primary-light);
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+
+    h2 {
+      margin: 0 0 2px;
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--ib-text);
+    }
+    p {
+      margin: 0 0 6px;
+      font-size: 12.5px;
+      color: var(--ib-text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+  }
+
+  &__count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ib-primary);
+    background: var(--ib-primary-light);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  &__chevron {
+    font-size: 22px;
+    color: var(--ib-text-muted);
+    flex-shrink: 0;
+  }
+}
+
+.no-results {
+  padding: 60px 0;
+  text-align: center;
+  color: var(--ib-text-muted);
+}

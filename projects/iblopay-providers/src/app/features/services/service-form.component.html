@@ -1,0 +1,189 @@
+<div class="page-header center-header">
+  <div>
+    <h1>{{ isEdit ? 'Modifier le service' : 'Nouveau service' }}</h1>
+    <p>Configurez les informations générales du service</p>
+  </div>
+</div>
+
+<div class="form-container">
+  <form [formGroup]="form" class="card form-card">
+    <div class="form-grid">
+      <div class="field">
+        <label>Nom du service <span class="required">*</span></label>
+        <input type="text" formControlName="nom" placeholder="Ex: Demande de certificat" />
+      </div>
+      <div class="field">
+        <label>Code <span class="auto-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> généré automatiquement</span></label>
+        <input type="text" formControlName="code" placeholder="Généré automatiquement" readonly />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Description <span class="required">*</span></label>
+      <textarea formControlName="description" rows="3" placeholder="Décrivez le service proposé..."></textarea>
+    </div>
+
+    <div class="form-grid three">
+      <div class="field">
+        <label>Catégorie <span class="required">*</span></label>
+        <input type="text" formControlName="categorie" placeholder="Ex: Transport" />
+      </div>
+      <div class="field">
+        <label>Sous-catégorie <span class="optional-tag">optionnel</span></label>
+        <input type="text" formControlName="sousCategorie" placeholder="Ex: Trajet Centre-ville" />
+      </div>
+      <div class="field">
+        <label>Statut <span class="required">*</span></label>
+        <select formControlName="statut">
+          <option value="BROUILLON">Brouillon</option>
+          <option value="ACTIF">Actif</option>
+          <option value="INACTIF">Inactif</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Prix <span class="optional-tag">optionnel</span></label>
+        <input type="number" formControlName="prix" min="0" step="0.01" placeholder="Laisser vide si gratuit" />
+      </div>
+      <div class="field">
+        <label>Devise</label>
+        <select formControlName="devise">
+          <option value="BIF">BIF</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Documents requis <span class="optional-tag">optionnel</span></label>
+      <div class="documents-list" formArrayName="documentsRequis">
+        <div class="document-row" *ngFor="let doc of documents.controls; let i = index">
+          <input type="text" [formControlName]="i" placeholder="Ex: Pièce d'identité" />
+          <button type="button" class="btn-icon" (click)="supprimerDocument(i)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <button type="button" class="btn-outline btn-sm" (click)="ajouterDocument()">
+        <i class="fa-solid fa-plus"></i> Ajouter un document
+      </button>
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/services" class="btn-outline">Annuler</a>
+      <button type="button" class="btn-primary" [disabled]="isSaving" (click)="demanderConfirmation()">
+        <i class="fa-solid fa-check"></i> Enregistrer
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ CARTE DE CONFIRMATION AVANT ENREGISTREMENT ============ -->
+<div class="confirm-overlay" *ngIf="isConfirmOpen" (click)="annulerConfirmation()">
+  <div class="confirm-card" (click)="$event.stopPropagation()">
+    <div class="confirm-header">
+      <div class="confirm-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+      <div>
+        <div class="confirm-title">Confirmer l'enregistrement du service</div>
+        <div class="confirm-sub">Le service sera enregistré en brouillon — la publication se fera à la fin, une fois le workflow et le formulaire créés</div>
+      </div>
+    </div>
+
+    <div class="confirm-body">
+      <div class="confirm-row">
+        <span>Nom</span>
+        <strong>{{ form.value.nom || '—' }}</strong>
+      </div>
+      <div class="confirm-row">
+        <span>Code</span>
+        <strong class="code-chip">{{ form.value.code || '—' }}</strong>
+      </div>
+      <div class="confirm-row">
+        <span>Catégorie</span>
+        <strong>{{ form.value.categorie || '—' }}<ng-container *ngIf="form.value.sousCategorie"> / {{ form.value.sousCategorie }}</ng-container></strong>
+      </div>
+      <div class="confirm-row">
+        <span>Prix</span>
+        <strong>{{ form.value.prix ? (form.value.prix | number) + ' ' + form.value.devise : 'Gratuit / non défini' }}</strong>
+      </div>
+      <div class="confirm-row" *ngIf="documentsNonVides.length > 0">
+        <span>Documents requis</span>
+        <strong>{{ documentsNonVides.join(', ') }}</strong>
+      </div>
+      <div class="confirm-description" *ngIf="form.value.description">
+        {{ form.value.description }}
+      </div>
+    </div>
+
+    <div class="confirm-actions">
+      <button class="btn-outline" (click)="annulerConfirmation()" [disabled]="isSaving">
+        <i class="fa-solid fa-pen"></i> Modifier
+      </button>
+      <button class="btn-primary" (click)="confirmerEtEnregistrer()" [disabled]="isSaving">
+        <i class="fa-solid" [class.fa-check]="!isSaving" [class.fa-spinner]="isSaving" [class.fa-spin]="isSaving"></i>
+        {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CARTE RÉCAPITULATIVE APRÈS ENREGISTREMENT ============ -->
+<!-- Affichée juste après l'enregistrement : tout sur le service qui vient d'être créé,
+     avec un bouton "Étape suivante" qui dirige vers la création du workflow. -->
+<div class="confirm-overlay" *ngIf="serviceEnregistre">
+  <div class="confirm-card recap-card">
+    <div class="confirm-header">
+      <div class="confirm-icon confirm-icon-success"><i class="fa-solid fa-circle-check"></i></div>
+      <div>
+        <div class="confirm-title">Service enregistré avec succès</div>
+        <div class="confirm-sub">Voici le récapitulatif de « {{ serviceEnregistre.nom }} »</div>
+      </div>
+    </div>
+
+    <div class="confirm-body">
+      <div class="confirm-row">
+        <span>Nom</span>
+        <strong>{{ serviceEnregistre.nom }}</strong>
+      </div>
+      <div class="confirm-row">
+        <span>Code</span>
+        <strong class="code-chip">{{ serviceEnregistre.code }}</strong>
+      </div>
+      <div class="confirm-row">
+        <span>Catégorie</span>
+        <strong>{{ serviceEnregistre.categorie }}<ng-container *ngIf="serviceEnregistre.sousCategorie"> / {{ serviceEnregistre.sousCategorie }}</ng-container></strong>
+      </div>
+      <div class="confirm-row">
+        <span>Prix</span>
+        <strong>{{ serviceEnregistre.prix ? (serviceEnregistre.prix | number) + ' ' + serviceEnregistre.devise : 'Gratuit / non défini' }}</strong>
+      </div>
+      <div class="confirm-row" *ngIf="serviceEnregistre.documentsRequis?.length">
+        <span>Documents requis</span>
+        <strong>{{ serviceEnregistre.documentsRequis.join(', ') }}</strong>
+      </div>
+      <div class="confirm-row">
+        <span>Statut</span>
+        <strong class="statut-chip statut-brouillon">BROUILLON — en attente de publication</strong>
+      </div>
+      <div class="confirm-description" *ngIf="serviceEnregistre.description">
+        {{ serviceEnregistre.description }}
+      </div>
+
+      <div class="recap-next-hint">
+        <i class="fa-solid fa-circle-info"></i>
+        Passez maintenant à la création du <strong>workflow</strong> (les étapes de validation et les comptes des agents).
+        Le service ne sera publié qu'à la toute fin, une fois le workflow et le formulaire terminés.
+      </div>
+    </div>
+
+    <div class="confirm-actions">
+      <button class="btn-outline" (click)="fermerRecapitulatif()">
+        <i class="fa-solid fa-arrow-left"></i> Revenir plus tard
+      </button>
+      <button class="btn-primary" (click)="allerVersWorkflow()">
+        Étape suivante — Créer le workflow <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
