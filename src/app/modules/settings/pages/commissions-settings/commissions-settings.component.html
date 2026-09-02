@@ -1,609 +1,249 @@
-<div class="settings-page">
-  <!-- HEADER -->
+<div class="commissions-page">
+
+  <!-- En-tête -->
   <header class="page-header">
-    
-    <div class="page-header__title">
-      <span class="icon">💵</span>
-      <div>
-        <h1>Gestion des Commissions</h1>
-        <p>Configuration, calcul, paiement et historique des commissions</p>
-      </div>
+    <div class="titre-bloc">
+      <h1>Paramètres des commissions</h1>
+      <p class="sous-titre">Barèmes appliqués aux agents et super agents (SA)</p>
+    </div>
+
+    <div class="actions-header">
+      <span class="badge-info" *ngIf="dernierePublication && !modeEdition">
+        Publié le {{ dernierePublication | date:'dd/MM/yyyy à HH:mm' }}
+      </span>
+
+      <ng-container *ngIf="!modeEdition; else editionActions">
+        <button type="button" class="btn btn-modifier" (click)="activerEdition()">
+          Modifier
+        </button>
+      </ng-container>
+
+      <ng-template #editionActions>
+        <button type="button" class="btn btn-annuler" (click)="annulerEdition()" [disabled]="enregistrementEnCours">
+          Annuler
+        </button>
+        <button type="button" class="btn btn-publier" (click)="enregistrerEtPublier()" [disabled]="enregistrementEnCours">
+          <span *ngIf="!enregistrementEnCours">Enregistrer et publier</span>
+          <span *ngIf="enregistrementEnCours">Publication…</span>
+        </button>
+      </ng-template>
     </div>
   </header>
 
-  <!-- KPI CARDS -->
-  <div class="kpi-grid">
-    <div class="kpi-card" *ngFor="let kpi of getKpiData()">
-      <div class="kpi-card__icon" [style.background-color]="kpi.color" [style.color]="kpi.textColor">
-        {{ kpi.icon }}
-      </div>
-      <div class="kpi-card__content">
-        <span class="kpi-card__value">{{ kpi.value }}</span>
-        <span class="kpi-card__label">{{ kpi.label }}</span>
-        <span class="kpi-card__trend" [class]="kpi.trend">
-          {{ kpi.trend === 'up' ? '↑' : kpi.trend === 'down' ? '↓' : '→' }}
-          {{ kpi.trendValue }}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- TABS -->
-  <nav class="tabs-nav">
-    <button class="tab-btn" *ngFor="let tab of tabs"
-            [class.active]="activeTab === tab.key"
-            (click)="setActiveTab(tab.key)">
-      <span class="tab-btn__icon">{{ tab.icon }}</span>
-      {{ tab.label }}
-      <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
+  <!-- Barre d'onglets -->
+  <nav class="tabs">
+    <button type="button" class="tab" [class.actif]="ongletActif === 'commissions'" (click)="definirOnglet('commissions')">
+      Commissions
+    </button>
+    <button type="button" class="tab" [class.actif]="ongletActif === 'configuration'" (click)="definirOnglet('configuration')">
+      Configuration
+    </button>
+    <button type="button" class="tab" [class.actif]="ongletActif === 'historique'" (click)="definirOnglet('historique')">
+      Historique
     </button>
   </nav>
 
-  <!-- ============ DASHBOARD ============ -->
-  <div *ngIf="activeTab === 'dashboard'" class="panel dashboard-panel">
-    <div class="dashboard-grid">
-      <div class="dashboard-card dashboard-card--blue">
-        <div class="dashboard-card__header">
-          <span class="dashboard-card__icon">👤</span>
-          <h3>Agents</h3>
-        </div>
-        <div class="dashboard-card__body">
-          <div class="stat-item">
-            <span class="stat-item__label">Total Agents</span>
-            <span class="stat-item__value">{{ getAgents().length }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Commissions</span>
-            <span class="stat-item__value stat-item__value--green">
-              {{ getMontantTotal('agent') | number:'1.0-0' }} BIF
-            </span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Transactions</span>
-            <span class="stat-item__value">{{ getNombreTransactions('agent') }}</span>
-          </div>
-        </div>
-        <div class="dashboard-card__footer">
-          <button class="btn btn--white" (click)="setActiveTab('agents')">Voir les agents →</button>
-        </div>
-      </div>
+  <!-- ===================== ONGLET COMMISSIONS ===================== -->
+  <ng-container *ngIf="ongletActif === 'commissions'">
 
-      <div class="dashboard-card dashboard-card--purple">
-        <div class="dashboard-card__header">
-          <span class="dashboard-card__icon">⭐</span>
-          <h3>Super Agents</h3>
-        </div>
-        <div class="dashboard-card__body">
-          <div class="stat-item">
-            <span class="stat-item__label">Total Super Agents</span>
-            <span class="stat-item__value">{{ getSuperAgents().length }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Commissions</span>
-            <span class="stat-item__value stat-item__value--gold">
-              {{ getMontantTotal('super') | number:'1.0-0' }} BIF
-            </span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Transactions</span>
-            <span class="stat-item__value">{{ getNombreTransactions('super') }}</span>
-          </div>
-        </div>
-        <div class="dashboard-card__footer">
-          <button class="btn btn--white" (click)="setActiveTab('super_agents')">Voir les super agents →</button>
-        </div>
-      </div>
+  <!-- Barème 1 : Retrait marchand -->
+  <section class="bareme-card">
+    <div class="bareme-bandeau">{{ baremeRetraitMarchand.titre }}</div>
+    <table class="bareme-table">
+      <thead>
+        <tr>
+          <th rowspan="2">Tranche (FBU)</th>
+          <th colspan="2">Agahembo</th>
+        </tr>
+        <tr>
+          <th>Agent</th>
+          <th>SA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of baremeRetraitMarchand.tranches">
+          <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+          <td>
+            <input *ngIf="modeEdition; else lectureAgent1" type="number" [(ngModel)]="t.agent" class="cell-input">
+            <ng-template #lectureAgent1>{{ formatMontant(t.agent) }}</ng-template>
+          </td>
+          <td class="col-neutre">{{ t.sa === null ? 'Ntayo' : formatMontant(t.sa) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
-      <div class="dashboard-card dashboard-card--etat">
-        <div class="dashboard-card__header">
-          <span class="dashboard-card__icon">🏛️</span>
-          <h3>État</h3>
-        </div>
-        <div class="dashboard-card__body">
-          <div class="stat-item">
-            <span class="stat-item__label">Fonds État</span>
-            <span class="stat-item__value stat-item__value--blue">
-              {{ getMontantTotal('etat') | number:'1.0-0' }} BIF
-            </span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Commissions Reçues</span>
-            <span class="stat-item__value">{{ getNombreTransactions('etat') }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Transferts</span>
-            <span class="stat-item__value">{{ getTransfertsCount() }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-item__label">Total Transféré</span>
-            <span class="stat-item__value stat-item__value--blue">
-              {{ getTotalTransfertsFormatted() }} BIF
-            </span>
-          </div>
-        </div>
-        <div class="dashboard-card__footer">
-          <button class="btn btn--white" (click)="openPinModal()">🏦 Transférer à l'État</button>
-          <button class="btn btn--white-outline" (click)="setActiveTab('etat')">Voir détails →</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Barème 2 : Recharge Lumicash -->
+  <section class="bareme-card">
+    <div class="bareme-bandeau">{{ baremeRechargeLumicash.titre }}</div>
+    <table class="bareme-table">
+      <thead>
+        <tr>
+          <th>Bidahera</th>
+          <th>Agahembo total</th>
+          <th>Agent (100%)</th>
+          <th>SA (0%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of baremeRechargeLumicash.tranches">
+          <td class="col-tranche">Forfait unique</td>
+          <td>
+            <input *ngIf="modeEdition; else lectureTot2" type="number" [(ngModel)]="t.agent" class="cell-input">
+            <ng-template #lectureTot2>{{ formatMontant(t.agent) }}</ng-template>
+          </td>
+          <td>{{ formatMontant(t.agent) }}</td>
+          <td>{{ formatMontant(t.sa) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
-  <!-- ============ AGENTS ============ -->
-  <div *ngIf="activeTab === 'agents'" class="panel">
-    <div class="panel__header">
-      <h3 class="panel__title">👤 Liste des Agents ({{ getAgents().length }})</h3>
-      <span class="panel__badge">{{ getAgents().length }} agents</span>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
+  <!-- Barème 3 : Retrait client — version A -->
+  <section class="bareme-card">
+    <div class="bareme-bandeau">{{ baremeRetraitClientA.titre }}</div>
+    <table class="bareme-table">
+      <thead>
+        <tr>
+          <th rowspan="2">Tranche (FBU)</th>
+          <th rowspan="2">Total</th>
+          <th colspan="2">Répartition</th>
+        </tr>
+        <tr>
+          <th>Agent (90%)</th>
+          <th>SA (10%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of baremeRetraitClientA.tranches">
+          <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+          <td>
+            <input *ngIf="modeEdition; else lectureTotA" type="number" [(ngModel)]="t.total" class="cell-input">
+            <ng-template #lectureTotA>{{ formatMontant(t.total) }}</ng-template>
+          </td>
+          <td>
+            <input *ngIf="modeEdition; else lectureAgentA" type="number" [(ngModel)]="t.agent" class="cell-input">
+            <ng-template #lectureAgentA>{{ formatMontant(t.agent) }}</ng-template>
+          </td>
+          <td>
+            <input *ngIf="modeEdition; else lectureSaA" type="number" [(ngModel)]="t.sa" class="cell-input">
+            <ng-template #lectureSaA>{{ formatMontant(t.sa) }}</ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Barème 4 : Retrait client — version B -->
+  <section class="bareme-card">
+    <div class="bareme-bandeau">{{ baremeRetraitClientB.titre }}</div>
+    <table class="bareme-table">
+      <thead>
+        <tr>
+          <th rowspan="2">Tranche (FBU)</th>
+          <th rowspan="2">Total</th>
+          <th colspan="2">Répartition</th>
+        </tr>
+        <tr>
+          <th>Agent (90%)</th>
+          <th>SA (10%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of baremeRetraitClientB.tranches">
+          <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+          <td>
+            <input *ngIf="modeEdition; else lectureTotB" type="number" [(ngModel)]="t.total" class="cell-input">
+            <ng-template #lectureTotB>{{ formatMontant(t.total) }}</ng-template>
+          </td>
+          <td>
+            <input *ngIf="modeEdition; else lectureAgentB" type="number" [(ngModel)]="t.agent" class="cell-input">
+            <ng-template #lectureAgentB>{{ formatMontant(t.agent) }}</ng-template>
+          </td>
+          <td>
+            <input *ngIf="modeEdition; else lectureSaB" type="number" [(ngModel)]="t.sa" class="cell-input">
+            <ng-template #lectureSaB>{{ formatMontant(t.sa) }}</ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Barème 5 : Carte agent (Ibiciro) -->
+  <section class="bareme-card">
+    <div class="bareme-bandeau">{{ baremeCarteAgent.titre }}</div>
+    <table class="bareme-table">
+      <thead>
+        <tr>
+          <th>Tranche (FBU)</th>
+          <th>Frais dépôt</th>
+          <th>Frais retrait</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of baremeCarteAgent.tranches">
+          <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+          <td>
+            <input *ngIf="modeEdition; else lectureDepot" type="number" [(ngModel)]="t.depot" class="cell-input">
+            <ng-template #lectureDepot>{{ formatMontant(t.depot) }}</ng-template>
+          </td>
+          <td>
+            <input *ngIf="modeEdition; else lectureRetrait" type="number" [(ngModel)]="t.retrait" class="cell-input">
+            <ng-template #lectureRetrait>{{ formatMontant(t.retrait) }}</ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  </ng-container>
+
+  <!-- ===================== ONGLET CONFIGURATION ===================== -->
+  <!-- Un tableau par photo de barème reçue. Pour ajouter une nouvelle photo,
+       ajouter une entrée dans baremesConfiguration (voir le .ts) : ce bloc
+       s'affichera automatiquement dans une nouvelle carte. -->
+  <ng-container *ngIf="ongletActif === 'configuration'">
+
+    <section class="bareme-card config-card" *ngFor="let bareme of baremesConfiguration; let i = index">
+      <div class="bareme-bandeau">
+        <span class="numero-photo">Photo {{ i + 1 }}</span>
+        {{ bareme.titre }}
+      </div>
+      <table class="bareme-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Téléphone</th>
-            <th>Solde</th>
-            <th>Commissions</th>
-            <th>Transactions</th>
-            <th>Statut</th>
+            <th>Tranche (FBU)</th>
+            <th>Frais dépôt</th>
+            <th>Frais retrait</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let agent of getPaginatedItems('agents')">
-            <td><strong>{{ agent.id }}</strong></td>
-            <td>{{ agent.nom }}</td>
-            <td>{{ agent.email }}</td>
-            <td>{{ agent.telephone }}</td>
-            <td class="amount">{{ getAgentSolde(agent) }} BIF</td>
-            <td class="amount amount--success">{{ getAgentCommissionTotal(agent) }} BIF</td>
-            <td>{{ agent.transactions }}</td>
-            <td><span class="status-badge" [class]="agent.statut === 'actif' ? 'status-badge--actif' : 'status-badge--inactif'">{{ agent.statut === 'actif' ? '✅ Actif' : '⛔ Inactif' }}</span></td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="pagination" *ngIf="getTotalPages('agents') > 1">
-        <button class="pagination__btn" (click)="prevPage('agents')" [disabled]="getCurrentPage('agents') === 1">‹</button>
-        <span class="pagination__info">Page {{ getCurrentPage('agents') }} / {{ getTotalPages('agents') }}</span>
-        <button class="pagination__btn" (click)="nextPage('agents')" [disabled]="getCurrentPage('agents') === getTotalPages('agents')">›</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ SUPER AGENTS ============ -->
-  <div *ngIf="activeTab === 'super_agents'" class="panel">
-    <div class="panel__header panel__header--gold">
-      <h3 class="panel__title">⭐ Liste des Super Agents ({{ getSuperAgents().length }})</h3>
-      <span class="panel__badge panel__badge--gold">{{ getSuperAgents().length }} super agents</span>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Téléphone</th>
-            <th>Solde</th>
-            <th>Commissions</th>
-            <th>Transactions</th>
-            <th>Statut</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let agent of getPaginatedItems('super_agents')">
-            <td><strong>{{ agent.id }}</strong></td>
-            <td>{{ agent.nom }}</td>
-            <td>{{ agent.email }}</td>
-            <td>{{ agent.telephone }}</td>
-            <td class="amount amount--gold">{{ getAgentSolde(agent) }} BIF</td>
-            <td class="amount amount--gold">{{ getAgentCommissionTotal(agent) }} BIF</td>
-            <td>{{ agent.transactions }}</td>
-            <td><span class="status-badge" [class]="agent.statut === 'actif' ? 'status-badge--actif' : 'status-badge--inactif'">{{ agent.statut === 'actif' ? '✅ Actif' : '⛔ Inactif' }}</span></td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="pagination" *ngIf="getTotalPages('super_agents') > 1">
-        <button class="pagination__btn" (click)="prevPage('super_agents')" [disabled]="getCurrentPage('super_agents') === 1">‹</button>
-        <span class="pagination__info">Page {{ getCurrentPage('super_agents') }} / {{ getTotalPages('super_agents') }}</span>
-        <button class="pagination__btn" (click)="nextPage('super_agents')" [disabled]="getCurrentPage('super_agents') === getTotalPages('super_agents')">›</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ ÉTAT ============ -->
-  <div *ngIf="activeTab === 'etat'" class="panel">
-    <div class="panel__header panel__header--etat">
-      <h3 class="panel__title">🏛️ Gestion des Fonds État</h3>
-      <div class="panel__actions">
-        <button class="btn btn--etat" (click)="openPinModal()">🏦 Transférer</button>
-      </div>
-    </div>
-    
-    <div class="etat-summary">
-      <div class="etat-summary__grid">
-        <div class="etat-stat-card" *ngFor="let etat of getEtat()">
-          <div class="etat-stat-card__content">
-            <div class="etat-stat-card__total">
-              <span class="etat-stat-card__label">Total Fonds État</span>
-              <span class="etat-stat-card__value">{{ getAgentSolde(etat) }} BIF</span>
-            </div>
-            <div class="etat-stat-card__details">
-              <div class="etat-stat-item">
-                <span class="etat-stat-item__label">Commissions Reçues</span>
-                <span class="etat-stat-item__value">{{ getNombreTransactions('etat') }}</span>
-              </div>
-              <div class="etat-stat-item">
-                <span class="etat-stat-item__label">Transferts Effectués</span>
-                <span class="etat-stat-item__value">{{ getTransfertsCount() }}</span>
-              </div>
-              <div class="etat-stat-item">
-                <span class="etat-stat-item__label">Total Transféré</span>
-                <span class="etat-stat-item__value etat-stat-item__value--blue">
-                  {{ getTotalTransfertsFormatted() }} BIF
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="etat-stat-card__action">
-            <button class="btn btn--etat btn--lg" (click)="openPinModal()">🏦 Transférer à l'État</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <h4 class="section-title">📋 Historique des Transferts ({{ getTransfertsEtat().length }})</h4>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Référence</th>
-            <th>Montant</th>
-            <th>Statut</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let t of getPaginatedItems('transferts')">
-            <td>{{ t.date }}</td>
-            <td><strong>{{ t.reference }}</strong></td>
-            <td class="amount amount--blue">{{ getTransfertMontant(t) }} BIF</td>
-            <td><span class="status-badge" [class]="'status-badge--' + t.statut">{{ getStatutLabel(t.statut) }}</span></td>
-            <td>{{ t.description }}</td>
+          <tr *ngFor="let t of bareme.tranches">
+            <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
             <td>
-              <button class="action-btn" title="Voir détails" (click)="openVoirTransfert(t)">👁️</button>
+              <input *ngIf="modeEdition; else lectureDepotCfg" type="number" [(ngModel)]="t.depot" class="cell-input">
+              <ng-template #lectureDepotCfg>{{ formatMontant(t.depot) }}</ng-template>
+            </td>
+            <td>
+              <input *ngIf="modeEdition; else lectureRetraitCfg" type="number" [(ngModel)]="t.retrait" class="cell-input">
+              <ng-template #lectureRetraitCfg>{{ formatMontant(t.retrait) }}</ng-template>
             </td>
           </tr>
         </tbody>
       </table>
-      <div class="pagination" *ngIf="getTotalPages('transferts') > 1">
-        <button class="pagination__btn" (click)="prevPage('transferts')" [disabled]="getCurrentPage('transferts') === 1">‹</button>
-        <span class="pagination__info">Page {{ getCurrentPage('transferts') }} / {{ getTotalPages('transferts') }}</span>
-        <button class="pagination__btn" (click)="nextPage('transferts')" [disabled]="getCurrentPage('transferts') === getTotalPages('transferts')">›</button>
-      </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- ============ COMMISSIONS ============ -->
-  <div *ngIf="activeTab === 'commissions'" class="panel">
-    <div class="panel__header">
-      <h3 class="panel__title">💰 Commissions ({{ getCommissions().length }})</h3>
-      <div class="panel__actions">
-        <button class="btn btn--primary" (click)="openPinModal()">🏦 Transférer à l'État</button>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Agent</th>
-            <th>Rôle</th>
-            <th>Transactions</th>
-            <th>Volume</th>
-            <th>Taux</th>
-            <th>Commission</th>
-            <th>Part État</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let c of getPaginatedItems('commissions')">
-            <td><strong>{{ c.agentNom }}</strong></td>
-            <td><span class="badge" [class]="'badge--' + c.agentRole">{{ getRoleLabel(c.agentRole) }}</span></td>
-            <td class="text-center">{{ c.nbTransactions }}</td>
-            <td class="amount">{{ getCommissionVolume(c) }} BIF</td>
-            <td>{{ c.taux }}%</td>
-            <td class="amount amount--success">{{ getCommissionMontant(c) }} BIF</td>
-            <td class="amount amount--blue">{{ getCommissionEtatMontant(c) }} BIF</td>
-            <td><span class="status-badge" [class]="'status-badge--' + c.statut">{{ getStatutLabel(c.statut) }}</span></td>
-            <td>
-              <div class="action-group">
-                <button class="action-btn" title="Voir" (click)="openVoirCommission(c)">👁️</button>
-                <button class="action-btn" title="Payer" (click)="openPayerCommission(c)" *ngIf="c.statut !== 'payee'">💵</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="pagination" *ngIf="getTotalPages('commissions') > 1">
-        <button class="pagination__btn" (click)="prevPage('commissions')" [disabled]="getCurrentPage('commissions') === 1">‹</button>
-        <span class="pagination__info">Page {{ getCurrentPage('commissions') }} / {{ getTotalPages('commissions') }}</span>
-        <button class="pagination__btn" (click)="nextPage('commissions')" [disabled]="getCurrentPage('commissions') === getTotalPages('commissions')">›</button>
-      </div>
-    </div>
-  </div>
+    <p class="config-vide" *ngIf="baremesConfiguration.length === 0">
+      Aucun barème de configuration pour le moment. Envoyez une photo pour en ajouter un.
+    </p>
 
-  <!-- ============ HISTORIQUE ============ -->
-  <div *ngIf="activeTab === 'historique'" class="panel">
-    <div class="panel__header">
-      <h3 class="panel__title">📋 Historique des Commissions ({{ getHistorique().length }})</h3>
-      <span class="panel__badge">{{ getHistorique().length }} entrées</span>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Agent</th>
-            <th>Rôle</th>
-            <th>Montant</th>
-            <th>Type</th>
-            <th>Référence</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let h of getPaginatedItems('historique')">
-            <td>{{ h.date }}</td>
-            <td><strong>{{ h.agentNom }}</strong></td>
-            <td><span class="badge" [class]="'badge--' + h.agentRole">{{ getRoleLabel(h.agentRole) }}</span></td>
-            <td class="amount">{{ getHistoriqueMontant(h) }} BIF</td>
-            <td>{{ getTypeLabel(h.type) }}</td>
-            <td class="text-muted">{{ h.reference }}</td>
-            <td><span class="status-badge" [class]="'status-badge--' + h.statut">{{ getStatutLabel(h.statut) }}</span></td>
-            <td>
-              <button class="action-btn" title="Voir détails" (click)="openVoirHistorique(h)">👁️</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="pagination" *ngIf="getTotalPages('historique') > 1">
-        <button class="pagination__btn" (click)="prevPage('historique')" [disabled]="getCurrentPage('historique') === 1">‹</button>
-        <span class="pagination__info">Page {{ getCurrentPage('historique') }} / {{ getTotalPages('historique') }}</span>
-        <button class="pagination__btn" (click)="nextPage('historique')" [disabled]="getCurrentPage('historique') === getTotalPages('historique')">›</button>
-      </div>
-    </div>
-  </div>
+  </ng-container>
 
-  <!-- ============ TRANSFERTS ============ -->
-  <div *ngIf="activeTab === 'transferts'" class="panel">
-    <div class="panel__header panel__header--etat">
-      <h3 class="panel__title">🏦 Transferts vers l'État ({{ getTransfertsEtat().length }})</h3>
-      <div class="panel__actions">
-        <button class="btn btn--etat" (click)="openPinModal()">🏦 Nouveau transfert</button>
-      </div>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Référence</th>
-            <th>Montant</th>
-            <th>Statut</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let t of getPaginatedItems('transferts')">
-            <td>{{ t.date }}</td>
-            <td><strong>{{ t.reference }}</strong></td>
-            <td class="amount amount--blue">{{ getTransfertMontant(t) }} BIF</td>
-            <td><span class="status-badge" [class]="'status-badge--' + t.statut">{{ getStatutLabel(t.statut) }}</span></td>
-            <td>{{ t.description }}</td>
-            <td>
-              <button class="action-btn" title="Voir détails" (click)="openVoirTransfert(t)">👁️</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="pagination" *ngIf="getTotalPages('transferts') > 1">
-        <button class="pagination__btn" (click)="prevPage('transferts')" [disabled]="getCurrentPage('transferts') === 1">‹</button>
-        <span class="pagination__info">Page {{ getCurrentPage('transferts') }} / {{ getTotalPages('transferts') }}</span>
-        <button class="pagination__btn" (click)="nextPage('transferts')" [disabled]="getCurrentPage('transferts') === getTotalPages('transferts')">›</button>
-      </div>
-    </div>
-  </div>
+  <!-- ===================== ONGLET HISTORIQUE ===================== -->
+  <ng-container *ngIf="ongletActif === 'historique'">
+    <section class="bareme-card historique-vide">
+      <p>L'historique des modifications de barèmes s'affichera ici.</p>
+    </section>
+  </ng-container>
 
-  <!-- ============ MODAL PIN ============ -->
-  <div class="modal-overlay" *ngIf="showPinModal" (click)="closePinModal()"></div>
-  <div class="modal modal--animated modal--pin" *ngIf="showPinModal">
-    <div class="modal__header">
-      <h2 class="modal__title">🔐 Code PIN</h2>
-      <button class="modal__close" (click)="closePinModal()">✕</button>
-    </div>
-    <div class="modal__body">
-      <div class="modal__icon">🔐</div>
-      <p class="modal__subtitle">Veuillez entrer votre code PIN pour autoriser le transfert</p>
-      <div class="pin-input-group">
-        <input type="password" class="pin-input" [(ngModel)]="pinCode" maxlength="4" placeholder="• • • •" autofocus>
-      </div>
-      <div class="pin-keypad">
-        <button class="pin-key" *ngFor="let key of [1,2,3,4,5,6,7,8,9]" (click)="addPinDigit(key)">{{ key }}</button>
-        <button class="pin-key pin-key--clear" (click)="clearPin()">⌫</button>
-        <button class="pin-key pin-key--zero" (click)="addPinDigit(0)">0</button>
-        <button class="pin-key pin-key--confirm" (click)="confirmPin()">✓</button>
-      </div>
-      <div class="pin-error" *ngIf="pinCode.length === 4 && pinCode !== '1234'">
-        ⚠️ Code PIN incorrect (Code: 1234)
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ MODAL TRANSFERT ============ -->
-  <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
-  <div class="modal modal--animated" *ngIf="modalOpen">
-    <div class="modal__header">
-      <h2 class="modal__title">{{ modalTitle }}</h2>
-      <button class="modal__close" (click)="closeModal()">✕</button>
-    </div>
-    <div class="modal__body">
-      <div class="modal__icon">{{ modalIcon }}</div>
-      
-      <div *ngIf="modalType === 'transfert_etat'">
-        <div class="alert alert--info">
-          ℹ️ Les commissions payées seront automatiquement transférées vers le compte de l'État.
-        </div>
-        <div class="transfert-summary">
-          <div class="transfert-item">
-            <span class="transfert-item__label">Nombre de commissions</span>
-            <span class="transfert-item__value">{{ getNbCommissionsPayees() }}</span>
-          </div>
-          <div class="transfert-item">
-            <span class="transfert-item__label">Montant total</span>
-            <span class="transfert-item__value transfert-item__value--blue">
-              {{ getTotalCommissionsEtatFormatted() }} BIF
-            </span>
-          </div>
-        </div>
-        <div class="commission-list" *ngIf="hasCommissionsPayees()">
-          <h4>Commissions concernées</h4>
-          <div class="commission-item" *ngFor="let c of formData.commissions">
-            <span>{{ c.agentNom }}</span>
-            <span class="amount amount--blue">{{ getCommissionEtatMontant(c) }} BIF</span>
-          </div>
-        </div>
-        <div class="alert alert--warning" *ngIf="!hasCommissionsPayees()">
-          ⚠️ Aucune commission payable trouvée.
-        </div>
-      </div>
-
-      <div *ngIf="modalType === 'voir_commission' && selectedItem">
-        <div class="detail-card">
-          <div class="detail-card__header">
-            <span class="detail-card__icon">💰</span>
-            <h4>Détails de la Commission</h4>
-          </div>
-          <div class="detail-card__body">
-            <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">{{ selectedItem.id }}</span></div>
-            <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value"><strong>{{ selectedItem.agentNom }}</strong></span></div>
-            <div class="detail-row"><span class="detail-label">Rôle</span><span class="detail-value"><span class="badge" [class]="'badge--' + selectedItem.agentRole">{{ getRoleLabel(selectedItem.agentRole) }}</span></span></div>
-            <div class="detail-row"><span class="detail-label">Transactions</span><span class="detail-value">{{ selectedItem.nbTransactions }}</span></div>
-            <div class="detail-row"><span class="detail-label">Volume</span><span class="detail-value amount">{{ getCommissionVolume(selectedItem) }} BIF</span></div>
-            <div class="detail-row"><span class="detail-label">Taux</span><span class="detail-value">{{ selectedItem.taux }}%</span></div>
-            <div class="detail-row"><span class="detail-label">Commission</span><span class="detail-value amount amount--success">{{ getCommissionMontant(selectedItem) }} BIF</span></div>
-            <div class="detail-row"><span class="detail-label">Part État</span><span class="detail-value amount amount--blue">{{ getCommissionEtatMontant(selectedItem) }} BIF</span></div>
-            <div class="detail-row"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="'status-badge--' + selectedItem.statut">{{ getStatutLabel(selectedItem.statut) }}</span></span></div>
-            <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">{{ selectedItem.date || 'N/A' }}</span></div>
-          </div>
-          <div class="detail-card__footer">
-            <button class="btn btn--primary" (click)="openPayerCommission(selectedItem)" *ngIf="selectedItem.statut !== 'payee'">💵 Payer</button>
-            <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="modalType === 'payer_commission' && selectedItem">
-        <div class="detail-card">
-          <div class="detail-card__header">
-            <span class="detail-card__icon">💵</span>
-            <h4>Paiement de la Commission</h4>
-          </div>
-          <div class="detail-card__body">
-            <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value"><strong>{{ selectedItem.agentNom }}</strong></span></div>
-            <div class="detail-row"><span class="detail-label">Montant</span><span class="detail-value amount amount--success">{{ getCommissionMontant(selectedItem) }} BIF</span></div>
-            <div class="detail-row"><span class="detail-label">Transactions</span><span class="detail-value">{{ selectedItem.nbTransactions }}</span></div>
-            <div class="detail-row"><span class="detail-label">Taux</span><span class="detail-value">{{ selectedItem.taux }}%</span></div>
-            <div class="form-group">
-              <label>Méthode de paiement</label>
-              <select [(ngModel)]="formData.methode" class="form-control">
-                <option value="wallet">💰 Wallet</option>
-                <option value="mobile_money">📱 Mobile Money</option>
-                <option value="banque">🏦 Virement bancaire</option>
-                <option value="cash">💵 Cash</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Référence</label>
-              <input type="text" [(ngModel)]="formData.reference" class="form-control" placeholder="Référence du paiement" />
-            </div>
-            <div class="form-group">
-              <label>Commentaire</label>
-              <input type="text" [(ngModel)]="formData.commentaire" class="form-control" placeholder="Commentaire optionnel" />
-            </div>
-          </div>
-          <div class="detail-card__footer">
-            <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
-            <button class="btn btn--primary" (click)="confirmModal()">💵 Confirmer</button>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="modalType === 'voir_historique' && selectedItem">
-        <div class="detail-card">
-          <div class="detail-card__header">
-            <span class="detail-card__icon">📋</span>
-            <h4>Détails de l'Historique</h4>
-          </div>
-          <div class="detail-card__body">
-            <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">{{ selectedItem.id }}</span></div>
-            <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">{{ selectedItem.date }}</span></div>
-            <div class="detail-row"><span class="detail-label">Agent</span><span class="detail-value"><strong>{{ selectedItem.agentNom }}</strong></span></div>
-            <div class="detail-row"><span class="detail-label">Rôle</span><span class="detail-value"><span class="badge" [class]="'badge--' + selectedItem.agentRole">{{ getRoleLabel(selectedItem.agentRole) }}</span></span></div>
-            <div class="detail-row"><span class="detail-label">Montant</span><span class="detail-value amount">{{ getHistoriqueMontant(selectedItem) }} BIF</span></div>
-            <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value">{{ getTypeLabel(selectedItem.type) }}</span></div>
-            <div class="detail-row"><span class="detail-label">Référence</span><span class="detail-value">{{ selectedItem.reference }}</span></div>
-            <div class="detail-row"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="'status-badge--' + selectedItem.statut">{{ getStatutLabel(selectedItem.statut) }}</span></span></div>
-            <div class="detail-row" *ngIf="selectedItem.description"><span class="detail-label">Description</span><span class="detail-value">{{ selectedItem.description }}</span></div>
-          </div>
-          <div class="detail-card__footer">
-            <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="modalType === 'voir_transfert' && selectedItem">
-        <div class="detail-card">
-          <div class="detail-card__header">
-            <span class="detail-card__icon">🏦</span>
-            <h4>Détails du Transfert</h4>
-          </div>
-          <div class="detail-card__body">
-            <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">{{ selectedItem.id }}</span></div>
-            <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">{{ selectedItem.date }}</span></div>
-            <div class="detail-row"><span class="detail-label">Référence</span><span class="detail-value"><strong>{{ selectedItem.reference }}</strong></span></div>
-            <div class="detail-row"><span class="detail-label">Montant</span><span class="detail-value amount amount--blue">{{ getTransfertMontant(selectedItem) }} BIF</span></div>
-            <div class="detail-row"><span class="detail-label">Source</span><span class="detail-value">{{ selectedItem.source }}</span></div>
-            <div class="detail-row"><span class="detail-label">Destination</span><span class="detail-value">🏛️ {{ selectedItem.destination }}</span></div>
-            <div class="detail-row"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="'status-badge--' + selectedItem.statut">{{ getStatutLabel(selectedItem.statut) }}</span></span></div>
-            <div class="detail-row"><span class="detail-label">Description</span><span class="detail-value">{{ selectedItem.description }}</span></div>
-            <div class="detail-row"><span class="detail-label">Commissions</span><span class="detail-value">{{ selectedItem.commissionIds?.length || 0 }}</span></div>
-          </div>
-          <div class="detail-card__footer">
-            <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal__footer" *ngIf="modalType === 'transfert_etat'">
-      <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
-      <button class="btn btn--etat" (click)="confirmModal()" *ngIf="hasCommissionsPayees()">
-        🏦 Transférer
-      </button>
-    </div>
-  </div>
-
-  <!-- ============ TOASTS ============ -->
-  <div class="toast-stack">
-    <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
-      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>
-      {{ t.message }}
-      <button class="toast__close" (click)="dismissToast(t.id)">✕</button>
-    </div>
-  </div>
 </div>

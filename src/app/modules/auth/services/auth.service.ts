@@ -109,7 +109,8 @@ export class AuthService {
   // ─── Authentication ────────────────────────────────────────
 
   /**
-   * Login with phone number and PIN (simulates 2FA redirect on success)
+   * Login with phone number and PIN
+   * 🔥 MODE DÉVELOPPEMENT : Connexion directe sans 2FA pour tous les utilisateurs
    */
   login(credentials: LoginRequest): Observable<AuthResponse> {
     const users = this.getMockUsers();
@@ -130,15 +131,38 @@ export class AuthService {
       })).pipe(delay(800));
     }
 
-    // Success: Simulate 2FA required by throwing a 403 with requires_2fa: true
-    return throwError(() => ({
-      status: 403,
-      error: { requires_2fa: true }
-    })).pipe(delay(1000));
+    // 🔥 Connexion directe pour TOUS les utilisateurs (pas de 2FA en mode développement)
+    const mockTokens = {
+      access_token: 'mock-jwt-access-token-' + Math.random().toString(36).substring(2),
+      refresh_token: 'mock-jwt-refresh-token-' + Math.random().toString(36).substring(2),
+      expires_in: 3600,
+      token_type: 'Bearer'
+    };
+
+    const response: AuthResponse = {
+      success: true,
+      message: AUTH_CONSTANTS.MESSAGES.LOGIN_SUCCESS,
+      data: {
+        user: user,
+        tokens: mockTokens
+      }
+    };
+
+    return of(response).pipe(
+      delay(1000),
+      tap(res => {
+        if (res.success && res.data) {
+          this.tokenService.setTokens(res.data.tokens);
+          this.setCurrentUser(res.data.user);
+          this.sessionService.startSessionMonitoring();
+        }
+      })
+    );
   }
 
   /**
    * Verify two-factor authentication OTP
+   * ⚠️ Cette méthode est conservée mais n'est plus utilisée en mode dev
    */
   verifyTwoFactor(request: TwoFactorRequest): Observable<AuthResponse> {
     const users = this.getMockUsers();

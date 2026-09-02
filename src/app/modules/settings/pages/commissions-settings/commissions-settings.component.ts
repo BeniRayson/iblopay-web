@@ -1,825 +1,244 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 
-// ========== INTERFACES ==========
+interface TrancheSimple {
+  min: number;
+  max: number;
+  agent: number | null;   // null => "Ntayo" / N/A
+  sa: number | null;
+}
 
-interface Agent {
+interface TrancheRepartie {
+  min: number;
+  max: number;
+  total: number | null;
+  agent: number | null;   // 90%
+  sa: number | null;      // 10%
+}
+
+interface TrancheCarte {
+  min: number;
+  max: number;
+  depot: number | null;   // umuntu yandikishe
+  retrait: number | null; // umuntu atandise
+}
+
+interface Bareme<T> {
   id: string;
-  nom: string;
-  role: 'agent' | 'super_agent' | 'etat';
-  email: string;
-  telephone: string;
-  dateCreation: string;
-  solde: number;
-  transactions: number;
-  volumeTotal: number;
-  commissionTotal: number;
-  statut: 'actif' | 'inactif';
-}
-
-interface Commission {
-  id: string;
-  agentId: string;
-  agentNom: string;
-  agentRole: 'agent' | 'super_agent' | 'etat';
-  nbTransactions: number;
-  volume: number;
-  taux: number;
-  montant: number;
-  statut: 'calculee' | 'payee' | 'en_attente';
-  date?: string;
-  transactionIds?: string[];
-  commissionEtat?: number;
-}
-
-interface HistoriqueCommission {
-  id: string;
-  date: string;
-  agentId: string;
-  agentNom: string;
-  agentRole: 'agent' | 'super_agent' | 'etat';
-  montant: number;
-  type: 'commission_agent' | 'commission_super' | 'commission_etat' | 'transfert_etat';
-  reference: string;
-  statut: 'effectue' | 'en_attente' | 'echoue';
-  description?: string;
-}
-
-interface TransfertEtat {
-  id: string;
-  date: string;
-  montant: number;
-  reference: string;
-  statut: 'effectue' | 'en_attente' | 'echoue';
-  description: string;
-  source: string;
-  destination: 'compte_etat';
-  commissionIds: string[];
-  agentId?: string;
-}
-
-interface Toast {
-  id: number;
-  message: string;
-  type: 'success' | 'danger' | 'info' | 'warning';
-}
-
-interface TabItem {
-  key: string;
-  label: string;
-  icon: string;
-  count?: number;
-}
-
-interface KpiData {
-  icon: string;
-  label: string;
-  value: string;
-  color: string;
-  textColor: string;
-  trend: 'up' | 'down' | 'stable';
-  trendValue: string;
+  titre: string;
+  tranches: T[];
 }
 
 @Component({
   selector: 'app-commissions-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './commissions-settings.component.html',
   styleUrls: ['./commissions-settings.component.scss']
 })
-export class CommissionsSettingsComponent implements OnInit {
-  readonly title = 'Gestion des Commissions';
-  readonly icon = '💵';
-  readonly pageSize = 100;
-  private readonly STORAGE_KEY = 'commissions_data_v2';
+export class CommissionsSettingsComponent {
 
-  private agents: Agent[] = [];
-  private commissions: Commission[] = [];
-  private historique: HistoriqueCommission[] = [];
-  private transfertsEtat: TransfertEtat[] = [];
-  private toastSeq = 0;
+  modeEdition = false;
+  enregistrementEnCours = false;
+  dernierePublication: Date | null = null;
 
-  activeTab: string = 'dashboard';
-  modalOpen = false;
-  modalTitle = '';
-  modalType = '';
-  modalIcon = '';
-  selectedItem: any = null;
-  formData: any = {};
-  toasts: Toast[] = [];
-  pinCode: string = '';
-  showPinModal: boolean = false;
+  ongletActif: 'commissions' | 'configuration' | 'historique' = 'commissions';
 
-  private currentPages: { [key: string]: number } = {
-    commissions: 1,
-    historique: 1,
-    transferts: 1,
-    agents: 1,
-    super_agents: 1
+  definirOnglet(onglet: 'commissions' | 'configuration' | 'historique'): void {
+    if (this.modeEdition) {
+      this.annulerEdition();
+    }
+    this.ongletActif = onglet;
+  }
+
+  // Barème 1 — Commission Agent/SA quand le marchand retire (FBU)
+  baremeRetraitMarchand: Bareme<TrancheSimple> = {
+    id: 'retrait-marchand',
+    titre: "Agahembo k'umukozi (Agent) / uwukurira umukozi wa Lumiash (SA) — igihe umudandaza abikuye (FBU)",
+    tranches: [
+      { min: 0,       max: 50000,      agent: 0,    sa: null },
+      { min: 50001,   max: 70000,      agent: 100,  sa: null },
+      { min: 70001,   max: 100000,     agent: 200,  sa: null },
+      { min: 100001,  max: 150000,     agent: 300,  sa: null },
+      { min: 150001,  max: 200000,     agent: 400,  sa: null },
+      { min: 200001,  max: 300000,     agent: 500,  sa: null },
+      { min: 300001,  max: 400000,     agent: 600,  sa: null },
+      { min: 400001,  max: 500000,     agent: 700,  sa: null },
+      { min: 500001,  max: 600000,     agent: 800,  sa: null },
+      { min: 600001,  max: 700000,     agent: 900,  sa: null },
+      { min: 700001,  max: 999999999,  agent: 1000, sa: null },
+    ]
   };
 
-  tabs: TabItem[] = [
-    { key: 'dashboard', label: 'Tableau de bord', icon: '📊' },
-    { key: 'agents', label: 'Agents', icon: '👤' },
-    { key: 'super_agents', label: 'Super Agents', icon: '⭐' },
-    { key: 'etat', label: 'État', icon: '🏛️' },
-    { key: 'commissions', label: 'Commissions', icon: '💰' },
-    { key: 'historique', label: 'Historique', icon: '📋' },
-    { key: 'transferts', label: 'Transferts État', icon: '🏦' }
+  // Barème 2 — Commission Agent/SA quand le client recharge un compte Lumicash (FBU)
+  baremeRechargeLumicash: Bareme<TrancheSimple> = {
+    id: 'recharge-lumicash',
+    titre: "Agahembo k'umukozi (Agent) / uwukurira umukozi wa Lumiash (SA) — igihe bugururirie umunywanyi ikonte ya Lumicash (FBU)",
+    tranches: [
+      { min: 0, max: 0, agent: 200, sa: 0 } // "Bidahera" : forfait unique — 100% Agent / 0% SA
+    ]
+  };
+
+  // Barème 3 — Commission quand le client retire (répartition 90% Agent / 10% SA) — version A
+  baremeRetraitClientA: Bareme<TrancheRepartie> = {
+    id: 'retrait-client-a',
+    titre: "Agahembo k'umukozi (Agent) / uwukurira umukozi wa Lumiash (SA) — igihe umunywanyi abikishije (FBU) — Bareme A",
+    tranches: [
+      { min: 100,    max: 999,     total: 10,   agent: 9,   sa: 1 },
+      { min: 1000,   max: 4999,    total: 30,   agent: 27,  sa: 3 },
+      { min: 5000,   max: 9999,    total: 80,   agent: 72,  sa: 8 },
+      { min: 10000,  max: 19999,   total: 100,  agent: 90,  sa: 10 },
+      { min: 20000,  max: 29999,   total: 200,  agent: 180, sa: 20 },
+      { min: 30000,  max: 39999,   total: 270,  agent: 243, sa: 27 },
+      { min: 40000,  max: 49999,   total: 360,  agent: 324, sa: 36 },
+      { min: 50000,  max: 59999,   total: 450,  agent: 405, sa: 45 },
+      { min: 60000,  max: 69999,   total: 520,  agent: 468, sa: 52 },
+      { min: 70000,  max: 79999,   total: 600,  agent: 540, sa: 60 },
+      { min: 80000,  max: 89999,   total: 700,  agent: 630, sa: 70 },
+      { min: 90000,  max: 99999,   total: 750,  agent: 675, sa: 75 },
+      { min: 100000, max: 199999,  total: 800,  agent: 720, sa: 80 },
+      { min: 200000, max: 299999,  total: 1100, agent: 990, sa: 110 },
+      { min: 300000, max: 399999,  total: 1300, agent: 1170, sa: 130 },
+      { min: 400000, max: 499999,  total: 1500, agent: 1350, sa: 150 },
+      { min: 500000, max: 1000000, total: 2400, agent: 2160, sa: 240 },
+    ]
+  };
+
+  // Barème 4 — Commission quand le client retire (répartition 90% Agent / 10% SA) — version B
+  baremeRetraitClientB: Bareme<TrancheRepartie> = {
+    id: 'retrait-client-b',
+    titre: "Agahembo k'umukozi (Agent) / uwukurira umukozi wa Lumiash (SA) — igihe umunywanyi abikishije (FBU) — Bareme B",
+    tranches: [
+      { min: 100,    max: 999,     total: null, agent: null, sa: null },
+      { min: 1000,   max: 4999,    total: 70,   agent: 63,   sa: 7 },
+      { min: 5000,   max: 9999,    total: 120,  agent: 108,  sa: 12 },
+      { min: 10000,  max: 19999,   total: 180,  agent: 162,  sa: 18 },
+      { min: 20000,  max: 29999,   total: 230,  agent: 207,  sa: 23 },
+      { min: 30000,  max: 39999,   total: 350,  agent: 315,  sa: 35 },
+      { min: 40000,  max: 49999,   total: 450,  agent: 405,  sa: 45 },
+      { min: 50000,  max: 59999,   total: 550,  agent: 495,  sa: 55 },
+      { min: 60000,  max: 69999,   total: 650,  agent: 585,  sa: 65 },
+      { min: 70000,  max: 79999,   total: 750,  agent: 675,  sa: 75 },
+      { min: 80000,  max: 89999,   total: 850,  agent: 765,  sa: 85 },
+      { min: 90000,  max: 99999,   total: 950,  agent: 855,  sa: 95 },
+      { min: 100000, max: 199999,  total: 1100, agent: 990,  sa: 110 },
+      { min: 200000, max: 299999,  total: 1800, agent: 1620, sa: 180 },
+      { min: 300000, max: 399999,  total: 2200, agent: 1980, sa: 220 },
+      { min: 400000, max: 499999,  total: 2600, agent: 2340, sa: 260 },
+      { min: 500000, max: 1000000, total: 4000, agent: 3600, sa: 240 },
+    ]
+  };
+
+  // Barème 5 — Ibiciro (dépôt / retrait) tel qu'affiché sur la carte agent
+  baremeCarteAgent: Bareme<TrancheCarte> = {
+    id: 'carte-agent',
+    titre: 'Ibiciro — Frais de dépôt et de retrait (carte agent)',
+    tranches: [
+      { min: 100,    max: 999,     depot: null,  retrait: null },
+      { min: 1000,   max: 4999,    depot: 168,   retrait: 720 },
+      { min: 5000,   max: 9999,    depot: 384,   retrait: 1380 },
+      { min: 10000,  max: 19999,   depot: 540,   retrait: 1740 },
+      { min: 20000,  max: 29999,   depot: 840,   retrait: 2280 },
+      { min: 30000,  max: 39999,   depot: 1020,  retrait: 2760 },
+      { min: 40000,  max: 49999,   depot: 1110,  retrait: 3000 },
+      { min: 50000,  max: 59999,   depot: 1200,  retrait: 3240 },
+      { min: 60000,  max: 69999,   depot: 1500,  retrait: 3960 },
+      { min: 70000,  max: 79999,   depot: 1710,  retrait: 4320 },
+      { min: 80000,  max: 89999,   depot: 1840,  retrait: 4620 },
+      { min: 90000,  max: 99999,   depot: 1920,  retrait: 4680 },
+      { min: 100000, max: 199999,  depot: 2640,  retrait: 5880 },
+      { min: 200000, max: 299999,  depot: 3400,  retrait: 6960 },
+      { min: 300000, max: 399999,  depot: 4080,  retrait: 9480 },
+      { min: 400000, max: 499999,  depot: 4800,  retrait: 11520 },
+      { min: 500000, max: 1000000, depot: 5760,  retrait: 17040 },
+    ]
+  };
+
+  // Onglet "Configuration" — un tableau distinct par photo transmise.
+  // Pour ajouter un nouveau barème reçu en photo : dupliquer un bloc ci-dessous
+  // avec son propre id/titre/tranches.
+  baremesConfiguration: Bareme<TrancheCarte>[] = [
+    {
+      id: 'config-carte-agent-1',
+      titre: "Ibiciro — Frais de dépôt et de retrait (carte agent)",
+      tranches: [
+        { min: 100,    max: 999,     depot: null,  retrait: null },
+        { min: 1000,   max: 4999,    depot: 168,   retrait: 720 },
+        { min: 5000,   max: 9999,    depot: 384,   retrait: 1380 },
+        { min: 10000,  max: 19999,   depot: 540,   retrait: 1740 },
+        { min: 20000,  max: 29999,   depot: 840,   retrait: 2280 },
+        { min: 30000,  max: 39999,   depot: 1020,  retrait: 2760 },
+        { min: 40000,  max: 49999,   depot: 1110,  retrait: 3000 },
+        { min: 50000,  max: 59999,   depot: 1200,  retrait: 3240 },
+        { min: 60000,  max: 69999,   depot: 1500,  retrait: 3960 },
+        { min: 70000,  max: 79999,   depot: 1710,  retrait: 4320 },
+        { min: 80000,  max: 89999,   depot: 1840,  retrait: 4620 },
+        { min: 90000,  max: 99999,   depot: 1920,  retrait: 4680 },
+        { min: 100000, max: 199999,  depot: 2640,  retrait: 5880 },
+        { min: 200000, max: 299999,  depot: 3400,  retrait: 6960 },
+        { min: 300000, max: 399999,  depot: 4080,  retrait: 9480 },
+        { min: 400000, max: 499999,  depot: 4800,  retrait: 11520 },
+        { min: 500000, max: 1000000, depot: 5760,  retrait: 17040 },
+      ]
+    }
   ];
 
-  constructor() {
-    this.loadData();
-    this.initializeData();
-  }
+  // Copies de sauvegarde pour permettre l'annulation d'une édition
+  private snapshot: string | null = null;
 
-  ngOnInit(): void {
-    this.updateCounts();
-  }
-
-  // ========== GENERATION DES NOMS ==========
-
-  private generateAgentNames(count: number, prefix: string, role: 'agent' | 'super_agent'): { id: string; nom: string }[] {
-    const prenoms = [
-      'Pierre', 'Claire', 'Jean-Bosco', 'Marie', 'Emmanuel', 'David', 'Esther', 'Fabrice', 
-      'Gracieuse', 'Hervé', 'Isabelle', 'Jean-Pierre', 'Karine', 'Léonard', 'Martine', 
-      'Noël', 'Odette', 'Patrick', 'Rose', 'Samuel', 'Thérèse', 'Urbain', 'Valérie', 
-      'William', 'Xavier', 'Yvonne', 'Zacharie', 'Anne', 'Benoît', 'Céline', 'Alain', 
-      'Bernadette', 'Charles', 'Dominique', 'Emilie', 'Françoise', 'Gisèle', 'Henri', 
-      'Inès', 'Jacques', 'Katherine', 'Louis', 'Madeleine', 'Nicolas', 'Odile', 
-      'Philippe', 'Quentin', 'Rachel', 'Stéphane', 'Ursula', 'Victor', 'Wendy', 
-      'Xénia', 'Yves', 'Zoé', 'Antoine', 'Béatrice', 'Christophe', 'Diane', 'Éric', 
-      'Florence', 'Gérard', 'Hélène', 'Irène', 'Joël', 'Laurence', 'Michel', 
-      'Nathalie', 'Olivier', 'Pascale', 'René', 'Sandrine', 'Thierry', 'Véronique'
-    ];
-    
-    const noms = [
-      'NIZIGIYIMANA', 'NDIKUMANA', 'NSABIMANA', 'NTAKIRUTIMANA', 'NDAYISABA', 
-      'NIYONKURU', 'HAKIZIMANA', 'NIBITANGA', 'NDAYIZEYE', 'KARORERO', 
-      'MANIRAKIZA', 'NIMUBONA', 'NISHIMWE', 'NTIRANDEKURA', 'NZAJIMANA',
-      'BIGIRIMANA', 'BUCUMI', 'HABONIMANA', 'HATEGEKIMANA', 'IRAKOZE',
-      'KABAYIZA', 'KAMANA', 'MANIRAKIZA', 'MPOZENZI', 'MUNYAKAZI',
-      'NAHAYO', 'NDAYISENGA', 'NDIKUMANA', 'NIBISHAKA', 'NIMUBONA'
-    ];
-    
-    const result: { id: string; nom: string }[] = [];
-    const prefixId = prefix === 'AG' ? 'AG' : 'SA';
-    
-    for (let i = 1; i <= count; i++) {
-      const prenomIndex = (i - 1) % prenoms.length;
-      const nomIndex = (i - 1) % noms.length;
-      const id = `${prefixId}-${String(100 + i).padStart(3, '0')}`;
-      const nom = `${prenoms[prenomIndex]} ${noms[nomIndex]}`;
-      result.push({ id, nom });
-    }
-    
-    return result;
-  }
-
-  // ========== INITIALISATION ==========
-
-  private initializeData(): void {
-    if (this.agents.length > 0) return;
-
-    const agentsData: any[] = [];
-
-    // 100 Agents normaux
-    const agentNames = this.generateAgentNames(100, 'AG', 'agent');
-    for (let i = 0; i < agentNames.length; i++) {
-      const a = agentNames[i];
-      if (a) {
-        const solde = 50000 + Math.floor(Math.random() * 450000);
-        agentsData.push({
-          id: a.id,
-          nom: a.nom,
-          role: 'agent' as const,
-          email: `${a.nom.toLowerCase().replace(' ', '.')}@email.com`,
-          telephone: `+257 79 ${String(100 + i).padStart(3, '0')} ${String(100 + i * 3).padStart(3, '0')}`,
-          dateCreation: `2024-${String(1 + (i % 12)).padStart(2, '0')}-${String(1 + (i % 28)).padStart(2, '0')}`,
-          solde: solde,
-          transactions: 0
-        });
-      }
-    }
-
-    // 100 Super Agents
-    const superAgentNames = this.generateAgentNames(100, 'SA', 'super_agent');
-    for (let i = 0; i < superAgentNames.length; i++) {
-      const a = superAgentNames[i];
-      if (a) {
-        const solde = 200000 + Math.floor(Math.random() * 800000);
-        agentsData.push({
-          id: a.id,
-          nom: a.nom,
-          role: 'super_agent' as const,
-          email: `${a.nom.toLowerCase().replace(' ', '.')}@super.email.com`,
-          telephone: `+257 79 ${String(200 + i).padStart(3, '0')} ${String(200 + i * 3).padStart(3, '0')}`,
-          dateCreation: `2024-${String(1 + (i % 12)).padStart(2, '0')}-${String(1 + (i % 28)).padStart(2, '0')}`,
-          solde: solde,
-          transactions: 0
-        });
-      }
-    }
-
-    // État
-    agentsData.push({
-      id: 'ET-001',
-      nom: 'Trésor Public - État',
-      role: 'etat' as const,
-      email: 'tresor@finance.gov.bi',
-      telephone: '+257 22 123 456',
-      dateCreation: '2024-01-01',
-      solde: 0,
-      transactions: 0
+  activerEdition(): void {
+    this.snapshot = JSON.stringify({
+      a: this.baremeRetraitMarchand,
+      b: this.baremeRechargeLumicash,
+      c: this.baremeRetraitClientA,
+      d: this.baremeRetraitClientB,
+      e: this.baremeCarteAgent,
+      f: this.baremesConfiguration,
     });
-
-    this.agents = agentsData.map((a: any) => ({
-      ...a,
-      commissionTotal: 0,
-      volumeTotal: 0,
-      statut: 'actif' as const
-    }));
-
-    this.generateCommissions();
-    this.generateTransfertsInitiaux();
-    this.saveData();
+    this.modeEdition = true;
   }
 
-  private generateCommissions(): void {
-    const agents = this.agents.filter(a => a.role !== 'etat');
-    const statuts: ('calculee' | 'payee' | 'en_attente')[] = ['calculee', 'payee', 'en_attente'];
-    
-    agents.forEach((agent) => {
-      const nbCommissions = 2 + Math.floor(Math.random() * 4);
-      let totalCommission = 0;
-      let totalVolume = 0;
-      
-      for (let i = 0; i < nbCommissions; i++) {
-        const nbTransactions = 3 + Math.floor(Math.random() * 30);
-        const volume = 20000 + Math.floor(Math.random() * 500000);
-        const taux = agent.role === 'super_agent' ? 1.5 + Math.random() * 2 : 2 + Math.random() * 3;
-        const montant = volume * (taux / 100);
-        const commissionEtat = montant * 0.1;
-        const statusIndex = i % statuts.length;
-        
-        const commission: Commission = {
-          id: `COM-${String(100000 + this.commissions.length + 1).padStart(6, '0')}`,
-          agentId: agent.id,
-          agentNom: agent.nom,
-          agentRole: agent.role,
-          nbTransactions: nbTransactions,
-          volume: volume,
-          taux: Math.round(taux * 10) / 10,
-          montant: Math.round(montant),
-          statut: statuts[statusIndex] || 'en_attente',
-          date: new Date(Date.now() - (i * 86400000 * 2)).toLocaleDateString('fr-FR'),
-          commissionEtat: Math.round(commissionEtat)
-        };
-        
-        this.commissions.push(commission);
-        totalCommission += montant;
-        totalVolume += volume;
-      }
-      
-      const agentIndex = this.agents.findIndex(a => a.id === agent.id);
-      if (agentIndex !== -1) {
-        const agentToUpdate = this.agents[agentIndex];
-        if (agentToUpdate) {
-          agentToUpdate.commissionTotal = Math.round(totalCommission);
-          agentToUpdate.volumeTotal = totalVolume;
-          agentToUpdate.transactions = nbCommissions;
-        }
-      }
-    });
-
-    const etat = this.agents.find(a => a.role === 'etat');
-    if (etat) {
-      const totalEtat = this.commissions.reduce((sum, c) => sum + (c.commissionEtat || 0), 0);
-      etat.solde = totalEtat;
-      etat.volumeTotal = totalEtat;
-      etat.transactions = this.commissions.filter(c => c.statut === 'payee').length;
+  annulerEdition(): void {
+    if (this.snapshot) {
+      const data = JSON.parse(this.snapshot);
+      this.baremeRetraitMarchand = data.a;
+      this.baremeRechargeLumicash = data.b;
+      this.baremeRetraitClientA = data.c;
+      this.baremeRetraitClientB = data.d;
+      this.baremeCarteAgent = data.e;
+      this.baremesConfiguration = data.f ?? this.baremesConfiguration;
     }
-
-    this.generateHistorique();
+    this.modeEdition = false;
   }
 
-  private generateHistorique(): void {
-    const agents = this.agents.filter(a => a.role !== 'etat');
-    const statuts: HistoriqueCommission['statut'][] = ['effectue', 'effectue', 'en_attente', 'echoue'];
-    
-    agents.forEach(agent => {
-      for (let i = 0; i < 2; i++) {
-        const commission = this.commissions.find(c => c.agentId === agent.id);
-        if (commission) {
-          const statusIndex = i % statuts.length;
-          this.historique.push({
-            id: `HIS-${String(100000 + this.historique.length + 1).padStart(6, '0')}`,
-            date: new Date(Date.now() - (i * 86400000 * 3)).toLocaleDateString('fr-FR'),
-            agentId: agent.id,
-            agentNom: agent.nom,
-            agentRole: agent.role,
-            montant: commission.montant * (0.5 + Math.random() * 0.5),
-            type: agent.role === 'super_agent' ? 'commission_super' : 'commission_agent',
-            reference: `REF-${String(100000 + this.historique.length + 1).padStart(6, '0')}`,
-            statut: statuts[statusIndex] || 'effectue',
-            description: `Commission ${agent.role === 'super_agent' ? 'Super ' : ''}${agent.nom}`
-          });
-        }
-      }
-    });
-  }
+  enregistrerEtPublier(): void {
+    this.enregistrementEnCours = true;
 
-  private generateTransfertsInitiaux(): void {
-    for (let i = 0; i < 5; i++) {
-      const montant = 30000 + Math.random() * 150000;
-      this.transfertsEtat.push({
-        id: `TRF-${String(100000 + i + 1).padStart(6, '0')}`,
-        date: new Date(Date.now() - (i * 86400000 * 5)).toLocaleDateString('fr-FR'),
-        montant: Math.round(montant),
-        reference: `REF-ETAT-${String(100000 + i + 1).padStart(6, '0')}`,
-        statut: i === 0 ? 'en_attente' : 'effectue',
-        description: `Transfert des commissions État (${2 + i} commissions)`,
-        source: 'Commissions payées',
-        destination: 'compte_etat',
-        commissionIds: [`COM-${String(100000 + i + 1).padStart(6, '0')}`]
-      });
-    }
-  }
-
-  // ========== DATA PERSISTENCE ==========
-
-  private loadData(): void {
-    const saved = localStorage.getItem(this.STORAGE_KEY);
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        if (data.agents) this.agents = data.agents;
-        if (data.commissions) this.commissions = data.commissions;
-        if (data.historique) this.historique = data.historique;
-        if (data.transferts) this.transfertsEtat = data.transferts;
-      } catch (e) {
-        console.error('Erreur de chargement des données', e);
-      }
-    }
-  }
-
-  private saveData(): void {
-    const data = {
-      agents: this.agents,
-      commissions: this.commissions,
-      historique: this.historique,
-      transferts: this.transfertsEtat
-    };
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
-  }
-
-  // ========== GETTERS ==========
-
-  getAgents(): Agent[] {
-    return this.agents.filter(a => a.role === 'agent');
-  }
-
-  getSuperAgents(): Agent[] {
-    return this.agents.filter(a => a.role === 'super_agent');
-  }
-
-  getEtat(): Agent[] {
-    return this.agents.filter(a => a.role === 'etat');
-  }
-
-  getCommissions(): Commission[] {
-    return this.commissions;
-  }
-
-  getHistorique(): HistoriqueCommission[] {
-    return this.historique.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }
-
-  getTransfertsEtat(): TransfertEtat[] {
-    return this.transfertsEtat.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }
-
-  // ========== PAGINATION ==========
-
-  getCurrentPage(type: string): number {
-    return this.currentPages[type] || 1;
-  }
-
-  getTotalPages(type: string): number {
-    let items: any[] = [];
-    switch(type) {
-      case 'commissions': items = this.getCommissions(); break;
-      case 'historique': items = this.getHistorique(); break;
-      case 'transferts': items = this.getTransfertsEtat(); break;
-      case 'agents': items = this.getAgents(); break;
-      case 'super_agents': items = this.getSuperAgents(); break;
-      default: return 1;
-    }
-    return Math.ceil(items.length / this.pageSize);
-  }
-
-  getPaginatedItems(type: string): any[] {
-    const page = this.currentPages[type] || 1;
-    const start = (page - 1) * this.pageSize;
-    let items: any[] = [];
-    switch(type) {
-      case 'commissions': items = this.getCommissions(); break;
-      case 'historique': items = this.getHistorique(); break;
-      case 'transferts': items = this.getTransfertsEtat(); break;
-      case 'agents': items = this.getAgents(); break;
-      case 'super_agents': items = this.getSuperAgents(); break;
-      default: return [];
-    }
-    return items.slice(start, start + this.pageSize);
-  }
-
-  nextPage(type: string): void {
-    const total = this.getTotalPages(type);
-    const current = this.currentPages[type] || 1;
-    if (current < total) this.currentPages[type] = current + 1;
-  }
-
-  prevPage(type: string): void {
-    const current = this.currentPages[type] || 1;
-    if (current > 1) this.currentPages[type] = current - 1;
-  }
-
-  setActiveTab(tab: string): void {
-    this.activeTab = tab;
-    this.currentPages[tab] = 1;
-  }
-
-  private updateCounts(): void {
-    this.tabs = this.tabs.map(tab => {
-      switch(tab.key) {
-        case 'commissions': return { ...tab, count: this.commissions.length };
-        case 'historique': return { ...tab, count: this.historique.length };
-        case 'transferts': return { ...tab, count: this.transfertsEtat.length };
-        case 'agents': return { ...tab, count: this.getAgents().length };
-        case 'super_agents': return { ...tab, count: this.getSuperAgents().length };
-        default: return tab;
-      }
-    });
-  }
-
-  // ========== KPI DATA ==========
-
-  getKpiData(): KpiData[] {
-    const totalCommissions = this.commissions.reduce((sum, c) => sum + c.montant, 0);
-    const totalPayees = this.commissions.filter(c => c.statut === 'payee').length;
-    const totalEnAttente = this.commissions.filter(c => c.statut === 'en_attente').length;
-    const totalEtat = this.commissions.reduce((sum, c) => sum + (c.commissionEtat || 0), 0);
-    const totalAgents = this.getAgents().length;
-    const totalSuperAgents = this.getSuperAgents().length;
-    const totalTransferts = this.transfertsEtat.reduce((sum, t) => sum + t.montant, 0);
-
-    return [
-      {
-        icon: '💰',
-        label: 'Total Com.',
-        value: totalCommissions.toLocaleString('fr-FR') + ' BIF',
-        color: '#1a1a2e',
-        textColor: '#ffffff',
-        trend: 'up',
-        trendValue: '+12%'
-      },
-      {
-        icon: '✅',
-        label: 'Payées',
-        value: totalPayees.toString(),
-        color: '#2e7d32',
-        textColor: '#ffffff',
-        trend: 'up',
-        trendValue: `${totalPayees}`
-      },
-      {
-        icon: '⏳',
-        label: 'Attente',
-        value: totalEnAttente.toString(),
-        color: '#e65100',
-        textColor: '#ffffff',
-        trend: 'down',
-        trendValue: `${totalEnAttente}`
-      },
-      {
-        icon: '🏛️',
-        label: 'État',
-        value: totalEtat.toLocaleString('fr-FR') + ' BIF',
-        color: '#1a237e',
-        textColor: '#ffffff',
-        trend: 'up',
-        trendValue: `${totalTransferts.toLocaleString('fr-FR')}`
-      },
-      {
-        icon: '👤',
-        label: 'Agents',
-        value: totalAgents.toString(),
-        color: '#1a237e',
-        textColor: '#ffffff',
-        trend: 'up',
-        trendValue: `${totalAgents}`
-      },
-      {
-        icon: '⭐',
-        label: 'Super A.',
-        value: totalSuperAgents.toString(),
-        color: '#4a148c',
-        textColor: '#ffffff',
-        trend: 'up',
-        trendValue: `${totalSuperAgents}`
-      }
-    ];
-  }
-
-  // ========== PIN MODAL ==========
-
-  openPinModal(): void {
-    this.pinCode = '';
-    this.showPinModal = true;
-  }
-
-  addPinDigit(digit: number): void {
-    if (this.pinCode.length < 4) {
-      this.pinCode += digit.toString();
-    }
-  }
-
-  clearPin(): void {
-    this.pinCode = '';
-  }
-
-  confirmPin(): void {
-    if (this.pinCode === '1234') {
-      this.showPinModal = false;
-      this.openTransfertEtat();
-    } else {
-      this.toast('Code PIN incorrect. Veuillez réessayer.', 'danger');
-      this.pinCode = '';
-    }
-  }
-
-  closePinModal(): void {
-    this.showPinModal = false;
-    this.pinCode = '';
-  }
-
-  // ========== TRANSFERT VERS L'ÉTAT ==========
-
-  openTransfertEtat(): void {
-    const commissionsPayees = this.commissions.filter(c => c.statut === 'payee' && c.commissionEtat && c.commissionEtat > 0);
-    this.modalType = 'transfert_etat';
-    this.modalTitle = '🏦 Transférer à l\'État';
-    this.modalIcon = '🏦';
-    this.formData = {
-      commissions: commissionsPayees
-    };
-    this.modalOpen = true;
-  }
-
-  transfererVersEtat(): void {
-    const commissionsToTransfer = this.commissions.filter(c => c.statut === 'payee' && c.commissionEtat && c.commissionEtat > 0);
-
-    if (commissionsToTransfer.length === 0) {
-      this.toast('Aucune commission à transférer à l\'État.', 'warning');
-      return;
-    }
-
-    const totalMontant = commissionsToTransfer.reduce((sum, c) => sum + (c.commissionEtat || 0), 0);
-    
-    const transfert: TransfertEtat = {
-      id: `TRF-${String(100000 + this.transfertsEtat.length + 1).padStart(6, '0')}`,
-      date: new Date().toLocaleDateString('fr-FR'),
-      montant: Math.round(totalMontant),
-      reference: `REF-ETAT-${String(100000 + this.transfertsEtat.length + 1).padStart(6, '0')}`,
-      statut: 'effectue',
-      description: `Transfert des commissions État (${commissionsToTransfer.length} commissions)`,
-      source: 'Commissions payées',
-      destination: 'compte_etat',
-      commissionIds: commissionsToTransfer.map(c => c.id)
+    // TODO: remplacer par l'appel réel au service/API de sauvegarde des barèmes
+    const payload = {
+      retraitMarchand: this.baremeRetraitMarchand,
+      rechargeLumicash: this.baremeRechargeLumicash,
+      retraitClientA: this.baremeRetraitClientA,
+      retraitClientB: this.baremeRetraitClientB,
+      carteAgent: this.baremeCarteAgent,
+      configuration: this.baremesConfiguration,
     };
 
-    this.transfertsEtat.push(transfert);
+    setTimeout(() => {
+      // Simulation d'un appel réseau — à remplacer par ex. par
+      // this.commissionsService.publierBaremes(payload).subscribe(...)
+      console.log('Barèmes à publier :', payload);
+      this.enregistrementEnCours = false;
+      this.modeEdition = false;
+      this.dernierePublication = new Date();
+    }, 600);
+  }
 
-    const etat = this.agents.find(a => a.role === 'etat');
-    if (etat) {
-      etat.solde = (etat.solde || 0) + totalMontant;
+  formatMontant(valeur: number | null): string {
+    if (valeur === null || valeur === undefined) {
+      return 'N/A';
     }
-
-    this.historique.push({
-      id: `HIS-${String(100000 + this.historique.length + 1).padStart(6, '0')}`,
-      date: new Date().toLocaleDateString('fr-FR'),
-      agentId: 'ET-001',
-      agentNom: 'Trésor Public - État',
-      agentRole: 'etat',
-      montant: Math.round(totalMontant),
-      type: 'transfert_etat',
-      reference: transfert.reference,
-      statut: 'effectue',
-      description: `Transfert de ${Math.round(totalMontant).toLocaleString('fr-FR')} BIF vers le compte État`
-    });
-
-    this.saveData();
-    this.updateCounts();
-    this.toast(`Transfert de ${Math.round(totalMontant).toLocaleString('fr-FR')} BIF vers l'État effectué avec succès.`, 'success');
-    this.closeModal();
-  }
-
-  // ========== MODALES ==========
-
-  openVoirCommission(item: any): void {
-    this.selectedItem = item;
-    this.modalType = 'voir_commission';
-    this.modalTitle = '👁️ Détails de la Commission';
-    this.modalIcon = '👁️';
-    this.modalOpen = true;
-  }
-
-  openPayerCommission(item: any): void {
-    this.selectedItem = item;
-    this.modalType = 'payer_commission';
-    this.modalTitle = '💵 Payer la Commission';
-    this.modalIcon = '💵';
-    this.formData = { methode: 'wallet', reference: '', commentaire: '' };
-    this.modalOpen = true;
-  }
-
-  openVoirHistorique(item: any): void {
-    this.selectedItem = item;
-    this.modalType = 'voir_historique';
-    this.modalTitle = '📋 Détails de l\'Historique';
-    this.modalIcon = '📋';
-    this.modalOpen = true;
-  }
-
-  openVoirTransfert(item: any): void {
-    this.selectedItem = item;
-    this.modalType = 'voir_transfert';
-    this.modalTitle = '🏦 Détails du Transfert';
-    this.modalIcon = '🏦';
-    this.modalOpen = true;
-  }
-
-  closeModal(): void {
-    this.modalOpen = false;
-    this.selectedItem = null;
-  }
-
-  confirmModal(): void {
-    switch(this.modalType) {
-      case 'transfert_etat':
-        this.transfererVersEtat();
-        break;
-      case 'payer_commission':
-        this.payerCommission();
-        break;
-    }
-    this.closeModal();
-  }
-
-  private payerCommission(): void {
-    if (!this.selectedItem) return;
-    this.selectedItem.statut = 'payee';
-    
-    this.historique.push({
-      id: `HIS-${String(100000 + this.historique.length + 1).padStart(6, '0')}`,
-      date: new Date().toLocaleDateString('fr-FR'),
-      agentId: this.selectedItem.agentId,
-      agentNom: this.selectedItem.agentNom,
-      agentRole: this.selectedItem.agentRole,
-      montant: this.selectedItem.montant,
-      type: this.selectedItem.agentRole === 'super_agent' ? 'commission_super' : 'commission_agent',
-      reference: this.formData.reference || `PAY-${String(100000 + this.historique.length + 1).padStart(6, '0')}`,
-      statut: 'effectue',
-      description: `Paiement commission ${this.selectedItem.agentNom}`
-    });
-    
-    this.saveData();
-    this.updateCounts();
-    this.toast(`Commission payée à ${this.selectedItem.agentNom}`, 'success');
-  }
-
-  // ========== TOASTS ==========
-
-  toast(message: string, type: Toast['type'] = 'info'): void {
-    const id = ++this.toastSeq;
-    this.toasts.push({ id, message, type });
-    setTimeout(() => this.dismissToast(id), 5000);
-  }
-
-  dismissToast(id: number): void {
-    this.toasts = this.toasts.filter(t => t.id !== id);
-  }
-
-  // ========== MÉTHODES POUR LE TEMPLATE ==========
-
-  getStatutLabel(statut: string): string {
-    const labels: Record<string, string> = {
-      calculee: '✅ Calculée',
-      payee: '💵 Payée',
-      en_attente: '⏳ En attente',
-      effectue: '✅ Effectué',
-      echoue: '❌ Échoué',
-      actif: '✅ Actif',
-      inactif: '⛔ Inactif'
-    };
-    return labels[statut] || statut;
-  }
-
-  getRoleLabel(role: string): string {
-    const labels: Record<string, string> = {
-      agent: '👤 Agent',
-      super_agent: '⭐ Super Agent',
-      etat: '🏛️ État'
-    };
-    return labels[role] || role;
-  }
-
-  getTypeLabel(type: string): string {
-    const labels: Record<string, string> = {
-      commission_agent: 'Commission Agent',
-      commission_super: 'Commission Super Agent',
-      commission_etat: 'Commission État',
-      transfert_etat: 'Transfert État'
-    };
-    return labels[type] || type;
-  }
-
-  getMontantTotal(type: string): number {
-    switch(type) {
-      case 'agent': return this.getAgents().reduce((sum, a) => sum + a.commissionTotal, 0);
-      case 'super': return this.getSuperAgents().reduce((sum, a) => sum + a.commissionTotal, 0);
-      case 'etat': return this.commissions.reduce((sum, c) => sum + (c.commissionEtat || 0), 0);
-      default: return 0;
-    }
-  }
-
-  getNombreTransactions(type: string): number {
-    switch(type) {
-      case 'agent': return this.getAgents().reduce((sum, a) => sum + a.transactions, 0);
-      case 'super': return this.getSuperAgents().reduce((sum, a) => sum + a.transactions, 0);
-      case 'etat': return this.commissions.filter(c => c.statut === 'payee').length;
-      default: return 0;
-    }
-  }
-
-  getTransfertsCount(): number {
-    return this.transfertsEtat.length;
-  }
-
-  getTotalTransfertsFormatted(): string {
-    const total = this.transfertsEtat.reduce((sum, t) => sum + t.montant, 0);
-    return total.toLocaleString('fr-FR');
-  }
-
-  getTotalCommissionsEtatFormatted(): string {
-    const total = this.formData.commissions?.reduce((sum: number, c: any) => sum + (c.commissionEtat || 0), 0) || 0;
-    return total.toLocaleString('fr-FR');
-  }
-
-  getNbCommissionsPayees(): number {
-    return this.formData.commissions?.length || 0;
-  }
-
-  hasCommissionsPayees(): boolean {
-    return this.formData.commissions && this.formData.commissions.length > 0;
-  }
-
-  getTransfertMontant(transfert: any): string {
-    return transfert.montant.toLocaleString('fr-FR');
-  }
-
-  getCommissionEtatMontant(commission: any): string {
-    return (commission.commissionEtat || 0).toLocaleString('fr-FR');
-  }
-
-  getAgentSolde(agent: any): string {
-    return agent.solde.toLocaleString('fr-FR');
-  }
-
-  getAgentCommissionTotal(agent: any): string {
-    return agent.commissionTotal.toLocaleString('fr-FR');
-  }
-
-  getAgentVolumeTotal(agent: any): string {
-    return agent.volumeTotal.toLocaleString('fr-FR');
-  }
-
-  getCommissionMontant(commission: any): string {
-    return commission.montant.toLocaleString('fr-FR');
-  }
-
-  getCommissionVolume(commission: any): string {
-    return commission.volume.toLocaleString('fr-FR');
-  }
-
-  getHistoriqueMontant(historique: any): string {
-    return historique.montant.toLocaleString('fr-FR');
-  }
-
-  getDetailInfo(detail: any, field: string): string {
-    return detail[field] || 'N/A';
+    return valeur.toLocaleString('fr-FR');
   }
 }

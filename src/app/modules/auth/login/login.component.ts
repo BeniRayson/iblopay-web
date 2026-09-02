@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      phone_number: ['', [Validators.required, phoneValidator()]],
+      phone_number: ['+237', [Validators.required, phoneValidator()]],
       pin: ['', [Validators.required, pinValidator()]]
     });
 
@@ -71,21 +71,21 @@ export class LoginComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.isLoading = false;
-        if (response.success) {
-          // Check if 2FA is required
-          if (response.data?.user) {
-            this.router.navigate([AUTH_CONSTANTS.DASHBOARD_ROUTE]);
-          }
+        if (response.success && response.data?.user) {
+          // 🔥 Connexion réussie - redirection directe vers le dashboard
+          this.router.navigate([AUTH_CONSTANTS.DASHBOARD_ROUTE]);
         }
       },
       error: (error) => {
         this.isLoading = false;
+        
+        // Gestion des erreurs simplifiée car la 2FA est désactivée
         if (error.status === 401) {
           this.errorMessage = AUTH_CONSTANTS.MESSAGES.LOGIN_FAILED;
         } else if (error.status === 0) {
           this.errorMessage = AUTH_CONSTANTS.MESSAGES.NETWORK_ERROR;
         } else if (error.status === 403 && error.error?.requires_2fa) {
-          // Redirect to 2FA with phone number
+          // 🔥 Cas rare : si la 2FA est encore activée (gardé pour sécurité)
           this.router.navigate([AUTH_CONSTANTS.TWO_FACTOR_ROUTE], {
             queryParams: { phone: credentials.phone_number }
           });
