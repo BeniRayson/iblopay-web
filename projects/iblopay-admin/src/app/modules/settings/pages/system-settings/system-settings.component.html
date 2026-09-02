@@ -252,7 +252,7 @@
       <div class="panel__actions">
         <span class="panel__badge" *ngIf="modeEditionBareme">🔴 Mode edition</span>
         <ng-container *ngIf="!modeEditionBareme; else baremeEditionActions">
-          <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()">✏️ Modifier</button>
+          <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()">✏️ Modifier tous les baremes</button>
         </ng-container>
         <ng-template #baremeEditionActions>
           <button class="btn btn--secondary btn--sm" (click)="annulerEditionBaremes()"
@@ -269,9 +269,8 @@
     <div class="baremes-grid">
   
       <!-- Carte 1 : Retrait Client -->
-      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-client'"
-        (click)="basculerSectionBareme('retrait-client')">
-        <div class="bareme-card__header">
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-client'">
+        <div class="bareme-card__header" (click)="basculerSectionBareme('retrait-client')">
           <span class="bareme-card__icon">🏦</span>
           <h4>Retrait client</h4>
           <span class="bareme-card__badge">90% / 10%</span>
@@ -280,6 +279,12 @@
         <p class="bareme-card__subtitle">Commission agent/SA quand le client retire (FBU)</p>
   
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'retrait-client'">
+          <div class="bareme-card__toolbar">
+            <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
+              Modifier</button>
+            <span class="bareme-card__info" *ngIf="modeEditionBareme">🔴 Edition active - modifiez les valeurs
+              ci-dessous</span>
+          </div>
           <table class="bareme-table">
             <thead>
               <tr>
@@ -309,13 +314,19 @@
               </tr>
             </tbody>
           </table>
+          <div class="bareme-card__footer-actions" *ngIf="modeEditionBareme">
+            <button class="btn btn--secondary btn--sm" (click)="annulerEditionBaremes()">❌ Annuler</button>
+            <button class="btn btn--success btn--sm" (click)="enregistrerBaremes()"
+              [disabled]="enregistrementBaremeEnCours">
+              💾 {{ enregistrementBaremeEnCours ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
         </div>
       </div>
   
       <!-- Carte 2 : Retrait Marchand -->
-      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-marchand'"
-        (click)="basculerSectionBareme('retrait-marchand')">
-        <div class="bareme-card__header">
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-marchand'">
+        <div class="bareme-card__header" (click)="basculerSectionBareme('retrait-marchand')">
           <span class="bareme-card__icon">🛒</span>
           <h4>Retrait marchand</h4>
           <span class="bareme-card__badge">100% Agent</span>
@@ -324,6 +335,12 @@
         <p class="bareme-card__subtitle">Commission agent/SA quand le marchand retire (FBU)</p>
   
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'retrait-marchand'">
+          <div class="bareme-card__toolbar">
+            <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
+              Modifier</button>
+            <span class="bareme-card__info" *ngIf="modeEditionBareme">🔴 Edition active - modifiez les valeurs
+              ci-dessous</span>
+          </div>
           <table class="bareme-table">
             <thead>
               <tr>
@@ -344,13 +361,19 @@
               </tr>
             </tbody>
           </table>
+          <div class="bareme-card__footer-actions" *ngIf="modeEditionBareme">
+            <button class="btn btn--secondary btn--sm" (click)="annulerEditionBaremes()">❌ Annuler</button>
+            <button class="btn btn--success btn--sm" (click)="enregistrerBaremes()"
+              [disabled]="enregistrementBaremeEnCours">
+              💾 {{ enregistrementBaremeEnCours ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
         </div>
       </div>
   
       <!-- Carte 3 : Recharge Client -->
-      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'recharge-client'"
-        (click)="basculerSectionBareme('recharge-client')">
-        <div class="bareme-card__header">
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'recharge-client'">
+        <div class="bareme-card__header" (click)="basculerSectionBareme('recharge-client')">
           <span class="bareme-card__icon">📱</span>
           <h4>Recharge client</h4>
           <span class="bareme-card__badge">90% / 10%</span>
@@ -359,6 +382,12 @@
         <p class="bareme-card__subtitle">Commission agent/SA quand le client recharge (FBU)</p>
   
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'recharge-client'">
+          <div class="bareme-card__toolbar">
+            <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
+              Modifier</button>
+            <span class="bareme-card__info" *ngIf="modeEditionBareme">🔴 Edition active - modifiez les valeurs
+              ci-dessous</span>
+          </div>
           <table class="bareme-table">
             <thead>
               <tr>
@@ -388,13 +417,19 @@
               </tr>
             </tbody>
           </table>
+          <div class="bareme-card__footer-actions" *ngIf="modeEditionBareme">
+            <button class="btn btn--secondary btn--sm" (click)="annulerEditionBaremes()">❌ Annuler</button>
+            <button class="btn btn--success btn--sm" (click)="enregistrerBaremes()"
+              [disabled]="enregistrementBaremeEnCours">
+              💾 {{ enregistrementBaremeEnCours ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
         </div>
       </div>
   
       <!-- Carte 4 : Carte Agent (Ibiciro) -->
-      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'carte-agent'"
-        (click)="basculerSectionBareme('carte-agent')">
-        <div class="bareme-card__header">
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'carte-agent'">
+        <div class="bareme-card__header" (click)="basculerSectionBareme('carte-agent')">
           <span class="bareme-card__icon">💳</span>
           <h4>Carte agent</h4>
           <span class="bareme-card__badge">Ibiciro</span>
@@ -403,6 +438,12 @@
         <p class="bareme-card__subtitle">Frais de depot et de retrait (carte agent)</p>
   
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'carte-agent'">
+          <div class="bareme-card__toolbar">
+            <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
+              Modifier</button>
+            <span class="bareme-card__info" *ngIf="modeEditionBareme">🔴 Edition active - modifiez les valeurs
+              ci-dessous</span>
+          </div>
           <table class="bareme-table">
             <thead>
               <tr>
@@ -427,6 +468,13 @@
               </tr>
             </tbody>
           </table>
+          <div class="bareme-card__footer-actions" *ngIf="modeEditionBareme">
+            <button class="btn btn--secondary btn--sm" (click)="annulerEditionBaremes()">❌ Annuler</button>
+            <button class="btn btn--success btn--sm" (click)="enregistrerBaremes()"
+              [disabled]="enregistrementBaremeEnCours">
+              💾 {{ enregistrementBaremeEnCours ? 'Enregistrement...' : 'Enregistrer' }}
+            </button>
+          </div>
         </div>
       </div>
   

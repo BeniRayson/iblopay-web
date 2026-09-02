@@ -1178,4 +1178,44 @@
     padding: 2px 2px;
     font-size: 9px;
   }
+    // Toolbar et actions pour les barèmes
+    .bareme-card__toolbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 10px 16px 8px;
+      gap: 10px;
+      border-bottom: 1px solid var(--ib-border);
+      background: var(--ib-surface);
+  
+      .bareme-card__info {
+        font-size: 11px;
+        color: var(--ib-danger);
+        font-weight: 600;
+      }
+    }
+  
+    .bareme-card__footer-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 10px 16px 4px;
+      border-top: 1px solid var(--ib-border);
+      background: var(--ib-surface);
+  
+      .btn {
+        font-size: 11px;
+      }
+    }
+  
+    // Ajustement pour le header cliquable
+    .bareme-card__header {
+      cursor: pointer;
+      user-select: none;
+  
+      &:hover {
+        background: darken(#E6F4F1, 3%);
+      }
+    }
+
 }
