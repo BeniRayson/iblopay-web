@@ -1,21 +1,19 @@
 <div class="settings-page">
   <!-- HEADER -->
   <header class="page-header">
-    
     <div class="page-header__title">
       <span class="icon">⚙️</span>
       <div>
         <h1>Configuration Générale</h1>
-        <p>Frais, limites, notifications et paramètres système.</p>
+        <p>Frais, limites, notifications, paramètres système et barèmes de commission.</p>
       </div>
     </div>
   </header>
 
   <!-- TABS -->
   <nav class="tabs-nav">
-    <button class="tab-btn" *ngFor="let tab of tabs"
-            [class.active]="activeTab === tab.key"
-            (click)="setActiveTab(tab.key)">
+    <button class="tab-btn" *ngFor="let tab of tabs" [class.active]="activeTab === tab.key"
+      (click)="setActiveTab(tab.key)">
       <span class="tab-btn__icon">{{ tab.icon }}</span>
       {{ tab.label }}
       <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
@@ -24,6 +22,7 @@
 
   <!-- ============ FRAIS ============ -->
   <div *ngIf="activeTab === 'frais'" class="panel">
+    <!-- ... (contenu inchangé) ... -->
     <div class="panel__header">
       <h3 class="panel__title">💲 Frais et Commissions</h3>
       <span class="panel__badge">{{ getActiveFeesCount() }} frais actifs</span>
@@ -62,7 +61,8 @@
         </div>
         <div class="settings-card__footer">
           <button class="btn btn--primary btn--sm" (click)="configureFee(fee)">✏️ Modifier</button>
-          <button class="btn btn--sm" [class.btn--success]="!fee.active" [class.btn--danger]="fee.active" (click)="toggleFee(fee)">
+          <button class="btn btn--sm" [class.btn--success]="!fee.active" [class.btn--danger]="fee.active"
+            (click)="toggleFee(fee)">
             {{ fee.active ? '⏹️ Désactiver' : '▶️ Activer' }}
           </button>
         </div>
@@ -72,6 +72,7 @@
 
   <!-- ============ LIMITES ============ -->
   <div *ngIf="activeTab === 'limites'" class="panel">
+    <!-- ... (contenu inchangé) ... -->
     <div class="panel__header">
       <h3 class="panel__title">📏 Limites et Seuils</h3>
       <span class="panel__badge">{{ getActiveLimitsCount() }} limites configurées</span>
@@ -89,7 +90,8 @@
         <div class="settings-card__body">
           <div class="settings-card__row">
             <span class="settings-card__label">Valeur</span>
-            <span class="settings-card__value settings-card__value--highlight">{{ limit.value | number:'1.0-0' }} BIF</span>
+            <span class="settings-card__value settings-card__value--highlight">{{ limit.value | number:'1.0-0' }}
+              BIF</span>
           </div>
           <div class="settings-card__row" *ngIf="limit.period">
             <span class="settings-card__label">Période</span>
@@ -98,8 +100,10 @@
           <div class="settings-card__row" *ngIf="limit.currentUsage !== undefined">
             <span class="settings-card__label">Utilisation</span>
             <div class="settings-card__progress">
-              <div class="settings-card__progress-bar" [style.width]="(limit.currentUsage / limit.value) * 100 + '%'"></div>
-              <span class="settings-card__progress-label">{{ limit.currentUsage | number:'1.0-0' }} / {{ limit.value | number:'1.0-0' }} BIF</span>
+              <div class="settings-card__progress-bar" [style.width]="(limit.currentUsage / limit.value) * 100 + '%'">
+              </div>
+              <span class="settings-card__progress-label">{{ limit.currentUsage | number:'1.0-0' }} / {{ limit.value |
+                number:'1.0-0' }} BIF</span>
             </div>
           </div>
           <div class="settings-card__row" *ngIf="limit.description">
@@ -109,23 +113,25 @@
         </div>
         <div class="settings-card__footer">
           <button class="btn btn--primary btn--sm" (click)="configureLimit(limit)">✏️ Modifier</button>
-          <button class="btn btn--sm" [class.btn--success]="!limit.active" [class.btn--danger]="limit.active" (click)="toggleLimit(limit)">
+          <button class="btn btn--sm" [class.btn--success]="!limit.active" [class.btn--danger]="limit.active"
+            (click)="toggleLimit(limit)">
             {{ limit.active ? '⏹️ Désactiver' : '▶️ Activer' }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Limites globales -->
     <div class="panel__sub">
       <h4>📊 Résumé des limites</h4>
       <div class="limits-summary">
         <div class="limits-summary__item" *ngFor="let summary of getLimitsSummary()">
           <span class="limits-summary__label">{{ summary.label }}</span>
           <div class="limits-summary__bar">
-            <div class="limits-summary__bar-fill" [style.width]="summary.percentage + '%'" [style.background]="summary.color"></div>
+            <div class="limits-summary__bar-fill" [style.width]="summary.percentage + '%'"
+              [style.background]="summary.color"></div>
           </div>
-          <span class="limits-summary__value">{{ summary.current | number:'1.0-0' }} / {{ summary.max | number:'1.0-0' }} BIF</span>
+          <span class="limits-summary__value">{{ summary.current | number:'1.0-0' }} / {{ summary.max | number:'1.0-0'
+            }} BIF</span>
           <span class="limits-summary__percent">{{ summary.percentage }}%</span>
         </div>
       </div>
@@ -134,6 +140,7 @@
 
   <!-- ============ NOTIFICATIONS ============ -->
   <div *ngIf="activeTab === 'notifications'" class="panel">
+    <!-- ... (contenu inchangé) ... -->
     <div class="panel__header">
       <h3 class="panel__title">🔔 Notifications</h3>
       <span class="panel__badge">{{ getActiveNotificationsCount() }} canaux actifs</span>
@@ -166,7 +173,8 @@
         </div>
         <div class="settings-card__footer">
           <button class="btn btn--primary btn--sm" (click)="configureNotification(notification)">✏️ Modifier</button>
-          <button class="btn btn--sm" [class.btn--success]="!notification.active" [class.btn--danger]="notification.active" (click)="toggleNotification(notification)">
+          <button class="btn btn--sm" [class.btn--success]="!notification.active"
+            [class.btn--danger]="notification.active" (click)="toggleNotification(notification)">
             {{ notification.active ? '⏹️ Désactiver' : '▶️ Activer' }}
           </button>
           <button class="btn btn--secondary btn--sm" (click)="testNotification(notification)">📨 Tester</button>
@@ -209,15 +217,16 @@
         </div>
         <div class="settings-card__footer">
           <button class="btn btn--primary btn--sm" (click)="configureParam(param)">✏️ Modifier</button>
-          <button class="btn btn--sm" [class.btn--success]="!param.active" [class.btn--danger]="param.active" (click)="toggleParam(param)">
+          <button class="btn btn--sm" [class.btn--success]="!param.active" [class.btn--danger]="param.active"
+            (click)="toggleParam(param)">
             {{ param.active ? '⏹️ Désactiver' : '▶️ Activer' }}
           </button>
-          <button class="btn btn--danger btn--sm" *ngIf="param.danger" (click)="resetParam(param)">🔄 Réinitialiser</button>
+          <button class="btn btn--danger btn--sm" *ngIf="param.danger" (click)="resetParam(param)">🔄
+            Réinitialiser</button>
         </div>
       </div>
     </div>
 
-    <!-- Actions système -->
     <div class="panel__sub panel__sub--danger">
       <h4>⚠️ Actions Système</h4>
       <div class="actions-grid">
@@ -226,6 +235,205 @@
         <button class="btn btn--danger" (click)="resetAll()">⚠️ Réinitialiser tout</button>
         <button class="btn btn--danger" (click)="exportData()">📤 Exporter les données</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- ============ BARÈMES DE COMMISSION ============ -->
+  <!-- ========================================================== -->
+  <div *ngIf="activeTab === 'baremes'" class="panel panel--baremes">
+  
+    <!-- En-tête des barèmes -->
+    <div class="panel__header panel__header--baremes">
+      <div>
+        <h3 class="panel__title">📊 Baremes de Commission</h3>
+        <p class="panel__subtitle">Gestion des commissions pour les agents et super agents (SA)</p>
+      </div>
+      <div class="panel__actions">
+        <span class="panel__badge" *ngIf="modeEditionBareme">🔴 Mode edition</span>
+        <ng-container *ngIf="!modeEditionBareme; else baremeEditionActions">
+          <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()">✏️ Modifier</button>
+        </ng-container>
+        <ng-template #baremeEditionActions>
+          <button class="btn btn--secondary btn--sm" (click)="annulerEditionBaremes()"
+            [disabled]="enregistrementBaremeEnCours">❌ Annuler</button>
+          <button class="btn btn--success btn--sm" (click)="enregistrerBaremes()"
+            [disabled]="enregistrementBaremeEnCours">
+            💾 {{ enregistrementBaremeEnCours ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  
+    <!-- Grille des 4 barèmes -->
+    <div class="baremes-grid">
+  
+      <!-- Carte 1 : Retrait Client -->
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-client'"
+        (click)="basculerSectionBareme('retrait-client')">
+        <div class="bareme-card__header">
+          <span class="bareme-card__icon">🏦</span>
+          <h4>Retrait client</h4>
+          <span class="bareme-card__badge">90% / 10%</span>
+          <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'retrait-client' ? '▲' : '▼' }}</span>
+        </div>
+        <p class="bareme-card__subtitle">Commission agent/SA quand le client retire (FBU)</p>
+  
+        <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'retrait-client'">
+          <table class="bareme-table">
+            <thead>
+              <tr>
+                <th>Tranche (FBU)</th>
+                <th>Total</th>
+                <th>Agent (90%)</th>
+                <th>SA (10%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of baremeRetraitClient.tranches">
+                <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureTot" type="number" [(ngModel)]="t.total"
+                    class="cell-input">
+                  <ng-template #lectureTot>{{ formatMontant(t.total) }}</ng-template>
+                </td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureAgent" type="number" [(ngModel)]="t.agent"
+                    class="cell-input">
+                  <ng-template #lectureAgent>{{ formatMontant(t.agent) }}</ng-template>
+                </td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureSa" type="number" [(ngModel)]="t.sa" class="cell-input">
+                  <ng-template #lectureSa>{{ formatMontant(t.sa) }}</ng-template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Carte 2 : Retrait Marchand -->
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-marchand'"
+        (click)="basculerSectionBareme('retrait-marchand')">
+        <div class="bareme-card__header">
+          <span class="bareme-card__icon">🛒</span>
+          <h4>Retrait marchand</h4>
+          <span class="bareme-card__badge">100% Agent</span>
+          <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'retrait-marchand' ? '▲' : '▼' }}</span>
+        </div>
+        <p class="bareme-card__subtitle">Commission agent/SA quand le marchand retire (FBU)</p>
+  
+        <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'retrait-marchand'">
+          <table class="bareme-table">
+            <thead>
+              <tr>
+                <th>Tranche (FBU)</th>
+                <th>Agent</th>
+                <th>SA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of baremeRetraitMarchand.tranches">
+                <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureAgentM" type="number" [(ngModel)]="t.agent"
+                    class="cell-input">
+                  <ng-template #lectureAgentM>{{ formatMontant(t.agent) }}</ng-template>
+                </td>
+                <td class="col-neutre">{{ formatMontant(t.sa) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Carte 3 : Recharge Client -->
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'recharge-client'"
+        (click)="basculerSectionBareme('recharge-client')">
+        <div class="bareme-card__header">
+          <span class="bareme-card__icon">📱</span>
+          <h4>Recharge client</h4>
+          <span class="bareme-card__badge">90% / 10%</span>
+          <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'recharge-client' ? '▲' : '▼' }}</span>
+        </div>
+        <p class="bareme-card__subtitle">Commission agent/SA quand le client recharge (FBU)</p>
+  
+        <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'recharge-client'">
+          <table class="bareme-table">
+            <thead>
+              <tr>
+                <th>Tranche (FBU)</th>
+                <th>Total</th>
+                <th>Agent (90%)</th>
+                <th>SA (10%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of baremeRechargeClient.tranches">
+                <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureTotR" type="number" [(ngModel)]="t.total"
+                    class="cell-input">
+                  <ng-template #lectureTotR>{{ formatMontant(t.total) }}</ng-template>
+                </td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureAgentR" type="number" [(ngModel)]="t.agent"
+                    class="cell-input">
+                  <ng-template #lectureAgentR>{{ formatMontant(t.agent) }}</ng-template>
+                </td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureSaR" type="number" [(ngModel)]="t.sa" class="cell-input">
+                  <ng-template #lectureSaR>{{ formatMontant(t.sa) }}</ng-template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Carte 4 : Carte Agent (Ibiciro) -->
+      <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'carte-agent'"
+        (click)="basculerSectionBareme('carte-agent')">
+        <div class="bareme-card__header">
+          <span class="bareme-card__icon">💳</span>
+          <h4>Carte agent</h4>
+          <span class="bareme-card__badge">Ibiciro</span>
+          <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'carte-agent' ? '▲' : '▼' }}</span>
+        </div>
+        <p class="bareme-card__subtitle">Frais de depot et de retrait (carte agent)</p>
+  
+        <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'carte-agent'">
+          <table class="bareme-table">
+            <thead>
+              <tr>
+                <th>Tranche (FBU)</th>
+                <th>Frais depot</th>
+                <th>Frais retrait</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of baremeCarteAgent.tranches">
+                <td class="col-tranche">{{ formatMontant(t.min) }} – {{ formatMontant(t.max) }}</td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureDepot" type="number" [(ngModel)]="t.depot"
+                    class="cell-input">
+                  <ng-template #lectureDepot>{{ formatMontant(t.depot) }}</ng-template>
+                </td>
+                <td>
+                  <input *ngIf="modeEditionBareme; else lectureRetrait" type="number" [(ngModel)]="t.retrait"
+                    class="cell-input">
+                  <ng-template #lectureRetrait>{{ formatMontant(t.retrait) }}</ng-template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+    </div>
+  
+    <div class="panel__footer panel__footer--baremes">
+      <p class="baremes-note">📌 Les baremes sont appliques automatiquement lors des transactions</p>
     </div>
   </div>
 
@@ -266,7 +474,8 @@
           </div>
           <div class="form-group">
             <label>Appliqué à</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.appliesTo" placeholder="Ex: Tous les utilisateurs" />
+            <input type="text" class="form-control" [(ngModel)]="formData.appliesTo"
+              placeholder="Ex: Tous les utilisateurs" />
           </div>
         </div>
         <div class="modal__footer">
@@ -296,7 +505,8 @@
           </div>
           <div class="form-group">
             <label>Description</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.description" placeholder="Description de la limite" />
+            <input type="text" class="form-control" [(ngModel)]="formData.description"
+              placeholder="Description de la limite" />
           </div>
         </div>
         <div class="modal__footer">
@@ -321,7 +531,8 @@
           </div>
           <div class="form-group" *ngIf="formData.channel === 'email'">
             <label>Adresse email</label>
-            <input type="email" class="form-control" [(ngModel)]="formData.config" placeholder="notifications@iblopay.bi" />
+            <input type="email" class="form-control" [(ngModel)]="formData.config"
+              placeholder="notifications@iblopay.bi" />
           </div>
           <div class="form-group" *ngIf="formData.channel === 'sms'">
             <label>Numéro de téléphone</label>
@@ -329,7 +540,8 @@
           </div>
           <div class="form-group" *ngIf="formData.channel === 'webhook'">
             <label>URL Webhook</label>
-            <input type="url" class="form-control" [(ngModel)]="formData.config" placeholder="https://api.iblopay.bi/webhook" />
+            <input type="url" class="form-control" [(ngModel)]="formData.config"
+              placeholder="https://api.iblopay.bi/webhook" />
           </div>
           <div class="form-group">
             <label>Événements</label>
@@ -364,7 +576,8 @@
           </div>
           <div class="form-group">
             <label>Description</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.description" placeholder="Description du paramètre" />
+            <input type="text" class="form-control" [(ngModel)]="formData.description"
+              placeholder="Description du paramètre" />
           </div>
         </div>
         <div class="modal__footer">
@@ -378,7 +591,8 @@
   <!-- ============ TOASTS ============ -->
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
-      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>
+      <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️'
+        : 'ℹ️' }}</span>
       {{ t.message }}
       <button class="toast__close" (click)="dismissToast(t.id)">✕</button>
     </div>
