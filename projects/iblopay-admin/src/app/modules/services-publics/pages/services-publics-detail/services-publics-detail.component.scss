@@ -25,7 +25,81 @@ $font-display: 'Fraunces', Georgia, serif;
 $font-ui: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 $font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
 $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* ------------------------------------------------------ DEMANDES EN ATTENTE */
+.demandes-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: $line-white;
+    border: 1px solid $line-white;
+    margin-bottom: 22px;
+}
 
+.demande-ref {
+    font-family: $font-mono;
+    font-size: 11px;
+    font-weight: 600;
+    color: $brass-dark;
+    letter-spacing: 0.03em;
+}
+
+.demandeur-info {
+    display: flex;
+    flex-direction: column;
+
+    small {
+        font-size: 10.5px;
+        color: $muted;
+        font-family: $font-mono;
+    }
+}
+
+.badge-priorite-haute {
+    color: #c0392b;
+    border-color: #c0392b;
+}
+
+.badge-priorite-critique {
+    color: #e74c3c;
+    border-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.badge-priorite-moyenne {
+    color: #f39c12;
+    border-color: #f39c12;
+}
+
+.badge-priorite-basse {
+    color: $green;
+    border-color: $green;
+}
+
+.badge-statut-en_attente {
+    color: #f39c12;
+    border-color: #f39c12;
+}
+
+.badge-statut-en_cours {
+    color: $blue;
+    border-color: $blue;
+}
+
+.badge-statut-validee {
+    color: $green;
+    border-color: $green;
+}
+
+.badge-statut-rejetee {
+    color: $red;
+    border-color: $red;
+}
+
+.demande-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
 .services-publics-detail {
     padding: 32px 40px 60px;
     background: $paper;

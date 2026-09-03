@@ -16,11 +16,30 @@ export interface ServicePublic {
     telephone: string;
     siteWeb: string;
     utilisateurs?: Utilisateur[];
+    demandesEnAttente?: DemandeEnAttente[];
     categories?: Categorie[];
     typesRNF?: TypeRNF[];
     paiements?: PaiementRNF[];
     institutions?: Institution[];
     statistiques?: Statistiques;
+}
+
+// ============================================================
+// DEMANDES EN ATTENTE
+// ============================================================
+export interface DemandeEnAttente {
+    id: number;
+    reference: string;
+    type: string;
+    objet: string;
+    demandeur: string;
+    emailDemandeur: string;
+    dateDemande: Date;
+    priorite: 'BASSE' | 'MOYENNE' | 'HAUTE' | 'CRITIQUE';
+    statut: 'EN_ATTENTE' | 'EN_COURS' | 'VALIDEE' | 'REJETEE';
+    description?: string;
+    documents?: string[];
+    serviceId?: number;
 }
 
 // ============================================================

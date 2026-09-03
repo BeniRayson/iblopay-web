@@ -5,7 +5,6 @@ import {
     Utilisateur,
     Categorie,
     TypeRNF,
-    SousTypeRNF,
     PaiementRNF
 } from '../../models/service-public.model';
 import { ServicesPublicsService } from '../../services/services-publics.service';
@@ -17,6 +16,20 @@ export interface Activite {
     user: string;
     date: Date;
     details?: string;
+}
+
+export interface DemandeEnAttente {
+    id: number;
+    reference: string;
+    type: string;
+    objet: string;
+    demandeur: string;
+    emailDemandeur: string;
+    dateDemande: Date;
+    priorite: 'BASSE' | 'MOYENNE' | 'HAUTE' | 'CRITIQUE';
+    statut: 'EN_ATTENTE' | 'EN_COURS' | 'VALIDEE' | 'REJETEE';
+    description?: string;
+    documents?: string[];
 }
 
 @Component({
@@ -53,6 +66,10 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
     paiementsItemsPerPage: number = 10;
     paiementsTotalPages: number = 0;
 
+    demandesCurrentPage: number = 1;
+    demandesItemsPerPage: number = 10;
+    demandesTotalPages: number = 0;
+
     activitiesCurrentPage: number = 1;
     activitiesItemsPerPage: number = 12;
     activityTypeFilter: string = '';
@@ -76,6 +93,9 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
 
     // Fiche Type RNF (aperçu rapide)
     viewingTypeRNF: TypeRNF | null = null;
+
+    // Fiche Demande (aperçu rapide)
+    viewingDemande: DemandeEnAttente | null = null;
 
     readonly Math = Math;
 
@@ -130,6 +150,9 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
 
         this.paiementsTotalPages = Math.ceil((this.service?.paiements?.length || 0) / this.paiementsItemsPerPage);
         if (this.paiementsTotalPages === 0) this.paiementsTotalPages = 1;
+
+        this.demandesTotalPages = Math.ceil((this.service?.demandesEnAttente?.length || 0) / this.demandesItemsPerPage);
+        if (this.demandesTotalPages === 0) this.demandesTotalPages = 1;
     }
 
     // ============================================================
@@ -285,6 +308,7 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
     getTotalItems(): number {
         if (!this.service) return 0;
         return (this.service.utilisateurs?.length || 0) +
+            (this.service.demandesEnAttente?.length || 0) +
             (this.service.categories?.length || 0) +
             (this.service.typesRNF?.length || 0) +
             (this.service.paiements?.length || 0);
@@ -316,6 +340,12 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         if (!this.service?.paiements) return [];
         const start = (this.paiementsCurrentPage - 1) * this.paiementsItemsPerPage;
         return this.service.paiements.slice(start, start + this.paiementsItemsPerPage);
+    }
+
+    get paginatedDemandes(): DemandeEnAttente[] {
+        if (!this.service?.demandesEnAttente) return [];
+        const start = (this.demandesCurrentPage - 1) * this.demandesItemsPerPage;
+        return this.service.demandesEnAttente.slice(start, start + this.demandesItemsPerPage);
     }
 
     // ============================================================
@@ -408,6 +438,43 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
             pages.push(i);
         }
         return pages;
+    }
+
+    // ============================================================
+    // MÉTHODES DE PAGINATION - DEMANDES
+    // ============================================================
+
+    changeDemandesPage(page: number): void {
+        if (page < 1 || page > this.demandesTotalPages) return;
+        this.demandesCurrentPage = page;
+    }
+
+    getDemandesPaginationPages(): number[] {
+        const pages: number[] = [];
+        const maxVisible = 5;
+        let start = Math.max(1, this.demandesCurrentPage - Math.floor(maxVisible / 2));
+        let end = Math.min(this.demandesTotalPages, start + maxVisible - 1);
+        if (end - start + 1 < maxVisible) {
+            start = Math.max(1, end - maxVisible + 1);
+        }
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+        return pages;
+    }
+
+    // ============================================================
+    // STATISTIQUES DES DEMANDES
+    // ============================================================
+
+    getDemandesParPriorite(priorite: string): number {
+        if (!this.service?.demandesEnAttente) return 0;
+        return this.service.demandesEnAttente.filter((d: DemandeEnAttente) => d.priorite === priorite).length;
+    }
+
+    getDemandesParStatut(statut: string): number {
+        if (!this.service?.demandesEnAttente) return 0;
+        return this.service.demandesEnAttente.filter((d: DemandeEnAttente) => d.statut === statut).length;
     }
 
     // ============================================================
@@ -583,6 +650,37 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
     }
 
     // ============================================================
+    // ACTIONS DEMANDES
+    // ============================================================
+
+    onViewDemande(demande: DemandeEnAttente): void {
+        this.viewingDemande = demande;
+    }
+
+    closeDemandeModal(): void {
+        this.viewingDemande = null;
+    }
+
+    onTraiterDemande(demande: DemandeEnAttente): void {
+        demande.statut = 'EN_COURS';
+        this.addActivity('system', `Demande "${demande.reference}" mise en cours de traitement`);
+    }
+
+    onRejeterDemande(demande: DemandeEnAttente): void {
+        if (confirm(`Êtes-vous sûr de vouloir rejeter la demande "${demande.reference}" ?`)) {
+            demande.statut = 'REJETEE';
+            this.addActivity('system', `Demande "${demande.reference}" rejetée`);
+        }
+    }
+
+    onValiderDemande(demande: DemandeEnAttente): void {
+        if (confirm(`Êtes-vous sûr de vouloir valider la demande "${demande.reference}" ?`)) {
+            demande.statut = 'VALIDEE';
+            this.addActivity('system', `Demande "${demande.reference}" validée`);
+        }
+    }
+
+    // ============================================================
     // EXPORT
     // ============================================================
 
@@ -600,6 +698,10 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
 
     exportPaiements(): void {
         this.exportData('PAIEMENTS', 'export_paiements');
+    }
+
+    exportDemandes(): void {
+        this.exportData('DEMANDES', 'export_demandes');
     }
 
     private exportData(type: string, fileName: string): void {
