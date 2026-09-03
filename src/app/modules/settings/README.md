@@ -48,6 +48,10 @@ Les actions marquées `danger: true` (Suspendre, Supprimer, Bloquer,
 Désactiver, Annuler, Marquer comme frauduleuse...) sont stylées en rouge —
 pensez à leur ajouter une confirmation avant exécution côté `onAction()`.
 
+## Documentation API
+
+Voir [API_SETTINGS_INTEGRATION.md](API_SETTINGS_INTEGRATION.md) pour le tableau des endpoints, les payloads attendus et les donnees de retour au format proche de la documentation commissions.
+
 ## Intégration
 
 1. Copier `settings/` dans `src/app/modules/`.
