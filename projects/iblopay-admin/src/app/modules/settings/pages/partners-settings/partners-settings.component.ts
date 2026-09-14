@@ -19,17 +19,12 @@ interface TabItem {
 interface Partner {
   id: string;
   name: string;
-  icon: string;
-  category: string;
   code: string;
-  contact: string;
-  email?: string;
-  status: 'active' | 'inactive' | 'pending' | 'suspended';
-  transactions: number;
-  commission?: string;
-  apiKey?: string;
-  webhook?: string;
-  createdAt?: string;
+  swiftCode: string;
+  accountNumber: string;
+  isActive: boolean;
+  /** Champ UI uniquement (hors contrat backend) — utilisé par l'onglet "Par catégorie" */
+  category?: string;
 }
 
 interface Integration {
@@ -88,6 +83,10 @@ export class PartnersSettingsComponent implements OnInit {
   currentPage: number = 1;
   filteredPartners: Partner[] = [];
 
+  // Tri (liste)
+  sortColumn: string = 'name';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   tabs: TabItem[] = [
     { key: 'tous', label: 'Tous les partenaires', icon: '🤝' },
     { key: 'categories', label: 'Par catégorie', icon: '📂' },
@@ -106,85 +105,57 @@ export class PartnersSettingsComponent implements OnInit {
   partners: Partner[] = [
     {
       id: '1',
-      name: 'Banque de la République',
-      icon: '🏦',
-      category: 'Banque',
-      code: 'BRB-001',
-      contact: '+257 79 123 456',
-      email: 'contact@brb.bi',
-      status: 'active',
-      transactions: 15420,
-      commission: '0.5%',
-      apiKey: 'brb_api_key_12345',
-      webhook: 'https://api.brb.bi/webhook',
-      createdAt: '2024-01-15'
+      name: 'Banque de la République du Burundi',
+      code: 'BRB',
+      swiftCode: 'BRBUBI01',
+      accountNumber: '20001160001',
+      isActive: true,
+      category: 'Banque'
     },
     {
       id: '2',
-      name: 'Econet Burundi',
-      icon: '📱',
-      category: 'Opérateur Télécom',
-      code: 'ECO-002',
-      contact: '+257 79 789 012',
-      email: 'partners@econet.bi',
-      status: 'active',
-      transactions: 28450,
-      commission: '1.2%',
-      apiKey: 'eco_api_key_67890',
-      webhook: 'https://api.econet.bi/webhook',
-      createdAt: '2024-02-01'
+      name: 'Banque Commerciale du Burundi (BANCOBU)',
+      code: 'BCOBU',
+      swiftCode: 'BCBUBI01',
+      accountNumber: '20002260002',
+      isActive: true,
+      category: 'Banque'
     },
     {
       id: '3',
-      name: 'PayTech Services',
-      icon: '💳',
-      category: 'Fournisseur de services',
-      code: 'PTS-003',
-      contact: '+257 79 456 789',
-      email: 'contact@paytech.bi',
-      status: 'active',
-      transactions: 8920,
-      commission: '2.0%',
-      apiKey: 'pts_api_key_24680',
-      webhook: 'https://api.paytech.bi/webhook',
-      createdAt: '2024-03-10'
+      name: 'Banque de Crédit de Bujumbura',
+      code: 'BCB',
+      swiftCode: 'BCBIBI01',
+      accountNumber: '20003360003',
+      isActive: true,
+      category: 'Banque'
     },
     {
       id: '4',
-      name: 'Super Marché Central',
-      icon: '🛍️',
-      category: 'Marchand',
-      code: 'SMC-004',
-      contact: '+257 79 321 654',
-      email: 'info@supermarche.bi',
-      status: 'active',
-      transactions: 12300,
-      commission: '1.5%',
-      createdAt: '2024-04-05'
+      name: 'Interbank Burundi',
+      code: 'IBK',
+      swiftCode: 'IBKBBU01',
+      accountNumber: '20004460004',
+      isActive: true,
+      category: 'Banque'
     },
     {
       id: '5',
-      name: 'Ministère des Finances',
-      icon: '🏛️',
-      category: 'Institution publique',
-      code: 'MFP-005',
-      contact: '+257 79 987 654',
-      email: 'finance@gov.bi',
-      status: 'pending',
-      transactions: 0,
-      createdAt: '2024-05-20'
+      name: 'Ecobank Burundi',
+      code: 'ECOB',
+      swiftCode: 'ECOBBI01',
+      accountNumber: '20005560005',
+      isActive: false,
+      category: 'Banque'
     },
     {
       id: '6',
-      name: 'Orange Burundi',
-      icon: '📱',
-      category: 'Opérateur Télécom',
-      code: 'ORA-006',
-      contact: '+257 79 654 321',
-      email: 'partners@orange.bi',
-      status: 'inactive',
-      transactions: 0,
-      createdAt: '2024-06-01'
+      name: 'FinBank',
+      code: 'FINB',
+      swiftCode: 'FINBBI01',
+      accountNumber: '20006660006',
+      isActive: false,
+      category: 'Banque'
     }
   ];
 
@@ -313,19 +284,15 @@ export class PartnersSettingsComponent implements OnInit {
   }
 
   get activePartners(): number {
-    return this.partners.filter(p => p.status === 'active').length;
+    return this.partners.filter(p => p.isActive).length;
   }
 
   get inactivePartners(): number {
-    return this.partners.filter(p => p.status === 'inactive' || p.status === 'suspended').length;
+    return this.partners.filter(p => !p.isActive).length;
   }
 
   get totalCategories(): number {
-    return new Set(this.partners.map(p => p.category)).size;
-  }
-
-  get totalTransactions(): number {
-    return this.partners.reduce((sum, p) => sum + p.transactions, 0);
+    return new Set(this.partners.map(p => p.category ?? 'Banque')).size;
   }
 
   get activeIntegrations(): number {
@@ -336,9 +303,9 @@ export class PartnersSettingsComponent implements OnInit {
 
   get categoryStats(): any[] {
     const stats = this.categories.map(cat => {
-      const partners = this.partners.filter(p => p.category === cat);
-      const active = partners.filter(p => p.status === 'active').length;
-      const inactive = partners.filter(p => p.status === 'inactive' || p.status === 'suspended').length;
+      const partners = this.partners.filter(p => (p.category ?? 'Banque') === cat);
+      const active = partners.filter(p => p.isActive).length;
+      const inactive = partners.filter(p => !p.isActive).length;
       return {
         name: cat,
         icon: this.getCategoryIcon(cat),
@@ -371,17 +338,18 @@ export class PartnersSettingsComponent implements OnInit {
       filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(term) ||
         p.code.toLowerCase().includes(term) ||
-        p.category.toLowerCase().includes(term) ||
-        p.contact.includes(term)
+        (p.swiftCode ?? '').toLowerCase().includes(term) ||
+        (p.accountNumber ?? '').toLowerCase().includes(term)
       );
     }
 
     if (this.categoryFilter) {
-      filtered = filtered.filter(p => p.category === this.categoryFilter);
+      filtered = filtered.filter(p => (p.category ?? 'Banque') === this.categoryFilter);
     }
 
     if (this.statusFilter) {
-      filtered = filtered.filter(p => p.status === this.statusFilter);
+      const active = this.statusFilter === 'active';
+      filtered = filtered.filter(p => p.isActive === active);
     }
 
     this.filteredPartners = filtered;
@@ -401,12 +369,18 @@ export class PartnersSettingsComponent implements OnInit {
     this.applyFilters();
   }
 
-  // ========== PAGINATION ==========
+  // ========== PAGINATION & TRI ==========
 
   get paginatedPartners(): Partner[] {
+    const sorted = [...this.filteredPartners].sort((a, b) => {
+      const av = String(a[this.sortColumn as keyof Partner] ?? '').toLowerCase();
+      const bv = String(b[this.sortColumn as keyof Partner] ?? '').toLowerCase();
+      const cmp = av.localeCompare(bv);
+      return this.sortDirection === 'asc' ? cmp : -cmp;
+    });
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
-    return this.filteredPartners.slice(start, end);
+    return sorted.slice(start, end);
   }
 
   get totalPages(): number {
@@ -425,26 +399,28 @@ export class PartnersSettingsComponent implements OnInit {
     }
   }
 
-  // ========== STATUS HELPERS ==========
-
-  getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      active: 'Actif',
-      inactive: 'Inactif',
-      pending: 'En attente',
-      suspended: 'Suspendu'
-    };
-    return labels[status] || status;
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
   }
 
-  getStatusBadgeClass(status: string): string {
-    const classes: Record<string, string> = {
-      active: 'status-badge--success',
-      inactive: 'status-badge--danger',
-      pending: 'status-badge--pending',
-      suspended: 'status-badge--suspended'
-    };
-    return classes[status] || 'status-badge--info';
+  getSortMarker(column: string): string {
+    if (this.sortColumn !== column) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  // ========== STATUS HELPERS ==========
+
+  getStatusLabel(active: boolean): string {
+    return active ? 'Actif' : 'Inactif';
+  }
+
+  getStatusBadgeClass(active: boolean): string {
+    return active ? 'status-badge--success' : 'status-badge--danger';
   }
 
   // ========== PARTNER ACTIONS ==========
@@ -460,17 +436,14 @@ export class PartnersSettingsComponent implements OnInit {
   addPartner(): void {
     this.selectedItem = null;
     this.modalType = 'partner_add';
-    this.modalTitle = 'Ajouter un partenaire';
+    this.modalTitle = 'Ajouter une banque partenaire';
     this.formData = {
       name: '',
-      category: this.categories[0],
       code: '',
-      contact: '',
-      email: '',
-      status: 'pending',
-      transactions: 0,
-      apiKey: this.generateApiKey(),
-      webhook: ''
+      swiftCode: '',
+      accountNumber: '',
+      isActive: true,
+      category: 'Banque'
     };
     this.showModal = true;
   }
@@ -488,15 +461,12 @@ export class PartnersSettingsComponent implements OnInit {
       const newPartner: Partner = {
         ...this.formData,
         id: (this.partners.length + 1).toString(),
-        icon: this.getCategoryIcon(this.formData.category),
-        transactions: 0,
-        createdAt: new Date().toISOString().split('T')[0]
+        category: this.formData.category || 'Banque'
       };
       this.partners.push(newPartner);
-      this.toast(`Partenaire "${newPartner.name}" ajouté avec succès`, 'success');
+      this.toast(`Banque partenaire "${newPartner.name}" ajoutée avec succès`, 'success');
     } else if (this.selectedItem) {
       Object.assign(this.selectedItem, this.formData);
-      this.selectedItem.icon = this.getCategoryIcon(this.formData.category);
       this.toast(`Partenaire "${this.selectedItem.name}" modifié avec succès`, 'success');
     }
     this.closeModal();
@@ -504,15 +474,11 @@ export class PartnersSettingsComponent implements OnInit {
   }
 
   togglePartnerStatus(partner: Partner): void {
-    if (partner.status === 'active') {
-      partner.status = 'inactive';
-      this.toast(`Partenaire "${partner.name}" désactivé`, 'danger');
-    } else if (partner.status === 'pending') {
-      this.toast(`Partenaire "${partner.name}" en attente de validation`, 'info');
-    } else {
-      partner.status = 'active';
-      this.toast(`Partenaire "${partner.name}" activé`, 'success');
-    }
+    partner.isActive = !partner.isActive;
+    this.toast(
+      `Partenaire "${partner.name}" ${partner.isActive ? 'activé' : 'désactivé'}`,
+      partner.isActive ? 'success' : 'danger'
+    );
   }
 
   deletePartner(partner: Partner): void {
@@ -521,11 +487,6 @@ export class PartnersSettingsComponent implements OnInit {
       this.toast(`Partenaire "${partner.name}" supprimé`, 'danger');
       this.applyFilters();
     }
-  }
-
-  generateApiKey(): string {
-    return 'sk_' + Math.random().toString(36).substring(2, 15) + '_' + 
-           Math.random().toString(36).substring(2, 10);
   }
 
   // ========== INTEGRATION ACTIONS ==========
