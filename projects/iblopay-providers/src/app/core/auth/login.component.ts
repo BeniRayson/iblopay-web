@@ -2,67 +2,73 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-  AuthService, ADMIN_SERVICES_IDENTIFIANT, ADMIN_SERVICES_PIN,
-  ADMIN_TRANSPORT_IDENTIFIANT, ADMIN_TRANSPORT_PIN,
-  ADMIN_EVENEMENTS_IDENTIFIANT, ADMIN_EVENEMENTS_PIN
-} from '../auth.service';
+import { finalize } from 'rxjs/operators';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
   identifiant = '';
   motDePasse = '';
-  showMotDePasse = false;
-  isLoading = false;
+  motDePasseVisible = false;
+  tentative = false;
+  chargement = false;
   erreur = '';
-  showAide = false;
 
-  readonly adminServicesIdentifiant = ADMIN_SERVICES_IDENTIFIANT;
-  readonly adminServicesPin = ADMIN_SERVICES_PIN;
-  readonly adminTransportIdentifiant = ADMIN_TRANSPORT_IDENTIFIANT;
-  readonly adminTransportPin = ADMIN_TRANSPORT_PIN;
-  readonly adminEvenementsIdentifiant = ADMIN_EVENEMENTS_IDENTIFIANT;
-  readonly adminEvenementsPin = ADMIN_EVENEMENTS_PIN;
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  constructor(private authService: AuthService, private router: Router) {}
+  seConnecter(): void {
+    if (this.chargement) return;
 
-  toggleAide(): void {
-    this.showAide = !this.showAide;
-  }
-
-  remplir(identifiant: string, pin: string): void {
-    this.identifiant = identifiant;
-    this.motDePasse = pin;
+    this.tentative = true;
     this.erreur = '';
-  }
 
-  connexion(): void {
-    if (!this.identifiant.trim() || !this.motDePasse.trim()) {
+    const identifiant = this.identifiant.trim();
+    const motDePasse = this.motDePasse.trim();
+
+    if (!identifiant || !motDePasse) {
       this.erreur = 'Veuillez renseigner votre identifiant et votre mot de passe.';
       return;
     }
-    this.isLoading = true;
-    this.erreur = '';
 
-    this.authService.connecter(this.identifiant, this.motDePasse).subscribe(resultat => {
-      this.isLoading = false;
-      if (!resultat.succes || !resultat.utilisateur) {
-        this.erreur = resultat.message || 'Connexion impossible.';
-        return;
-      }
-      if (resultat.utilisateur.type === 'ADMIN') {
-        if (resultat.utilisateur.secteur === 'TRANSPORT') this.router.navigate(['/transport']);
-        else if (resultat.utilisateur.secteur === 'EVENEMENTS') this.router.navigate(['/evenements']);
-        else this.router.navigate(['/dashboard']);
-      } else {
-        this.router.navigate(['/demandes']);
-      }
-    });
+    this.chargement = true;
+
+    this.authService.connecter(identifiant, motDePasse)
+      .pipe(finalize(() => this.chargement = false))
+      .subscribe({
+        next: resultat => {
+          if (!resultat.succes || !resultat.utilisateur) {
+            this.erreur = resultat.message || 'Connexion impossible.';
+            return;
+          }
+
+          const utilisateur = resultat.utilisateur;
+          if (utilisateur.type === 'ADMIN') {
+            switch (utilisateur.secteur) {
+              case 'TRANSPORT':
+                void this.router.navigate(['/transport']);
+                break;
+              case 'EVENEMENTS':
+                void this.router.navigate(['/evenements']);
+                break;
+              default:
+                void this.router.navigate(['/dashboard']);
+            }
+          } else {
+            void this.router.navigate(['/demandes']);
+          }
+        },
+        error: () => {
+          this.erreur = 'Une erreur est survenue pendant la connexion. Réessayez.';
+        }
+      });
   }
 }

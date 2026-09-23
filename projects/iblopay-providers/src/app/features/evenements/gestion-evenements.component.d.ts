@@ -1,0 +1,106 @@
+import { OnInit } from '@angular/core';
+import { EvenementsService } from '../../services/evenements.service';
+import { Evenement, Organisateur, Lieu, TypeEvenement, StatutEvenement, CategorieBillet, VenteHistorique } from '../../models/evenements.model';
+import { ToastService } from '../../core/toast.service';
+interface EvenementFormState {
+    id?: number;
+    nom: string;
+    type: TypeEvenement;
+    lieuNom: string;
+    organisateurNom: string;
+    dateDebut: string;
+    dateFin: string;
+    description: string;
+    capaciteTotale: number;
+    categoriesBillets: CategorieBillet[];
+    statut: StatutEvenement;
+    pieceJointeNom: string;
+    pieceJointeDataUrl: string;
+}
+interface OrganisateurFormState {
+    id?: number;
+    nom: string;
+    prenom: string;
+    telephone: string;
+    adresse: string;
+    entreprise: string;
+    email: string;
+}
+export declare class GestionEvenementsComponent implements OnInit {
+    private evenementsService;
+    private toastService;
+    vueActive: 'EVENEMENTS' | 'ORGANISATEURS';
+    evenements: Evenement[];
+    evenementsFiltres: Evenement[];
+    organisateurs: Organisateur[];
+    organisateursFiltres: Organisateur[];
+    lieux: Lieu[];
+    filtreType: '' | TypeEvenement;
+    filtreStatutEvenement: string;
+    filtreStatutOrganisateur: string;
+    recherche: string;
+    isLoading: boolean;
+    showEvenementModal: boolean;
+    evenementForm: EvenementFormState | null;
+    nouvelleCategorieNom: string;
+    nouvelleCategoriePrix: number;
+    nouvelleCategorieQuantite: number;
+    showOrganisateurModal: boolean;
+    organisateurForm: OrganisateurFormState | null;
+    evenementDetailAffiche: Evenement | null;
+    organisateurDetailAffiche: Organisateur | null;
+    historiqueOuvert: boolean;
+    historiqueTitre: string;
+    historiqueLignes: VenteHistorique[];
+    historiquePage: number;
+    historiquePageSize: number;
+    constructor(evenementsService: EvenementsService, toastService: ToastService);
+    ngOnInit(): void;
+    charger(): void;
+    changerVue(vue: 'EVENEMENTS' | 'ORGANISATEURS'): void;
+    appliquerFiltresEvenements(): void;
+    appliquerFiltresOrganisateurs(): void;
+    onFiltreChange(): void;
+    nomLieu(id: number): string;
+    nomOrganisateur(id: number): string;
+    billetsVendus(e: Evenement): number;
+    revenuEvenement(e: Evenement): number;
+    tauxRemplissage(e: Evenement): number;
+    typeLabel(type: TypeEvenement): string;
+    statutLabel(statut: StatutEvenement): string;
+    statutClass(statut: StatutEvenement): string;
+    voirDetailEvenement(e: Evenement): void;
+    fermerDetailEvenement(): void;
+    voirDetailOrganisateur(o: Organisateur): void;
+    fermerDetailOrganisateur(): void;
+    ouvrirHistorique(e: Evenement): void;
+    fermerHistorique(): void;
+    get historiqueRevenuTotal(): number;
+    get historiqueBilletsTotal(): number;
+    get historiqueTotalPages(): number;
+    get historiquePagine(): VenteHistorique[];
+    changerPageHistorique(page: number): void;
+    ouvrirNouvelEvenement(): void;
+    modifierEvenement(e: Evenement): void;
+    fermerEvenementModal(): void;
+    ajouterCategorie(): void;
+    supprimerCategorie(index: number): void;
+    onFichierSelectionne(event: Event): void;
+    supprimerPieceJointe(): void;
+    get pieceJointeEstImage(): boolean;
+    /** Trouve le lieu existant par nom (insensible à la casse), sinon le crée à la volée. */
+    private resoudreLieuId;
+    /** Trouve l'organisateur existant par nom (insensible à la casse), sinon le crée à la volée. */
+    private resoudreOrganisateurId;
+    enregistrerEvenement(): void;
+    supprimerEvenement(e: Evenement): void;
+    annulerEvenement(e: Evenement): void;
+    ouvrirNouvelOrganisateur(): void;
+    modifierOrganisateur(o: Organisateur): void;
+    fermerOrganisateurModal(): void;
+    enregistrerOrganisateur(): void;
+    toggleStatutOrganisateur(o: Organisateur, event?: Event): void;
+    supprimerOrganisateur(o: Organisateur): void;
+}
+export {};
+//# sourceMappingURL=gestion-evenements.component.d.ts.map

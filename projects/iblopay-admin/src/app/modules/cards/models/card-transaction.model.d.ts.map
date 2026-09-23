@@ -1,0 +1,1 @@
+{"version":3,"file":"card-transaction.model.d.ts","sourceRoot":"","sources":["card-transaction.model.ts"],"names":[],"mappings":"AAIA,MAAM,WAAW,eAAe;IAC9B,aAAa,EAAE,MAAM,CAAC;IACtB,MAAM,EAAE,MAAM,CAAC;IACf,MAAM,EAAE,MAAM,CAAC;IACf,QAAQ,EAAE,MAAM,CAAC;IACjB,MAAM,EAAE,MAAM,CAAC;IACf,SAAS,EAAE,MAAM,CAAC;CACnB"}

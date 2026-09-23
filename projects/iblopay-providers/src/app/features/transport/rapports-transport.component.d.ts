@@ -1,0 +1,57 @@
+import { OnInit } from '@angular/core';
+import { CoursesService } from '../../services/courses.service';
+import { TransportService } from '../../services/transport.service';
+import { Course, Vehicule, Chauffeur, TypeVehicule, LigneBus, ZoneTaxi } from '../../models/transport.model';
+import { ExportUtilsService, ColonneExport, LigneExport } from '../../core/export-utils.service';
+type TypeRapportTransport = 'COURSES' | 'REVENUS_CHAUFFEURS' | 'FLOTTE';
+export declare class RapportsTransportComponent implements OnInit {
+    private coursesService;
+    private transportService;
+    private exportUtils;
+    isLoading: boolean;
+    courses: Course[];
+    vehicules: Vehicule[];
+    chauffeurs: Chauffeur[];
+    lignesBus: LigneBus[];
+    zones: ZoneTaxi[];
+    historique: import('../../models/transport.model').TrajetHistorique[];
+    typeRapport: TypeRapportTransport;
+    dateDebut: string;
+    dateFin: string;
+    typeVehicule: '' | TypeVehicule;
+    statut: string;
+    recherche: string;
+    colonnes: ColonneExport[];
+    lignes: LigneExport[];
+    currentPage: number;
+    pageSize: number;
+    ligneDetailAffichee: LigneExport | null;
+    constructor(coursesService: CoursesService, transportService: TransportService, exportUtils: ExportUtilsService);
+    ngOnInit(): void;
+    changerType(type: TypeRapportTransport): void;
+    reinitialiserFiltres(): void;
+    private dansPeriode;
+    genererRapport(): void;
+    nomVehicule(id?: number): string;
+    nomChauffeur(id?: number): string;
+    statutLabel(statut: string): string;
+    motorisationLabel(m: string): string;
+    /** Consommation totale à ce jour, formatée avec la bonne unité (L pour thermique, kWh pour électrique). */
+    consommationFormatee(v: Vehicule): string;
+    private genererRapportCourses;
+    private genererRapportChauffeurs;
+    private genererRapportFlotte;
+    get totalLignes(): number;
+    get montantTotal(): number;
+    get totalPages(): number;
+    get lignesPaginees(): LigneExport[];
+    changePage(page: number): void;
+    ouvrirDetailLigne(ligne: LigneExport): void;
+    fermerDetailLigne(): void;
+    exporterLigneExcel(): void;
+    imprimerLigne(): void;
+    exporterExcel(): void;
+    imprimer(): void;
+}
+export {};
+//# sourceMappingURL=rapports-transport.component.d.ts.map

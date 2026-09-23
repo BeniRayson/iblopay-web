@@ -1,0 +1,102 @@
+import { OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+interface User {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    photoUrl: string;
+    role: 'CLIENT' | 'AGENT' | 'SUPER_AGENT';
+    status: 'ACTIVE' | 'SUSPENDED' | 'FROZEN' | 'CLOSED';
+    cardNumber: string;
+    cniNumber: string;
+    address: {
+        zone: string;
+        commune: string;
+        province: string;
+        fullAddress: string;
+    };
+    createdAt: Date;
+    createdBy: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+    };
+    accountNumber: string;
+    walletBalance: number;
+}
+export declare class UsersListComponent implements OnInit {
+    private router;
+    users: User[];
+    filteredUsers: User[];
+    paginatedUsers: User[];
+    isLoading: boolean;
+    searchTerm: string;
+    selectedRole: string;
+    selectedStatus: string;
+    currentPage: number;
+    itemsPerPage: number;
+    totalPages: number;
+    stats: {
+        total: number;
+        clients: number;
+        agents: number;
+        superAgents: number;
+        active: number;
+    };
+    showStatusModal: boolean;
+    statusLoading: boolean;
+    statusError: string;
+    statusSuccess: string;
+    selectedUser: User | null;
+    selectedNewStatus: string;
+    currentUserStatus: string;
+    statusOptions: {
+        value: string;
+        label: string;
+        color: string;
+        icon: string;
+    }[];
+    showDeleteModal: boolean;
+    deleteLoading: boolean;
+    deleteError: string;
+    deleteSuccess: string;
+    Math: Math;
+    constructor(router: Router);
+    ngOnInit(): void;
+    loadMockUsers(): void;
+    private generateMockUsers;
+    refreshAll(): void;
+    updateStats(): void;
+    applyFilters(): void;
+    changePage(page: number): void;
+    getPaginationPages(): number[];
+    getInitials(firstName: string, lastName: string): string;
+    getAvatarColor(id: string): string;
+    getStatusClass(status: string): string;
+    getStatusLabel(status: string): string;
+    getRoleClass(role: string): string;
+    getRoleLabel(role: string): string;
+    getCreatorRoleLabel(role: string): string;
+    onSearchChange(): void;
+    onFilterChange(): void;
+    clearFilters(): void;
+    onViewUser(user: User): void;
+    onEditUser(user: User): void;
+    onFundUser(user: User): void;
+    onToggleStatus(user: User): void;
+    closeStatusModal(): void;
+    onStatusChange(): void;
+    selectStatus(value: string): void;
+    confirmStatusChange(): void;
+    getStatusOptionLabel(status: string): string;
+    getStatusOptionColor(status: string): string;
+    getStatusOptionIcon(status: string): string;
+    onDeleteUser(user: User): void;
+    closeDeleteModal(): void;
+    confirmDelete(): void;
+}
+export {};
+//# sourceMappingURL=users-list.component.d.ts.map

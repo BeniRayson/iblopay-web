@@ -1,0 +1,545 @@
+<div class="chauffeurs-page">
+<div class="page-grid">
+    <!-- Colonne gauche -->
+    <section class="left-column">
+      <div class="panel soft-panel filters-panel">
+        <div class="filters-row">
+          <div class="field">
+            <label>Statut</label>
+            <select [(ngModel)]="statutFiltre" (change)="filtrer()">
+              <option *ngFor="let s of statutOptions" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+
+          <div class="field search-field">
+            <label>&nbsp;</label>
+            <input
+              type="text"
+              [(ngModel)]="recherche"
+              (input)="filtrer()"
+              placeholder="Rechercher par nom ou numéro de permis..."
+            />
+          </div>
+
+          <div class="actions-top">
+            <button class="btn btn-primary" (click)="ajouter()">
+              <i class="fa-solid fa-plus"></i>
+              Ajouter chauffeur
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card stat-blue">
+          <div class="icon-wrap"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-content">
+            <div class="stat-label">Total chauffeurs</div>
+            <div class="stat-value">{{ totalChauffeurs }}</div>
+            <div class="stat-sub">{{ chauffeursActifs }} actifs</div>
+            <div class="progress-line">
+              <span [style.width.%]="pourcentageActifs"></span>
+            </div>
+            <div class="mini-rate">{{ pourcentageActifs }} %</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-green">
+          <div class="icon-wrap"><i class="fa-solid fa-user"></i></div>
+          <div class="stat-content">
+            <div class="stat-label">Chauffeurs actifs</div>
+            <div class="stat-value">{{ chauffeursActifs }}</div>
+            <div class="stat-sub">{{ pourcentageActifs }} %</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-orange">
+          <div class="icon-wrap"><i class="fa-solid fa-car-side"></i></div>
+          <div class="stat-content">
+            <div class="stat-label">Sans véhicule</div>
+            <div class="stat-value">{{ sansVehicule }}</div>
+            <div class="stat-sub">{{ pourcentageSansVehicule }} %</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-red">
+          <div class="icon-wrap"><i class="fa-solid fa-pause"></i></div>
+          <div class="stat-content">
+            <div class="stat-label">En pause</div>
+            <div class="stat-value">{{ enPause }}</div>
+            <div class="stat-sub">{{ pourcentagePause }} %</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel soft-panel list-panel">
+        <div class="panel-header">
+          <div class="title-with-count">
+            <h3>Liste des chauffeurs</h3>
+            <span>{{ chauffeursFiltres.length }} résultats</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nom complet</th>
+                <th>N° de permis</th>
+                <th>Véhicule assigné</th>
+                <th>Recettes (Mois)</th>
+                <th>Versements (Mois)</th>
+                <th>Taux de recouvrement</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr
+                *ngFor="let chauffeur of chauffeursAffiches"
+                [class.selected-row]="chauffeur.id === selectionId"
+              >
+                <td>
+                  <div class="driver-cell">
+                    <div class="avatar-mini">
+                      {{ chauffeur.nom.split(' ')[0][0] }}{{ chauffeur.nom.split(' ')[1]?.[0] || '' }}
+                    </div>
+                    <span class="driver-name">
+                      {{ chauffeur.nom }}
+                    </span>
+                  </div>
+                </td>
+                <td>{{ chauffeur.permis }}</td>
+                <td>
+                  <span class="vehicle-chip">
+                    <i class="fa-solid fa-bus"></i>
+                    {{ chauffeur.vehicule }}
+                  </span>
+                </td>
+                <td>{{ formatBif(chauffeur.recettesMois) }}</td>
+                <td>{{ formatBif(chauffeur.versementsMois) }}</td>
+                <td>{{ ((chauffeur.versementsMois / chauffeur.recettesMois) * 100) | number:'1.1-1' }}%</td>
+                <td>
+                  <span class="status-pill" [ngClass]="statutClass(chauffeur.statut)">
+                    {{ chauffeur.statut }}
+                  </span>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <button class="detail-btn" (click)="voir(chauffeur)" title="Afficher les détails">
+                      <i class="fa-solid fa-eye"></i>
+                      <span>Détail</span>
+                    </button>
+                    <button class="icon-btn" (click)="edit(chauffeur)" title="Modifier">
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="icon-btn danger" (click)="remove(chauffeur)" title="Supprimer">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <div class="per-page">
+            <span>Afficher</span>
+            <select>
+              <option>10</option>
+            </select>
+            <span>par page</span>
+          </div>
+
+          <div class="pagination">
+            <button class="page-btn" (click)="changerPage(page - 1)">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button
+              *ngFor="let p of pages"
+              class="page-btn"
+              [class.active]="p === page"
+              (click)="changerPage(p)"
+            >
+              {{ p }}
+            </button>
+            <button class="page-btn" (click)="changerPage(page + 1)">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Détails du chauffeur : affichés sous la liste -->
+    <section class="right-column" *ngIf="selection as chauffeur">
+      <div class="panel soft-panel profile-panel">
+        <div class="profile-top">
+          <div class="profile-identite">
+            <div class="avatar-large">{{ initialesSelection }}</div>
+
+            <div class="identity-text">
+              <h2>{{ chauffeur.nom }}</h2>
+              <p>N° de permis : {{ chauffeur.permis }}</p>
+              <span class="status-pill" [ngClass]="statutClass(chauffeur.statut)">
+                {{ chauffeur.statut }}
+              </span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn btn-outline" (click)="modifier()">
+              <i class="fa-solid fa-pen"></i>
+              Modifier
+            </button>
+            <button class="btn btn-danger-soft" (click)="supprimer()">
+              <i class="fa-solid fa-trash"></i>
+              Supprimer
+            </button>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="mini-info-card">
+            <i class="fa-solid fa-bus"></i>
+            <div>
+              <span>Véhicule assigné</span>
+              <strong>{{ chauffeur.vehicule }} <small>({{ chauffeur.vehiculeModele }})</small></strong>
+            </div>
+          </div>
+
+          <div class="mini-info-card">
+            <i class="fa-solid fa-id-card"></i>
+            <div>
+              <span>Permis</span>
+              <strong>{{ chauffeur.permis }}</strong>
+            </div>
+          </div>
+
+          <div class="mini-info-card">
+            <i class="fa-solid fa-calendar-days"></i>
+            <div>
+              <span>Depuis le</span>
+              <strong>{{ chauffeur.dateDebut }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-cards">
+          <div class="mini-stat-card green-soft">
+            <div class="donut-wrap">
+              <div class="donut">
+                <span>{{ tauxRecouvrement | number:'1.1-1' }}%</span>
+              </div>
+            </div>
+            <div class="mini-stat-content">
+              <div class="mini-stat-label">Taux de recouvrement</div>
+              <div class="mini-stat-sub">(Versements / Recettes)</div>
+            </div>
+          </div>
+
+          <div class="mini-stat-card blue-soft">
+            <i class="fa-solid fa-coins"></i>
+            <div class="mini-stat-content">
+              <div class="mini-stat-value">{{ formatBif(recetteJournaliere) }}</div>
+              <div class="mini-stat-label">Recette journalière</div>
+            </div>
+          </div>
+
+          <div class="mini-stat-card purple-soft">
+            <i class="fa-solid fa-wallet"></i>
+            <div class="mini-stat-content">
+              <div class="mini-stat-value">{{ formatBif(versementJournalier) }}</div>
+              <div class="mini-stat-label">Versement journalier</div>
+            </div>
+          </div>
+
+          <div class="mini-stat-card amber-soft">
+            <i class="fa-solid fa-calendar-check"></i>
+            <div class="mini-stat-content">
+              <div class="mini-stat-value">{{ formatBif(versementMoisCalcule) }}</div>
+              <div class="mini-stat-label">Versement du mois</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabs-bar" role="tablist" aria-label="Activité du chauffeur">
+          <button type="button" class="tab-btn" [class.active]="ongletActif === 'Paiement effectué par les clients'"
+                  (click)="setOnglet('Paiement effectué par les clients')">
+            <i class="fa-solid fa-credit-card"></i> Paiement effectué par les clients
+          </button>
+          <button type="button" class="tab-btn" [class.active]="ongletActif === 'Historique des versements'"
+                  (click)="setOnglet('Historique des versements')">
+            <i class="fa-solid fa-wallet"></i> Historique des versements
+          </button>
+        </div>
+
+        <div class="tab-content" [ngSwitch]="ongletActif">
+          <div *ngSwitchCase="'Paiement effectué par les clients'" class="panel inner-panel">
+            <div class="inner-title"><i class="fa-solid fa-credit-card"></i> Paiement effectué par les clients</div>
+            <div class="table-toolbar">
+              <label class="period-field">Période
+                <select [(ngModel)]="periodePaiements" aria-label="Filtrer les paiements">
+                  <option value="tout">Tous</option>
+                  <option value="jour">Par jour</option>
+                  <option value="semaine">Par semaine</option>
+                  <option value="mois">Par mois</option>
+                </select>
+              </label>
+              <span class="demo-period">Filtrage par rapport à la dernière date des données de démonstration</span>
+            </div>
+            <div class="table-wrap inner-table-wrap">
+              <table>
+                <thead><tr><th>Date &amp; Heure</th><th>Bus</th><th>Itinéraire</th><th>Montant</th><th>Carte</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let t of paiementsFiltres">
+                    <td>{{ t.dateHeure }}</td><td>{{ t.bus }}</td><td>{{ t.itineraire }}</td>
+                    <td>{{ formatBif(t.montant) }}</td><td>{{ t.carte }}</td>
+                    <td><span class="sync-pill">{{ t.statut }}</span></td>
+                  </tr>
+                  <tr *ngIf="!paiementsFiltres.length"><td colspan="6" class="empty-state">Aucun paiement pour cette période.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngSwitchCase="'Historique des versements'" class="panel inner-panel">
+            <div class="inner-title"><i class="fa-solid fa-wallet"></i> Historique des versements</div>
+            <div class="table-toolbar">
+              <label class="period-field">Période
+                <select [(ngModel)]="periodeVersements" aria-label="Filtrer les versements">
+                  <option value="tout">Tous</option>
+                  <option value="jour">Par jour</option>
+                  <option value="semaine">Par semaine</option>
+                  <option value="mois">Par mois</option>
+                </select>
+              </label>
+              <span class="demo-period">Filtrage par rapport à la dernière date des données de démonstration</span>
+            </div>
+            <div class="table-wrap inner-table-wrap">
+              <table>
+                <thead><tr><th>Date &amp; Heure</th><th>Montant</th><th>Mode de paiement</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let v of versementsFiltres">
+                    <td>{{ v.dateHeure }}</td><td>{{ formatBif(v.montant) }}</td>
+                    <td>{{ v.modePaiement }}</td><td><span class="sync-pill">{{ v.statut }}</span></td>
+                  </tr>
+                  <tr *ngIf="!versementsFiltres.length"><td colspan="4" class="empty-state">Aucun versement pour cette période.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+    <div class="message-box" role="status" *ngIf="message">{{ message }}</div>
+  </div>
+
+  <!-- Formulaire chauffeur -->
+  <div class="modal-overlay" *ngIf="editionOuverte" (click)="annulerEdition()">
+    <section
+      class="driver-form-card"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Formulaire chauffeur"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="driver-form-header">
+        <div class="driver-form-header-icon">
+          <i class="fa-solid" [ngClass]="modeAjout ? 'fa-user-plus' : 'fa-user-pen'"></i>
+        </div>
+        <div class="driver-form-heading">
+          <h3>{{ modeAjout ? 'Ajouter un nouveau chauffeur' : 'Modifier le chauffeur' }}</h3>
+          <p *ngIf="modeAjout">
+            Commencez par le numéro de téléphone. Les informations du client sont récupérées automatiquement.
+          </p>
+          <p *ngIf="!modeAjout">Mettez à jour les informations du chauffeur sélectionné.</p>
+        </div>
+        <button type="button" class="form-close-btn" (click)="annulerEdition()" aria-label="Fermer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form *ngIf="brouillon as b" (ngSubmit)="enregistrer()" #chauffeurForm="ngForm">
+        <div class="driver-form-body">
+
+          <div class="form-section" *ngIf="modeAjout">
+            <div class="form-section-title">
+              <span class="section-step">1</span>
+              <div>
+                <strong>Identifier le chauffeur</strong>
+                <small>Recherche du client par numéro de téléphone</small>
+              </div>
+            </div>
+
+            <div class="lookup-field">
+              <label for="telephone">Téléphone <span class="required">*</span></label>
+              <div class="lookup-input-wrap">
+                <i class="fa-solid fa-phone"></i>
+                <input
+                  id="telephone"
+                  name="telephone"
+                  type="tel"
+                  [(ngModel)]="b.telephone"
+                  (input)="rechercherClientParTelephone()"
+                  placeholder="+257 79 12 34 56"
+                  autocomplete="off"
+                  required
+                />
+                <span class="lookup-spinner" *ngIf="rechercheClientEnCours">
+                  <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </span>
+              </div>
+              <div
+                class="lookup-feedback"
+                *ngIf="messageRechercheClient"
+                [class.success]="clientTrouve"
+                [class.error]="!clientTrouve"
+              >
+                <i class="fa-solid" [ngClass]="clientTrouve ? 'fa-circle-check' : 'fa-circle-info'"></i>
+                {{ messageRechercheClient }}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">
+              <span class="section-step">{{ modeAjout ? '2' : '1' }}</span>
+              <div>
+                <strong>Informations personnelles</strong>
+                <small *ngIf="modeAjout">Renseignées automatiquement à partir du téléphone</small>
+                <small *ngIf="!modeAjout">Informations du chauffeur</small>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Nom et prénom <span class="required">*</span></span>
+                <div class="field-with-icon">
+                  <i class="fa-solid fa-user"></i>
+                  <input name="nom" [(ngModel)]="b.nom" [readonly]="modeAjout" required />
+                </div>
+              </label>
+
+              <label class="form-field">
+                <span>Email</span>
+                <div class="field-with-icon">
+                  <i class="fa-solid fa-envelope"></i>
+                  <input name="email" type="email" [(ngModel)]="b.email" [readonly]="modeAjout" />
+                </div>
+              </label>
+
+              <label class="form-field form-field-full">
+                <span>Adresse</span>
+                <div class="field-with-icon">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <input name="adresse" [(ngModel)]="b.adresse" [readonly]="modeAjout" />
+                </div>
+              </label>
+
+              <label class="form-field" *ngIf="!modeAjout">
+                <span>Téléphone <span class="required">*</span></span>
+                <div class="field-with-icon">
+                  <i class="fa-solid fa-phone"></i>
+                  <input name="telephoneEdit" type="tel" [(ngModel)]="b.telephone" required />
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">
+              <span class="section-step">{{ modeAjout ? '3' : '2' }}</span>
+              <div>
+                <strong>Affectation du véhicule</strong>
+                <small>Le modèle est récupéré automatiquement à partir de l'immatriculation</small>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Immatriculation véhicule <span class="required">*</span></span>
+                <div class="field-with-icon">
+                  <i class="fa-solid fa-bus"></i>
+                  <input
+                    name="vehicule"
+                    [(ngModel)]="b.vehicule"
+                    (input)="rechercherVehiculeParImmatriculation()"
+                    placeholder="Ex. BK 7320"
+                    autocomplete="off"
+                    required
+                  />
+                </div>
+                <div
+                  class="lookup-feedback compact"
+                  *ngIf="messageRechercheVehicule"
+                  [class.success]="vehiculeTrouve"
+                  [class.error]="!vehiculeTrouve"
+                >
+                  <i class="fa-solid" [ngClass]="vehiculeTrouve ? 'fa-circle-check' : 'fa-circle-info'"></i>
+                  {{ messageRechercheVehicule }}
+                </div>
+              </label>
+
+              <label class="form-field">
+                <span>Modèle du véhicule</span>
+                <div class="field-with-icon readonly-field">
+                  <i class="fa-solid fa-car-side"></i>
+                  <input name="vehiculeModele" [(ngModel)]="b.vehiculeModele" readonly />
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">
+              <span class="section-step">{{ modeAjout ? '4' : '3' }}</span>
+              <div>
+                <strong>Informations de service</strong>
+                <small>Permis et statut du chauffeur</small>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label class="form-field">
+                <span>N° de permis <span class="required">*</span></span>
+                <div class="field-with-icon">
+                  <i class="fa-solid fa-id-card"></i>
+                  <input name="permis" [(ngModel)]="b.permis" placeholder="Ex. CP-32567" required />
+                </div>
+              </label>
+
+              <label class="form-field">
+                <span>Statut</span>
+                <div class="field-with-icon">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <select name="statut" [(ngModel)]="b.statut">
+                    <option value="Actif">Actif</option>
+                    <option value="Sans véhicule">Sans véhicule</option>
+                    <option value="En pause">En pause</option>
+                  </select>
+                </div>
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="driver-form-actions">
+          <button type="button" class="btn btn-outline" (click)="annulerEdition()">Annuler</button>
+          <button
+            type="submit"
+            class="btn btn-primary save-driver-btn"
+            [disabled]="chauffeurForm.invalid || (modeAjout && (!clientTrouve || !vehiculeTrouve))"
+          >
+            <i class="fa-solid fa-floppy-disk"></i>
+            {{ modeAjout ? 'Ajouter le chauffeur' : 'Enregistrer les modifications' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,122 @@
+<div class="rapports-page">
+  <!-- La navigation latérale et l'en-tête général sont fournis par le layout IBLOPAY. -->
+<section class="rapports-cards" aria-label="Catégories de rapports">
+    <article *ngFor="let carte of cartes" class="rapport-card" role="button" tabindex="0" [attr.aria-label]="'Afficher '+carte.titre" [ngClass]="carte.couleur" [class.active]="idActif === carte.id" (click)="ouvrirRapport(carte.id)" (keydown.enter)="ouvrirRapport(carte.id)" (keydown.space)="$event.preventDefault(); ouvrirRapport(carte.id)">
+      <div class="card-top">
+        <div class="card-icon"><i class="fa-solid" [ngClass]="carte.icone"></i></div>
+        <div class="card-head"><h2>{{ carte.titre }}</h2><p>{{ carte.description }}</p></div>
+        <span class="card-arrow" aria-hidden="true">
+          <i class="fa-solid fa-chevron-right"></i>
+        </span>
+      </div>
+      <div class="card-metrics">
+        <div class="card-metric" *ngFor="let e of carte.etiquettes; let i = index">
+          <span>{{ e }}</span><strong>{{ carte.chiffres[i] }}</strong>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section id="rapport-detail" class="detail-report panel" aria-label="Rapport détaillé">
+    <div class="report-head">
+      <div class="report-label">
+        <span class="report-icon" [ngClass]="actif.couleur"><i class="fa-solid" [ngClass]="actif.icone"></i></span>
+        <div><h2>{{ actif.titre }}</h2><p>{{ actif.description }}.</p></div>
+      </div>
+      <div class="export-actions">
+        <button type="button" class="export pdf" (click)="exporterPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        <button type="button" class="export print" (click)="imprimerTableau()"><i class="fa-solid fa-print"></i> Imprimer</button>
+        <button type="button" class="export excel" (click)="exporterExcel()"><i class="fa-solid fa-file-excel"></i> Excel</button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <label class="filter-field period-field"><span>Période : du</span>
+        <input type="date" [(ngModel)]="debut" (change)="filtreChange()" aria-label="Date de début">
+      </label>
+      <label class="filter-field period-field"><span>Au</span>
+        <input type="date" [(ngModel)]="fin" (change)="filtreChange()" aria-label="Date de fin">
+      </label>
+      <label class="filter-field"><span>Véhicule</span>
+        <select [(ngModel)]="vehicule" (change)="filtreChange()"><option value="Tous">Tous les véhicules</option><option *ngFor="let bus of vehicules" [value]="bus">{{ bus }}</option></select>
+      </label>
+      <label class="filter-field"><span>Type</span>
+        <select [(ngModel)]="typeBus" (change)="filtreChange()"><option value="Tous">Tous les types</option><option *ngFor="let type of types" [value]="type">{{ type }}</option></select>
+      </label>
+      <label class="filter-field"><span>Marque</span>
+        <select [(ngModel)]="marque" (change)="filtreChange()"><option value="Toutes">Toutes les marques</option><option *ngFor="let item of marques" [value]="item">{{ item }}</option></select>
+      </label>
+      <label class="filter-field search-filter"><span>Recherche</span>
+        <div class="search-input"><i class="fa-solid fa-magnifying-glass"></i><input type="search" [(ngModel)]="rechercheBus" (keyup.enter)="appliquerFiltres()" placeholder="Rechercher un bus…"></div>
+      </label>
+      <button class="filter-button" type="button" (click)="appliquerFiltres()"><i class="fa-solid fa-filter"></i> Filtrer</button>
+    </div>
+    <p class="notice" *ngIf="message">{{ message }}</p>
+
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let s of statistiques" [ngClass]="s.teinte">
+        <span class="stat-icon"><i class="fa-solid" [ngClass]="s.icone"></i></span>
+        <div><span class="stat-label">{{ s.libelle }}</span><strong>{{ s.valeur }}</strong></div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="number-cell">#</th><th *ngFor="let col of colonnes">{{ col.libelle }}</th><th class="action-col">Actions</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let ligne of lignesPage; let i = index" [class.selected]="ligneDetail && ligneDetail['id'] === ligne['id']">
+            <td class="number-cell">{{ (page - 1) * taillePage + i + 1 }}</td>
+            <td *ngFor="let col of colonnes" [ngClass]="{'numeric': ['recettes','versements','ecart','transactions','km','consommation','electriciteKwh','rendement'].includes(col.cle), 'negative': col.cle === 'ecart', 'strong-cell': ['bus', 'recettes', 'taux'].includes(col.cle)}">
+              <ng-container [ngSwitch]="col.cle">
+                <span *ngSwitchCase="'bus'" class="bus-cell"><i class="fa-solid fa-bus"></i> {{ ligne[col.cle] }}</span>
+                <span *ngSwitchCase="'type'" class="type-badge" [class.minibus]="ligne[col.cle] === 'Mini bus'">{{ ligne[col.cle] }}</span>
+                <span *ngSwitchCase="'taux'" class="rate-badge">{{ ligne[col.cle] }}</span>
+                <span *ngSwitchDefault>{{ formaterCellule(col.cle, ligne[col.cle] ?? '') }}</span>
+              </ng-container>
+            </td>
+            <td class="action-col"><button class="view-btn" type="button" (click)="afficherDetail(ligne)" aria-label="Voir les détails de cette ligne"><i class="fa-solid fa-eye"></i></button></td>
+          </tr>
+          <tr *ngIf="!lignesPage.length"><td class="empty" [attr.colspan]="colonnes.length + 2">Aucun résultat pour les filtres sélectionnés.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span>Affichage {{ premiereLigne }}–{{ derniereLigne }} sur {{ totalLignes }} résultats</span>
+      <div class="page-controls">
+        <button type="button" (click)="changerPage(page - 1)" [disabled]="page === 1" aria-label="Page précédente"><i class="fa-solid fa-angle-left"></i></button>
+        <button type="button" *ngFor="let p of numerosPages" (click)="changerPage(p)" [class.current]="page === p">{{ p }}</button>
+        <button type="button" (click)="changerPage(page + 1)" [disabled]="page === pages" aria-label="Page suivante"><i class="fa-solid fa-angle-right"></i></button>
+        <select [(ngModel)]="taillePage" (change)="changerTaille()" aria-label="Lignes par page"><option *ngFor="let n of tailles" [ngValue]="n">{{ n }} / page</option></select>
+      </div>
+    </div>
+
+
+  </section>
+  <!-- Fenêtre centrale de consultation : le tableau reste visible en arrière-plan -->
+  <div class="detail-overlay" *ngIf="ligneDetail as detail" (click)="fermerDetail()">
+    <section class="detail-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title" (click)="$event.stopPropagation()">
+      <header class="detail-dialog-head">
+        <div class="detail-dialog-heading">
+          <span class="dialog-icon"><i class="fa-solid" [ngClass]="actif.icone"></i></span>
+          <div><span class="dialog-eyebrow">{{ actif.titre }}</span><h2 id="modal-title">{{ detail['bus'] }} <small>· Détail de la ligne</small></h2></div>
+        </div>
+        <button class="dialog-close" type="button" (click)="fermerDetail()" aria-label="Fermer les détails"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="detail-dialog-content">
+        <div class="detail-dialog-intro">
+          <span class="detail-count"><i class="fa-solid fa-circle-info"></i> Données du rapport sélectionné</span>
+          <p>Informations correspondant à cette ligne et aux filtres appliqués.</p>
+        </div>
+        <dl class="detail-list">
+          <div class="detail-list-row" *ngFor="let col of colonnes">
+            <dt>{{ col.libelle }}</dt>
+            <dd>{{ formaterCellule(col.cle, detail[col.cle] ?? '') }}</dd>
+          </div>
+        </dl>
+      </div>
+      <footer class="detail-dialog-footer"><button type="button" class="dialog-done" (click)="fermerDetail()">Fermer</button></footer>
+    </section>
+  </div>
+  <p class="demo-note">Données de démonstration : les résultats réels nécessitent une connexion à l’API IBLOPAY.</p>
+</div>

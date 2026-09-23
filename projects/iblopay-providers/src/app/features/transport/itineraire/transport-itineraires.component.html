@@ -1,0 +1,105 @@
+<div class="itineraires-page">
+  
+  <div class="work-grid">
+    <!-- À gauche : recherche, statistiques et liste -->
+    <section class="left-side">
+      <div class="landscape-banner">
+        <img [src]="imagePaysage" alt="Paysage et transport en bus" />
+        <div class="landscape-overlay"></div>
+        <div class="landscape-content">
+          <i class="fa-solid fa-location-dot"></i>
+          <div><h2>Nos itinéraires</h2><p>Gérez vos lignes, vos tarifs et suivez leur performance.</p></div>
+        </div>
+        <button class="btn btn-primary banner-action" (click)="nouvelItineraire()"><i class="fa-solid fa-plus"></i> Nouvel itinéraire</button>
+      </div>
+
+      <div class="search-row">
+        <div class="search-input"><i class="fa-solid fa-magnifying-glass"></i>
+          <input [(ngModel)]="recherche" (ngModelChange)="filtrer()" placeholder="Rechercher par point de départ ou d’arrivée..." aria-label="Rechercher un itinéraire" />
+        </div>
+        <button class="btn btn-light" (click)="filtresOuverts = !filtresOuverts"><i class="fa-solid fa-filter"></i> Filtres</button>
+      </div>
+      <div class="filter-extra" *ngIf="filtresOuverts"><label for="filtre-statut">Statut</label>
+        <select id="filtre-statut" [(ngModel)]="statutFiltre" (change)="filtrer()">
+          <option value="Tous">Tous les itinéraires</option><option value="Actif">Actifs</option><option value="Inactif">Inactifs</option>
+        </select>
+        <button class="text-button" (click)="recherche = ''; statutFiltre = 'Tous'; filtrer()">Réinitialiser</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card stat-blue"><span class="stat-icon"><i class="fa-solid fa-route"></i></span><div><span class="stat-label">Total itinéraires</span><strong>{{ itineraires.length }}</strong><small>{{ nbActifs }} lignes actives</small></div></div>
+        <div class="stat-card stat-green"><span class="stat-icon"><i class="fa-solid fa-money-bill-transfer"></i></span><div><span class="stat-label">Total paiements</span><strong>{{ totalPaiements | number:'1.0-0' }}</strong><small>Données de démonstration</small></div></div>
+        <div class="stat-card stat-purple"><span class="stat-icon"><i class="fa-solid fa-chart-column"></i></span><div><span class="stat-label">Recettes totales</span><strong class="money-stat">{{ formatBif(totalRecettes) }}</strong><small>Tous itinéraires</small></div></div>
+        <div class="stat-card stat-amber"><span class="stat-icon"><i class="fa-solid fa-stopwatch"></i></span><div><span class="stat-label">Tarif moyen</span><strong class="money-stat">{{ formatBif(tarifMoyen) }}</strong><small>Par transaction</small></div></div>
+      </div>
+
+      <div class="panel list-panel">
+        <div class="section-title"><i class="fa-solid fa-bus"></i><h2>Liste des itinéraires</h2><span>{{ itinerairesFiltres.length }} résultats</span></div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Trajet (Départ → Arrivée)</th><th>Tarif</th><th>Paiements</th><th>Recettes générées</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let itineraire of itinerairesAffiches" [class.selected]="selectionId === itineraire.id">
+                <td><span class="route-cell"><i class="fa-solid fa-location-dot" [style.color]="itineraire.couleur"></i> {{ itineraire.depart }} <span class="route-arrow">→</span> {{ itineraire.arrivee }}</span></td>
+                <td class="cell-strong">{{ formatBif(itineraire.tarif) }}</td>
+                <td>{{ itineraire.paiements | number:'1.0-0' }}</td>
+                <td class="cell-income">{{ formatBif(itineraire.recettes) }}</td>
+                <td><button class="eye-btn" (click)="afficherDetail(itineraire)" [attr.aria-label]="'Détail de ' + itineraire.depart + ' vers ' + itineraire.arrivee" title="Afficher les détails"><i class="fa-solid fa-eye"></i></button></td>
+              </tr>
+              <tr *ngIf="!itinerairesAffiches.length"><td colspan="5" class="empty-state">Aucun itinéraire ne correspond aux filtres.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer"><span>Affichage de {{ itinerairesFiltres.length ? (page - 1) * taillePage + 1 : 0 }} à {{ (page * taillePage) > itinerairesFiltres.length ? itinerairesFiltres.length : page * taillePage }} sur {{ itinerairesFiltres.length }} itinéraires</span>
+          <div class="pagination"><button (click)="changerPage(page - 1)" [disabled]="page === 1" aria-label="Page précédente"><i class="fa-solid fa-chevron-left"></i></button><button *ngFor="let p of pages" [class.active]="page === p" (click)="changerPage(p)">{{ p }}</button><button (click)="changerPage(page + 1)" [disabled]="page === totalPages" aria-label="Page suivante"><i class="fa-solid fa-chevron-right"></i></button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- À droite : création/modification, puis détail au clic seulement -->
+    <section class="right-side">
+      <div class="panel form-panel">
+        <div class="section-title"><i class="fa-solid fa-circle-plus"></i><h2>{{ modeEdition ? 'Modifier un itinéraire' : 'Créer un itinéraire' }}</h2></div>
+        <form (ngSubmit)="enregistrer()" #formItineraire="ngForm" novalidate>
+          <div class="form-body">
+            <label for="depart">Point de départ <b>*</b></label>
+            <div class="input-icon"><i class="fa-solid fa-location-dot"></i><input id="depart" name="depart" type="text" [(ngModel)]="brouillon.depart" required placeholder="Ex : Bujumbura" /></div>
+            <label for="arrivee">Point d’arrivée <b>*</b></label>
+            <div class="input-icon"><i class="fa-solid fa-location-dot"></i><input id="arrivee" name="arrivee" type="text" [(ngModel)]="brouillon.arrivee" required placeholder="Ex : Gitega" /></div>
+            <div class="form-second-row"><div><label for="tarif">Tarif (BIF) <b>*</b></label><div class="input-icon"><i class="fa-solid fa-money-bill"></i><input id="tarif" name="tarif" type="number" min="1" step="1" [(ngModel)]="brouillon.tarif" required placeholder="Ex : 2500" /></div></div>
+              <div *ngIf="modeEdition"><label for="statut">Statut</label><select id="statut" name="statut" [(ngModel)]="brouillon.statut"><option value="Actif">Actif</option><option value="Inactif">Inactif</option></select></div>
+            </div>
+            <p class="form-help" *ngIf="!formulaireOuvert">Saisissez les informations pour créer un itinéraire, ou cliquez sur l’œil d’une ligne pour en afficher le détail.</p>
+            <p class="form-message" *ngIf="message" role="status">{{ message }}</p>
+          </div>
+          <div class="form-actions"><button type="button" class="btn btn-light" (click)="annuler()">Annuler</button><button type="submit" class="btn btn-primary" [disabled]="formItineraire.invalid"><i class="fa-solid fa-floppy-disk"></i> {{ modeEdition ? 'Mettre à jour' : 'Enregistrer' }}</button></div>
+        </form>
+      </div>
+
+      <div class="panel detail-panel" *ngIf="selection as itineraire">
+        <div class="section-title detail-heading"><i class="fa-solid fa-location-dot"></i><h2>Détail de l’itinéraire</h2><button class="btn btn-light back-btn" (click)="retourListe()"><i class="fa-solid fa-chevron-left"></i> Retour à la liste</button></div>
+        <div class="detail-banner"><img [src]="imagePaysage" alt="Paysage de l’itinéraire" /><div class="detail-banner-overlay"></div><div class="detail-banner-text"><h3>{{ itineraire.depart }} → {{ itineraire.arrivee }}</h3><span class="active-badge" [class.inactive-badge]="itineraire.statut === 'Inactif'">{{ itineraire.statut }}</span></div></div>
+        <div class="detail-kpis"><div><i class="fa-solid fa-stopwatch"></i><span>Tarif<strong>{{ formatBif(itineraire.tarif) }}</strong></span></div><div><i class="fa-solid fa-users"></i><span>Nombre de transactions<strong>{{ itineraire.paiements | number:'1.0-0' }}</strong></span></div><div><i class="fa-solid fa-chart-column"></i><span>Recettes générées<strong>{{ formatBif(itineraire.recettes) }}</strong></span></div></div>
+        <div class="detail-toolbar"><button class="btn btn-light" (click)="modifierSelection()"><i class="fa-solid fa-pen"></i> Modifier cet itinéraire</button></div>
+        <div class="detail-tabs"><button *ngFor="let onglet of onglets" [class.active]="ongletActif === onglet" (click)="ongletActif = onglet"><i class="fa-solid" [ngClass]="{'fa-chart-column': onglet === 'Statistiques', 'fa-bus': onglet === 'Top 5 des bus', 'fa-chart-line': onglet === 'Évolution des recettes'}"></i> {{ onglet }}</button></div>
+
+        <div class="detail-content" *ngIf="ongletActif === 'Statistiques' || ongletActif === 'Évolution des recettes'">
+          <div class="detail-grid"><div class="subpanel chart-panel"><h3><i class="fa-solid fa-location-dot"></i> Évolution des recettes <small>(démonstration)</small></h3>
+            <div class="chart-container"><svg viewBox="0 0 520 200" preserveAspectRatio="none" role="img" aria-label="Graphique d’évolution des recettes">
+              <defs><linearGradient id="route-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#82b5e8" stop-opacity="0.35"/><stop offset="100%" stop-color="#82b5e8" stop-opacity="0.02"/></linearGradient></defs>
+              <g class="chart-lines"><line *ngFor="let y of [23,59,95,131,167]" x1="35" [attr.y1]="y" x2="495" [attr.y2]="y"/></g>
+              <g class="chart-labels"><text *ngFor="let y of [0,1,2,3,4]" x="4" [attr.y]="27 + y*36">{{ 400 - y*100 }}K</text><text *ngFor="let x of [0,1,2,3,4,5,6]" [attr.x]="25 + x*75" y="190">{{ x === 0 ? '12 mai' : x === 6 ? '11 juin' : '' }}</text></g>
+              <polygon [attr.points]="remplissageEvolution" fill="url(#route-fill)"/><polyline [attr.points]="pointsEvolution" fill="none" stroke="#6b9fdd" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" />
+            </svg></div>
+          </div>
+          <div class="subpanel distribution-panel"><h3><i class="fa-solid fa-chart-pie"></i> Répartition des recettes</h3><div class="donut-area"><div class="donut"><div><strong>{{ formatBif(itineraire.recettes) }}</strong><small>Total</small></div></div><div class="legend"><span><i class="dot blue"></i> Espèces <b>45%</b></span><span><i class="dot green"></i> Carte <b>35%</b></span><span><i class="dot orange"></i> Mobile Money <b>15%</b></span><span><i class="dot violet"></i> Autres <b>5%</b></span></div></div><p class="demo-note">Répartition illustrative, à connecter aux paiements réels.</p></div></div>
+        </div>
+        <div class="detail-grid lower-detail" *ngIf="ongletActif === 'Statistiques' || ongletActif === 'Top 5 des bus'">
+          <div class="subpanel"><h3><i class="fa-solid fa-bus"></i> Top 5 des bus qui empruntent cet itinéraire</h3><div class="table-scroll"><table class="data-table mini-table"><thead><tr><th>#</th><th>Bus</th><th>Transactions</th><th>Recettes</th></tr></thead><tbody><tr *ngFor="let bus of busTop; let n = index"><td>{{ n + 1 }}</td><td><i class="fa-solid fa-bus bus-small"></i> {{ bus.immatriculation }}</td><td>{{ bus.transactions }}</td><td>{{ formatBif(bus.recettes) }}</td></tr></tbody></table></div><p class="demo-note">Exemples de bus — à relier aux données par itinéraire.</p></div>
+          <div class="subpanel complement"><h3><i class="fa-solid fa-gear"></i> Informations complémentaires</h3><div><i class="fa-solid fa-link"></i><span>Distance estimée<strong>{{ itineraire.distanceKm ? itineraire.distanceKm + ' km' : 'À définir' }}</strong></span></div><div><i class="fa-solid fa-clock"></i><span>Durée moyenne<strong>{{ itineraire.duree }}</strong></span></div><div><i class="fa-solid fa-calendar-days"></i><span>Fréquence moyenne<strong>{{ itineraire.frequence }}</strong></span></div><div><i class="fa-solid fa-rotate"></i><span>Dernière mise à jour<strong>{{ itineraire.maj }}</strong></span></div></div>
+        </div>
+      </div>
+      <div class="panel empty-details" *ngIf="!selection"><i class="fa-solid fa-route"></i><h3>Détail de l’itinéraire</h3><p>Sélectionnez l’icône œil d’une ligne pour afficher les informations détaillées ici.</p></div>
+    </section>
+  </div>
+</div>

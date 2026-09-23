@@ -1,0 +1,90 @@
+<div class="parametres-page">
+  <div class="feedback" *ngIf="message" [ngClass]="messageType" role="status">
+    <i class="fa-solid" [ngClass]="messageType === 'erreur' ? 'fa-circle-exclamation' : 'fa-circle-info'"></i>
+    {{ message }}
+  </div>
+
+
+  <!-- PROFIL ET SECURITE DANS LA MEME PAGE -->
+  <section class="settings-panel profile-layout">
+    <div class="account-edit">
+      <header class="section-heading">
+        <span class="heading-icon"><i class="fa-solid fa-user"></i></span>
+        <div>
+          <h2>Informations du compte</h2>
+          <p>Mettez à jour vos informations personnelles et professionnelles.</p>
+        </div>
+      </header>
+
+      <form class="profile-form" (ngSubmit)="enregistrerProfil()" #profilForm="ngForm" novalidate>
+        <div class="field">
+          <label for="nif"><i class="fa-regular fa-file-lines"></i> Numéro d'identification fiscale <b>*</b></label>
+          <input id="nif" name="nif" [(ngModel)]="profil.nif" required placeholder="Votre NIF" />
+        </div>
+        <div class="field">
+          <label for="registre"><i class="fa-solid fa-building"></i> Registre de commerce <b>*</b></label>
+          <input id="registre" name="registre" [(ngModel)]="profil.registreCommerce" required placeholder="N° de registre" />
+        </div>
+        <div class="field">
+          <label for="email"><i class="fa-solid fa-envelope"></i> Adresse email <b>*</b></label>
+          <input id="email" name="email" type="email" [(ngModel)]="profil.email" required email placeholder="adresse@email.com" />
+        </div>
+        <div class="field">
+          <label for="telephone"><i class="fa-solid fa-phone"></i> Numéro de téléphone <b>*</b></label>
+          <input id="telephone" name="telephone" type="tel" [(ngModel)]="profil.telephone" required placeholder="+257 ..." />
+        </div>
+        <div class="field full-row">
+          <label for="nom"><i class="fa-solid fa-user"></i> Nom <b>*</b></label>
+          <input id="nom" name="nom" [(ngModel)]="profil.nom" required placeholder="Nom du propriétaire" />
+        </div>
+        <button type="submit" class="save-button" [disabled]="!profilForm.valid || !profilValide">
+          <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+        </button>
+      </form>
+    </div>
+
+    <aside class="profile-card" aria-label="Résumé du compte">
+      <div class="avatar-area">
+        <div class="avatar-circle">
+          <img *ngIf="imageProfil" [src]="imageProfil" alt="Photo du profil" />
+          <span *ngIf="!imageProfil">{{ initiales }}</span>
+        </div>
+        <label class="avatar-edit" for="photoInput" title="Changer la photo" aria-label="Changer la photo">
+          <i class="fa-solid fa-camera"></i>
+        </label>
+        <input id="photoInput" class="visually-hidden" type="file" accept="image/*" (change)="choisirPhoto($event)" />
+        <h3>{{ profil.nom || 'Propriétaire' }}</h3>
+        <p>Compte principal</p>
+      </div>
+      <div class="profile-facts">
+        <div class="fact"><i class="fa-solid fa-user"></i><div><span>Rôle</span><strong>Propriétaire</strong></div></div>
+        <div class="fact"><i class="fa-solid fa-envelope"></i><div><span>Email</span><strong>{{ profil.email || '—' }}</strong></div></div>
+        <div class="fact"><i class="fa-solid fa-phone"></i><div><span>Téléphone</span><strong>{{ profil.telephone || '—' }}</strong></div></div>
+        <div class="fact"><i class="fa-solid fa-receipt"></i><div><span>ID fiscal</span><strong>{{ profil.nif || '—' }}</strong></div></div>
+        <div class="fact"><i class="fa-solid fa-building"></i><div><span>Registre de commerce</span><strong>{{ profil.registreCommerce || '—' }}</strong></div></div>
+      </div>
+    </aside>
+  </section>
+
+
+  <!-- CARTE DE SECURITE COMPACTE SOUS LE PROFIL -->
+  <section class="settings-panel security-panel">
+    <header class="section-heading">
+      <span class="heading-icon"><i class="fa-solid fa-lock"></i></span>
+      <div><h2>Sécurité du compte</h2><p>Gérez vos identifiants et protégez votre accès à IBLOPAY.</p></div>
+    </header>
+    <div class="subsection">
+      <h3>Changer le mot de passe</h3>
+      <p class="muted">Saisissez votre mot de passe actuel et définissez un nouveau mot de passe de 8 caractères minimum.</p>
+      <form class="security-form" (ngSubmit)="enregistrerMotDePasse()" autocomplete="off">
+        <div class="field"><label for="oldPassword">Mot de passe actuel</label><input id="oldPassword" name="oldPassword" [type]="afficherMotsDePasse ? 'text' : 'password'" [(ngModel)]="ancienMotDePasse" autocomplete="current-password" /></div>
+        <div class="field"><label for="newPassword">Nouveau mot de passe</label><input id="newPassword" name="newPassword" [type]="afficherMotsDePasse ? 'text' : 'password'" [(ngModel)]="nouveauMotDePasse" autocomplete="new-password" placeholder="Au moins 8 caractères" minlength="8" /></div>
+        <div class="field"><label for="confirmPassword">Confirmer le nouveau mot de passe</label><input id="confirmPassword" name="confirmPassword" [type]="afficherMotsDePasse ? 'text' : 'password'" [(ngModel)]="confirmationMotDePasse" autocomplete="new-password" /></div>
+        <label class="checkbox-inline"><input type="checkbox" name="showPassword" [(ngModel)]="afficherMotsDePasse" /> Afficher les mots de passe</label>
+        <button type="submit" class="save-button security-submit"><i class="fa-solid fa-shield-halved"></i> Vérifier le formulaire</button>
+      </form>
+    </div>
+    <div class="info-note"><i class="fa-solid fa-circle-info"></i><span>La modification du mot de passe et la double authentification nécessitent la connexion à votre backend. Aucun mot de passe n'est enregistré dans le navigateur.</span></div>
+  </section>
+
+</div>

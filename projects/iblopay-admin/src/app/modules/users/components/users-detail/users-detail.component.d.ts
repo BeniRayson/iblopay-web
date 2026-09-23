@@ -1,0 +1,122 @@
+import { OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
+import { FormBuilder, FormGroup } from '@angular/forms';
+interface User {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    photoUrl: string;
+    role: 'CLIENT' | 'AGENT' | 'SUPER_AGENT';
+    status: 'ACTIVE' | 'SUSPENDED' | 'FROZEN' | 'CLOSED';
+    cardNumber: string;
+    cniNumber: string;
+    address: {
+        zone: string;
+        commune: string;
+        province: string;
+        fullAddress: string;
+    };
+    createdAt: Date;
+    createdBy: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+    };
+    accountNumber: string;
+    walletBalance: number;
+}
+interface Transaction {
+    id: string;
+    type: 'TRANSFER' | 'DEPOSIT' | 'WITHDRAWAL' | 'FUND' | 'COMMISSION';
+    amount: number;
+    date: Date;
+    description: string;
+    status: 'COMPLETED' | 'PENDING' | 'FAILED';
+    from?: string;
+    to?: string;
+    reference?: string;
+    commission?: number;
+}
+interface Commission {
+    id: string;
+    amount: number;
+    date: Date;
+    from: string;
+    forTransaction: string;
+    type: 'SEND' | 'RECEIVE';
+    status: 'COMPLETED' | 'PENDING';
+}
+export declare class UsersDetailComponent implements OnInit {
+    private route;
+    private router;
+    private location;
+    private fb;
+    user: User | null;
+    isLoading: boolean;
+    isDarkMode: boolean;
+    activeTab: 'profile' | 'transactions' | 'commissions' | 'fund';
+    isEditing: boolean;
+    editForm: FormGroup;
+    editLoading: boolean;
+    editError: string;
+    editSuccess: string;
+    fundForm: FormGroup;
+    fundLoading: boolean;
+    fundError: string;
+    fundSuccess: string;
+    fundAmount: number;
+    transactions: Transaction[];
+    commissions: Commission[];
+    fundHistory: Transaction[];
+    transactionFilter: string;
+    commissionFilter: string;
+    communes: string[];
+    zones: string[];
+    provinces: string[];
+    constructor(route: ActivatedRoute, router: Router, location: Location, fb: FormBuilder);
+    ngOnInit(): void;
+    initEditForm(): void;
+    initFundForm(): void;
+    loadTheme(): void;
+    toggleTheme(): void;
+    loadUser(id: string): void;
+    private getMockUser;
+    loadMockData(): void;
+    populateForm(): void;
+    goBack(): void;
+    setTab(tab: 'profile' | 'transactions' | 'commissions' | 'fund'): void;
+    enableEditMode(): void;
+    cancelEdit(): void;
+    onSubmitEdit(): void;
+    onSubmitFund(): void;
+    get filteredTransactions(): Transaction[];
+    get filteredCommissions(): Commission[];
+    get totalCommissions(): number;
+    getFieldError(fieldName: string): string;
+    getFundFieldError(fieldName: string): string;
+    getInitials(firstName: string, lastName: string): string;
+    getAvatarColor(id: string): string;
+    getStatusLabel(status: string): string;
+    getStatusClass(status: string): string;
+    getRoleLabel(role: string): string;
+    getRoleClass(role: string): string;
+    getCreatorRoleLabel(role: string): string;
+    getTransactionTypeLabel(type: string): string;
+    getTransactionTypeClass(type: string): string;
+    getTransactionStatusClass(status: string): string;
+    getTransactionStatusLabel(status: string): string;
+    getCommissionStatusClass(status: string): string;
+    getCommissionStatusLabel(status: string): string;
+    formatDate(date: Date): string;
+    formatCurrency(amount: number): string;
+    onEdit(): void;
+    onFund(): void;
+    onToggleStatus(): void;
+    onDelete(): void;
+}
+export {};
+//# sourceMappingURL=users-detail.component.d.ts.map

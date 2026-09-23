@@ -38,7 +38,31 @@ interface MenuItem {
 export class LayoutComponent implements OnInit {
   isSidebarOpen = false;
   isNotifOpen = false;
-  moduleTitle = 'Tableau de bord';
+  moduleTitle = 'Dashboard';
+  readonly busImage = 'assets/images/Bus.png';
+  // Modifiez ces trois lignes dans le code pour changer le slogan, sans bouton dans l'interface.
+  sloganLigne1 = 'Une gestion efficace';
+  sloganLigne2 = 'pour un transport';
+  sloganLigne3 = 'plus rentable !';
+
+  readonly transportSubtitle = 'Voici un aperçu global de votre activité';
+  readonly transportBrand = 'BusGestion';
+  isProfileOpen = false;
+  confirmationDeconnexion = false;
+  now = new Date();
+  get isTransport(): boolean { return this.utilisateur?.secteur === 'TRANSPORT'; }
+  get displayName(): string { return this.isTransport ? 'Propriétaire' : this.institution.nom; }
+  get displayRole(): string { return this.isTransport ? 'Propriétaire' : this.institution.role; }
+  get pageSubtitle(): string {
+    if (!this.isTransport) return this.institution.role;
+    const descriptions: Record<string, string> = {
+      'Dashboard': this.transportSubtitle, 'Véhicules': 'Gestion de votre flotte',
+      'Chauffeurs': 'Gestion des chauffeurs', 'Recettes & Versements': 'Suivi financier complet',
+      'Transactions': 'Historique des transactions', 'Itinéraires': 'Gestion des lignes et des tarifs',
+      'Rapports': 'Analyse et export de vos données', 'Paramètres': 'Configuration de votre espace'
+    };
+    return descriptions[this.moduleTitle] || this.transportSubtitle;
+  }
 
   utilisateur: UtilisateurConnecte | null = null;
 
@@ -57,12 +81,66 @@ export class LayoutComponent implements OnInit {
     { icon: 'fa-solid fa-users', label: 'Utilisateurs', link: '/utilisateurs', adminOnly: true, secteur: 'SERVICES' },
     { icon: 'fa-solid fa-chart-line', label: 'Statistiques', link: '/statistiques', droit: 'VOIR_STATISTIQUES', secteur: 'SERVICES' },
     { icon: 'fa-solid fa-file-contract', label: 'Rapports', link: '/rapports', adminOnly: true, secteur: 'SERVICES' },
-    { icon: 'fa-solid fa-bus', label: 'Tableau de bord', link: '/transport', adminOnly: true, secteur: 'TRANSPORT' },
-    { icon: 'fa-solid fa-car', label: 'Flotte & Chauffeurs', link: '/transport/flotte', adminOnly: true, secteur: 'TRANSPORT' },
-    { icon: 'fa-solid fa-route', label: 'Trajets & Tarifs', link: '/transport/lignes-tarifs', adminOnly: true, secteur: 'TRANSPORT' },
-    { icon: 'fa-solid fa-satellite-dish', label: 'Courses en temps réel', link: '/transport/courses', adminOnly: true, secteur: 'TRANSPORT' },
-    { icon: 'fa-solid fa-chart-line', label: 'Statistiques', link: '/transport/statistiques', adminOnly: true, secteur: 'TRANSPORT' },
-    { icon: 'fa-solid fa-file-contract', label: 'Rapports', link: '/transport/rapports', adminOnly: true, secteur: 'TRANSPORT' },
+    /// =========================
+// MENU TRANSPORT
+// =========================
+
+{
+  icon: 'fa-solid fa-house',
+  label: 'Dashboard',
+  link: '/transport',
+  adminOnly: true,
+  secteur: 'TRANSPORT'
+},
+
+{
+  icon: 'fa-solid fa-bus',
+  label: 'Véhicules',
+  link: '/transport/vehicules',
+  adminOnly: true,
+  secteur: 'TRANSPORT'
+},
+
+{
+  icon: 'fa-solid fa-user',
+  label: 'Chauffeurs',
+  link: '/transport/chauffeurs',
+  adminOnly: true,
+  secteur: 'TRANSPORT'
+},
+
+{
+  icon: 'fa-solid fa-wallet',
+  label: 'Recettes & Versements',
+  link: '/transport/recettes-versements',
+  adminOnly: true,
+  secteur: 'TRANSPORT'
+},
+
+{
+  icon: 'fa-solid fa-route',
+  label: 'Itinéraires',
+  link: '/transport/itineraires',
+  adminOnly: true,
+  secteur: 'TRANSPORT'
+},
+
+{
+  icon: 'fa-solid fa-chart-column',
+  label: 'Rapports',
+  link: '/transport/rapports',
+  adminOnly: true,
+  secteur: 'TRANSPORT'
+},
+
+{
+  icon: 'fa-solid fa-gear',
+  label: 'Paramètres',
+  link: '/transport/parametres',
+  adminOnly: true,
+  secteur: 'TRANSPORT'
+},
+    // Paramètres : route à activer seulement après avoir créé sa page dans le routeur.
     { icon: 'fa-solid fa-calendar-days', label: 'Tableau de bord', link: '/evenements', adminOnly: true, secteur: 'EVENEMENTS' },
     { icon: 'fa-solid fa-ticket', label: 'Gestion des événements', link: '/evenements/gestion', adminOnly: true, secteur: 'EVENEMENTS' },
     { icon: 'fa-solid fa-map-location-dot', label: 'Lieux & Salles', link: '/evenements/lieux', adminOnly: true, secteur: 'EVENEMENTS' },
@@ -114,12 +192,13 @@ export class LayoutComponent implements OnInit {
     private activiteService: ActiviteService
   ) {
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
-      const url = this.router.url;
-      const candidats = this.menuItems.filter(m => url.startsWith(m.link)).sort((a, b) => b.link.length - a.link.length);
+      const url: string = (this.router.url ?? '').replace(/[?#].*$/, '');
+      const candidats = this.menuItems.filter(m => url === m.link || url.startsWith(m.link + '/')).sort((a, b) => b.link.length - a.link.length);
       const found = candidats[0];
       this.moduleTitle = found ? found.label : (this.utilisateur?.type === 'COMPTE' ? 'Mon espace de travail' : 'Tableau de bord');
       this.isSidebarOpen = false;
       this.isNotifOpen = false;
+      this.isProfileOpen = false;
     });
 
     this.toastService.toasts$.subscribe(toasts => {
@@ -132,12 +211,14 @@ export class LayoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.updateModuleTitle();
     this.activiteService.activites$.subscribe(liste => {
       this.activitesRecentes = liste.slice(0, 5);
     });
 
     this.authService.utilisateur$.subscribe(u => {
       this.utilisateur = u;
+      this.updateModuleTitle();
       if (u) {
         if (u.type === 'ADMIN') {
           if (u.secteur === 'TRANSPORT') {
@@ -190,6 +271,20 @@ export class LayoutComponent implements OnInit {
     });
   }
 
+  private updateModuleTitle(): void {
+    const url: string = (this.router.url ?? '').replace(/[?#].*$/, '');
+    const found = this.menuItems.filter(m => url === m.link || url.startsWith(m.link + '/')).sort((a,b) => b.link.length - a.link.length)[0];
+    this.moduleTitle = found?.label || 'Tableau de bord';
+  }
+
+  isMenuActive(item: MenuItem): boolean {
+    const url: string = (this.router.url ?? '').replace(/[?#].*$/, '');
+    if (this.isTransport && item.label === 'Dashboard') return url === '/transport' || url === '/transport/';
+    return url === item.link || (item.link !== '/transport' && url.startsWith(item.link + '/'));
+  }
+
+  toggleProfile(): void { this.isProfileOpen = !this.isProfileOpen; this.isNotifOpen = false; }
+
   toggleSidebar(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
@@ -200,20 +295,37 @@ export class LayoutComponent implements OnInit {
 
   toggleNotif(): void {
     this.isNotifOpen = !this.isNotifOpen;
+    this.isProfileOpen = false;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
+    if (!target.closest('.profile-wrap')) this.isProfileOpen = false;
     if (!target.closest('.notif-wrap')) {
       this.isNotifOpen = false;
     }
   }
 
+  // Le sidebar et le menu du profil ouvrent la même confirmation.
   logout(): void {
-    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-      this.authService.deconnecter();
-      this.router.navigate(['/login']);
-    }
+    this.isProfileOpen = false;
+    this.isNotifOpen = false;
+    this.confirmationDeconnexion = true;
+  }
+
+  annulerDeconnexion(): void {
+    this.confirmationDeconnexion = false;
+  }
+
+  confirmerDeconnexion(): void {
+    this.confirmationDeconnexion = false;
+    this.authService.deconnecter();
+    this.router.navigate(['/login']);
+  }
+
+  @HostListener('document:keydown.escape')
+  fermerConfirmationAvecEchap(): void {
+    if (this.confirmationDeconnexion) this.annulerDeconnexion();
   }
 }

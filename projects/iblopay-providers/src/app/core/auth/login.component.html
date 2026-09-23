@@ -1,64 +1,79 @@
 <div class="login-page">
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="assets/images/logo_iblo.jpeg" alt="IBLOPAY" class="logo-img" />
-    </div>
-    <h1>Bienvenue sur votre plateforme</h1>
-    <p class="login-subtitle">Connectez-vous avec l'identifiant et le mot de passe fournis par votre administrateur.</p>
+  <section class="login-visual" aria-label="Bienvenue sur la plateforme de suivi des bus et des taxis">
+    <img src="assets/images/login.png" alt="Bus et taxi : bienvenue sur votre plateforme" />
+  </section>
 
-    <form (ngSubmit)="connexion()">
-      <div class="field">
-        <label>Identifiant</label>
-        <input type="text" placeholder="Ex: 72483021 ou prenom.nom" [(ngModel)]="identifiant" name="identifiant" autocomplete="username" />
-      </div>
+  <main class="login-form-side">
+    <div class="decor-circle" aria-hidden="true"></div>
+    <div class="decor-wave" aria-hidden="true"></div>
 
-      <div class="field">
-        <label>Mot de passe / PIN</label>
-        <div class="password-wrap">
-          <input [type]="showMotDePasse ? 'text' : 'password'" placeholder="••••" [(ngModel)]="motDePasse" name="motDePasse" autocomplete="current-password" />
-          <button type="button" class="btn-eye" (click)="showMotDePasse = !showMotDePasse" tabindex="-1">
-            <i class="fa-solid" [class.fa-eye]="!showMotDePasse" [class.fa-eye-slash]="showMotDePasse"></i>
-          </button>
+    <section class="login-card" aria-labelledby="login-title">
+      <header class="card-heading">
+        <div class="card-heading-icon" aria-hidden="true"><i class="fa-solid fa-bus-simple"></i></div>
+        <h1 id="login-title">Bienvenue sur <span>IBLOPAY</span></h1>
+        <p>Connectez-vous à votre espace de gestion.</p>
+      </header>
+
+      <form (ngSubmit)="seConnecter()" #loginForm="ngForm" novalidate>
+        <div class="form-field">
+          <label for="identifiant">Identifiants</label>
+          <div class="input-shell">
+            <i class="fa-regular fa-user" aria-hidden="true"></i>
+            <input
+              id="identifiant"
+              name="identifiant"
+              type="text"
+              [(ngModel)]="identifiant"
+              required
+              autocomplete="username"
+              placeholder="Entrez vos identifiants"
+              [disabled]="chargement"
+              [attr.aria-invalid]="tentative && !identifiant.trim() ? 'true' : null"
+            />
+          </div>
+          <small class="field-error" *ngIf="tentative && !identifiant.trim()">
+            Saisissez vos identifiants.
+          </small>
         </div>
-      </div>
 
-      <div class="erreur-msg" *ngIf="erreur">
-        <i class="fa-solid fa-circle-exclamation"></i> {{ erreur }}
-      </div>
-
-      <button type="submit" class="btn-login" [disabled]="isLoading">
-        <i class="fa-solid fa-spinner fa-spin" *ngIf="isLoading"></i>
-        <i class="fa-solid fa-right-to-bracket" *ngIf="!isLoading"></i>
-        {{ isLoading ? 'Connexion...' : 'Se connecter' }}
-      </button>
-    </form>
-
-    <div class="aide-demo">
-      <button type="button" class="btn-aide-toggle" (click)="toggleAide()">
-        <i class="fa-solid fa-circle-info"></i> Identifiants de démonstration
-      </button>
-      <div class="aide-body" *ngIf="showAide">
-        <p>Ceci est un environnement de démonstration. Deux espaces sont disponibles selon l'identifiant utilisé :</p>
-        <div class="aide-creds">
-          <div class="aide-creds-titre"><i class="fa-solid fa-layer-group"></i> Espace Services</div>
-          <span>Identifiant : <strong>{{ adminServicesIdentifiant }}</strong></span>
-          <span>Mot de passe : <strong>{{ adminServicesPin }}</strong></span>
+        <div class="form-field">
+          <label for="motDePasse">Mot de passe</label>
+          <div class="input-shell">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <input
+              id="motDePasse"
+              name="motDePasse"
+              [type]="motDePasseVisible ? 'text' : 'password'"
+              [(ngModel)]="motDePasse"
+              required
+              autocomplete="current-password"
+              placeholder="Entrez votre mot de passe"
+              [disabled]="chargement"
+              [attr.aria-invalid]="tentative && !motDePasse ? 'true' : null"
+            />
+            <button
+              type="button"
+              class="reveal-btn"
+              [disabled]="chargement"
+              (click)="motDePasseVisible = !motDePasseVisible"
+              [attr.aria-label]="motDePasseVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            >
+              <i class="fa-regular" [class.fa-eye]="!motDePasseVisible" [class.fa-eye-slash]="motDePasseVisible"></i>
+            </button>
+          </div>
+          <small class="field-error" *ngIf="tentative && !motDePasse">
+            Saisissez votre mot de passe.
+          </small>
         </div>
-        <button type="button" class="btn-aide-remplir" (click)="remplir(adminServicesIdentifiant, adminServicesPin)">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Utiliser ces identifiants
+
+        <p *ngIf="erreur" class="login-error" role="alert">{{ erreur }}</p>
+
+        <button type="submit" class="submit-btn" [disabled]="chargement">
+          {{ chargement ? 'Connexion en cours…' : 'Se connecter' }}
         </button>
+      </form>
+    </section>
 
-        <div class="aide-creds">
-          <div class="aide-creds-titre"><i class="fa-solid fa-bus"></i> Espace Transport (Bus & Taxis)</div>
-          <span>Identifiant : <strong>{{ adminTransportIdentifiant }}</strong></span>
-          <span>Mot de passe : <strong>{{ adminTransportPin }}</strong></span>
-        </div>
-        <button type="button" class="btn-aide-remplir" (click)="remplir(adminTransportIdentifiant, adminTransportPin)">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Utiliser ces identifiants
-        </button>
-
-        <p class="aide-note">Les comptes des agents (secrétaires, validateurs...) se connectent avec l'identifiant et le mot de passe définis lors de leur création dans un workflow, et n'accèdent qu'à l'espace Services.</p>
-      </div>
-    </div>
-  </div>
+    <p class="copyright">© IBLOPAY · Gestion du transport</p>
+  </main>
 </div>

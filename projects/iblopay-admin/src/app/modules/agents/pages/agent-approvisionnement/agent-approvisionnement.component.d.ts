@@ -1,0 +1,128 @@
+import { ChangeDetectorRef, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Agent } from '../../models/agent.model';
+import { AgentService } from '../../services/agent.service';
+interface Bank {
+    code: string;
+    name: string;
+}
+interface FundData {
+    receiptReference: string;
+    amount: number;
+    bank: string;
+    branch: string;
+    depositDate: string;
+    trustAccountVerified: boolean;
+    reinforcedVerification: boolean;
+    adminNote: string;
+}
+type FundStatus = 'ACTIVE' | 'PENDING_APPROVAL' | 'REJECTED';
+interface FundHistoryItem {
+    id: string;
+    receiptReference: string;
+    amount: number;
+    date: Date;
+    agentName?: string;
+    status: FundStatus;
+    createdBy: string;
+    validatedBy?: string;
+    rejectionReason?: string;
+    bank?: string;
+    branch?: string;
+    depositDate?: string;
+}
+interface SummaryCardData {
+    transactionId: string;
+    actionLabel: string;
+    agentName: string;
+    agentCode: string;
+    receiptReference: string;
+    amount: number;
+    bank: string;
+    branch: string;
+    depositDate: string;
+    performedBy: string;
+    performedAt: Date;
+    newBalance: number;
+    status: FundStatus;
+}
+export declare class AgentApprovisionnementComponent implements OnInit {
+    private route;
+    private router;
+    private agentService;
+    private cdr;
+    agent: Agent | null;
+    isLoading: boolean;
+    isDarkMode: boolean;
+    fundLoading: boolean;
+    fundError: string;
+    fundSuccess: string;
+    fundHistory: FundHistoryItem[];
+    readonly banks: Bank[];
+    readonly APPROVAL_THRESHOLD = 5000000;
+    readonly RECEIPT_MAX_AGE_DAYS = 7;
+    readonly MAX_PIN_ATTEMPTS = 3;
+    readonly PIN_LOCK_DURATION_MS = 30000;
+    currentAdmin: string;
+    private mockAdminPin;
+    trustAccountBalance: number;
+    fundData: FundData;
+    showRejectModal: boolean;
+    rejectionTargetId: string | null;
+    rejectionReason: string;
+    showPinModal: boolean;
+    pinValue: string;
+    pinError: string;
+    pinAttempts: number;
+    pinLockedUntil: number | null;
+    private pendingAction;
+    private pendingApproveItem;
+    showSummaryModal: boolean;
+    summaryData: SummaryCardData | null;
+    showProcessingOverlay: boolean;
+    processingLabel: string;
+    private usedReferences;
+    private colorPalette;
+    constructor(route: ActivatedRoute, router: Router, agentService: AgentService, cdr: ChangeDetectorRef);
+    ngOnInit(): void;
+    loadTheme(): void;
+    toggleTheme(): void;
+    loadAgent(id: string): void;
+    loadFundHistory(): void;
+    setDefaultDate(): void;
+    getBankName(code: string): string;
+    getTotalElectronicsAmount(): number;
+    private normalizeReference;
+    isDuplicateReference(): boolean;
+    receiptAgeInDays(): number;
+    isReceiptExpired(): boolean;
+    requiresSecondApproval(): boolean;
+    reconciliationGap(): number;
+    onAmountChange(): void;
+    submitFund(): void;
+    openPinModal(): void;
+    cancelPin(): void;
+    get isPinLocked(): boolean;
+    pinLockSecondsRemaining(): number;
+    confirmPin(): void;
+    private executeFunding;
+    private creditWallet;
+    approvePending(item: FundHistoryItem): void;
+    private executeApproval;
+    openRejectModal(item: FundHistoryItem): void;
+    confirmReject(): void;
+    cancelReject(): void;
+    private openSummaryCard;
+    closeSummaryCard(): void;
+    printSummaryCard(): void;
+    resetFundForm(): void;
+    goBack(): void;
+    getColor(id: string, index: number): string;
+    getInitials(firstName: string, lastName: string): string;
+    getStatusLabel(status: string): string;
+    getStatusClass(status: string): string;
+    getFundStatusLabel(status: FundStatus): string;
+    getFundStatusClass(status: FundStatus): string;
+}
+export {};
+//# sourceMappingURL=agent-approvisionnement.component.d.ts.map

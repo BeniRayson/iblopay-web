@@ -1,0 +1,84 @@
+import { OnInit } from '@angular/core';
+import { TransportService } from '../../services/transport.service';
+import { Vehicule, Chauffeur, TypeVehicule, StatutVehicule, LigneBus, ZoneTaxi } from '../../models/transport.model';
+import { ToastService } from '../../core/toast.service';
+interface VehiculeFormState {
+    id?: number;
+    type: TypeVehicule;
+    matricule: string;
+    marqueModele: string;
+    capacite: number | null;
+    statut: StatutVehicule;
+    chauffeurId: number | null;
+    ligneId: number | null;
+    zoneId: number | null;
+    kilometrage: number;
+    motorisation: string;
+    consommationMoyenne100km: number;
+}
+interface ChauffeurFormState {
+    id?: number;
+    nom: string;
+    prenom: string;
+    telephone: string;
+    adresse: string;
+    numeroPermis: string;
+    permisValidite: string;
+    vehiculeId: number | null;
+}
+export declare class FlotteComponent implements OnInit {
+    private transportService;
+    private toastService;
+    vueActive: 'VEHICULES' | 'CHAUFFEURS';
+    vehicules: Vehicule[];
+    vehiculesFiltres: Vehicule[];
+    chauffeurs: Chauffeur[];
+    chauffeursFiltres: Chauffeur[];
+    lignes: LigneBus[];
+    zones: ZoneTaxi[];
+    filtreType: '' | TypeVehicule;
+    filtreStatutVehicule: string;
+    filtreStatutChauffeur: string;
+    recherche: string;
+    isLoading: boolean;
+    showVehiculeModal: boolean;
+    vehiculeForm: VehiculeFormState | null;
+    showChauffeurModal: boolean;
+    chauffeurForm: ChauffeurFormState | null;
+    vehiculeDetailAffiche: Vehicule | null;
+    chauffeurDetailAffiche: Chauffeur | null;
+    constructor(transportService: TransportService, toastService: ToastService);
+    ngOnInit(): void;
+    charger(): void;
+    changerVue(vue: 'VEHICULES' | 'CHAUFFEURS'): void;
+    appliquerFiltresVehicules(): void;
+    appliquerFiltresChauffeurs(): void;
+    onFiltreChange(): void;
+    nomChauffeur(id?: number): string;
+    nomLigneOuZone(v: Vehicule): string;
+    vehiculeAssigne(chauffeurId: number): Vehicule | undefined;
+    statutsDisponibles(type: TypeVehicule): StatutVehicule[];
+    statutVehiculeClass(statut: string): string;
+    statutVehiculeLabel(statut: string): string;
+    permisExpireBientot(date: Date): boolean;
+    motorisationLabel(m: string): string;
+    consommationFormatee(v: Vehicule): string;
+    voirDetailVehicule(v: Vehicule): void;
+    fermerDetailVehicule(): void;
+    voirDetailChauffeur(c: Chauffeur): void;
+    fermerDetailChauffeur(): void;
+    ouvrirNouveauVehicule(): void;
+    modifierVehicule(v: Vehicule): void;
+    fermerVehiculeModal(): void;
+    onChangerTypeVehicule(): void;
+    enregistrerVehicule(): void;
+    supprimerVehicule(v: Vehicule): void;
+    ouvrirNouveauChauffeur(): void;
+    modifierChauffeur(c: Chauffeur): void;
+    fermerChauffeurModal(): void;
+    enregistrerChauffeur(): void;
+    toggleStatutChauffeur(c: Chauffeur, event?: Event): void;
+    supprimerChauffeur(c: Chauffeur): void;
+}
+export {};
+//# sourceMappingURL=flotte.component.d.ts.map

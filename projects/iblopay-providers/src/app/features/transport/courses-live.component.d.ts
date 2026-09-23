@@ -1,0 +1,56 @@
+import { OnInit, OnDestroy } from '@angular/core';
+import { CoursesService } from '../../services/courses.service';
+import { TransportService } from '../../services/transport.service';
+import { Course, StatutCourse, Vehicule, Chauffeur, TypeVehicule } from '../../models/transport.model';
+import { ToastService } from '../../core/toast.service';
+export declare class CoursesLiveComponent implements OnInit, OnDestroy {
+    private coursesService;
+    private transportService;
+    private toastService;
+    courses: Course[];
+    filtered: Course[];
+    vehicules: Vehicule[];
+    chauffeurs: Chauffeur[];
+    filtreType: '' | TypeVehicule;
+    filtreStatut: string;
+    isLoading: boolean;
+    currentPage: number;
+    pageSize: number;
+    showAssignationModal: boolean;
+    courseAAssigner: Course | null;
+    vehiculeChoisiId: number | null;
+    courseDetailAffichee: Course | null;
+    private sub?;
+    constructor(coursesService: CoursesService, transportService: TransportService, toastService: ToastService);
+    ngOnInit(): void;
+    ngOnDestroy(): void;
+    applyFilters(): void;
+    onFiltreChange(): void;
+    get totalPages(): number;
+    get filteredPagines(): Course[];
+    changePage(page: number): void;
+    get enCoursCount(): number;
+    get enAttenteCount(): number;
+    get termineesAujourdhui(): number;
+    get revenuTotalCourses(): number;
+    formatBIF(v: number): string;
+    nomVehicule(id?: number): string;
+    nomChauffeur(id?: number): string;
+    telephoneChauffeur(id?: number): string;
+    vehiculesDisponibles(type: TypeVehicule): Vehicule[];
+    ouvrirAssignation(c: Course, event?: Event): void;
+    fermerAssignation(): void;
+    confirmerAssignation(): void;
+    demarrerCourse(c: Course, event?: Event): void;
+    terminerCourse(c: Course, event?: Event): void;
+    annulerCourse(c: Course, event?: Event): void;
+    statutClass(statut: StatutCourse): string;
+    statutLabel(statut: StatutCourse): string;
+    minutesEcoulees(date: Date): number;
+    ouvrirDetail(c: Course): void;
+    fermerDetail(): void;
+    /** Estimation du temps restant en minutes, en fonction de la progression actuelle. */
+    tempsRestantEstime(c: Course): number;
+    dureeTotale(c: Course): number;
+}
+//# sourceMappingURL=courses-live.component.d.ts.map

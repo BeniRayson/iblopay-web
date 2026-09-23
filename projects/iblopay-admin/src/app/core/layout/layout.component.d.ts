@@ -1,0 +1,68 @@
+import { OnInit, OnDestroy, ElementRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import { AuthService } from '../../modules/auth/services/auth.service';
+import { SearchService, SearchResult } from '../services/search.service';
+import { NotificationService, AppNotification } from '../services/notification.service';
+export declare class LayoutComponent implements OnInit, OnDestroy {
+    private authService;
+    private router;
+    private activatedRoute;
+    private searchService;
+    private notificationService;
+    private elementRef;
+    currentDate: Date;
+    currentTime: string;
+    currentDay: string;
+    isSidebarOpen: boolean;
+    isDarkMode: boolean;
+    private clockSubscription?;
+    private routerSubscription?;
+    private cleanupSubscription?;
+    readonly baseTitle = "IBLOPAY \u2014 Administration";
+    moduleTitle: string | null;
+    currentModuleKey: string | null;
+    get pageTitle(): string;
+    searchQuery: string;
+    isSearchOpen: boolean;
+    searchResults$: Observable<SearchResult[]>;
+    isNotifOpen: boolean;
+    notifications$: Observable<AppNotification[]>;
+    unreadCount$: Observable<number>;
+    menuItems: ({
+        icon: string;
+        label: string;
+        link: string;
+        badge?: never;
+    } | {
+        icon: string;
+        label: string;
+        link: string;
+        badge: string;
+    })[];
+    constructor(authService: AuthService, router: Router, activatedRoute: ActivatedRoute, searchService: SearchService, notificationService: NotificationService, elementRef: ElementRef);
+    ngOnInit(): void;
+    ngOnDestroy(): void;
+    private generateMockNotifications;
+    private updateRouteContext;
+    private initClock;
+    private updateClock;
+    toggleSidebar(): void;
+    closeSidebar(): void;
+    onResize(event: Event): void;
+    get menuToggleIcon(): string;
+    get themeToggleIcon(): string;
+    toggleTheme(): void;
+    private loadTheme;
+    onSearchInput(): void;
+    onSearchFocus(): void;
+    selectSearchResult(result: SearchResult): void;
+    toggleNotifications(): void;
+    openNotification(notification: AppNotification): void;
+    markAllNotificationsRead(event: Event): void;
+    clearAllNotifications(event: Event): void;
+    handleDocumentClick(event: MouseEvent): void;
+    handleKeyboardEvent(event: KeyboardEvent): void;
+    logout(): void;
+}
+//# sourceMappingURL=layout.component.d.ts.map

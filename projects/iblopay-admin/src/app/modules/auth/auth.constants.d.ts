@@ -1,0 +1,39 @@
+export declare const AUTH_CONSTANTS: {
+    ACCESS_TOKEN_KEY: string;
+    REFRESH_TOKEN_KEY: string;
+    USER_KEY: string;
+    SESSION_KEY: string;
+    TOKEN_REFRESH_THRESHOLD: number;
+    OTP_LENGTH: number;
+    OTP_RESEND_COOLDOWN: number;
+    OTP_EXPIRY: number;
+    PIN_LENGTH: number;
+    PIN_MIN_LENGTH: number;
+    PIN_MAX_LENGTH: number;
+    SESSION_TIMEOUT: number;
+    SESSION_CHECK_INTERVAL: number;
+    PHONE_PATTERN: RegExp;
+    PHONE_PREFIX: string;
+    LOGIN_ROUTE: string;
+    DASHBOARD_ROUTE: string;
+    FORGOT_PASSWORD_ROUTE: string;
+    RESET_PASSWORD_ROUTE: string;
+    TWO_FACTOR_ROUTE: string;
+    MESSAGES: {
+        LOGIN_SUCCESS: string;
+        LOGIN_FAILED: string;
+        LOGOUT_SUCCESS: string;
+        SESSION_EXPIRED: string;
+        OTP_SENT: string;
+        OTP_INVALID: string;
+        OTP_RESENT: string;
+        PASSWORD_RESET_SUCCESS: string;
+        UNAUTHORIZED: string;
+        NETWORK_ERROR: string;
+        USER_CREATED: string;
+        USER_UPDATED: string;
+        USER_SUSPENDED: string;
+        USER_ACTIVATED: string;
+    };
+};
+//# sourceMappingURL=auth.constants.d.ts.map

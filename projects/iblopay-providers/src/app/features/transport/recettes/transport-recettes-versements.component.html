@@ -1,0 +1,191 @@
+<div class="recettes-page">
+ 
+
+  <nav class="main-tabs" aria-label="Navigation recettes et versements">
+    <button *ngFor="let onglet of onglets" type="button" class="main-tab"
+            [class.active]="ongletActif === onglet" (click)="definirOnglet(onglet)">
+      <i class="fa-solid" [ngClass]="{
+        'fa-credit-card': onglet === 'Paiements',
+        'fa-wallet': onglet === 'Versements',
+        'fa-chart-pie': onglet === 'Comparatif Recettes / Versements',
+        'fa-id-card': onglet === 'Rapport par carte'
+      }"></i>
+      <span>{{ onglet }}</span>
+    </button>
+  </nav>
+
+  <section class="filter-panel" aria-label="Filtres des opérations">
+    <div class="field">
+      <label for="periode">Période</label>
+      <select id="periode" [(ngModel)]="periode" (change)="filtrer()">
+        <option value="Toutes">Toutes les périodes</option>
+        <option value="Jour">Dernier jour des données</option>
+        <option value="Semaine">7 derniers jours des données</option>
+        <option value="Mois">Mois des dernières données</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="vehicule">Véhicule</label>
+      <select id="vehicule" [(ngModel)]="vehiculeFiltre" (change)="filtrer()">
+        <option value="Tous">Tous les bus</option>
+        <option *ngFor="let bus of vehicules" [value]="bus">{{ bus }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="itineraire">Itinéraire</label>
+      <select id="itineraire" [(ngModel)]="itineraireFiltre" (change)="filtrer()" [disabled]="ongletActif === 'Versements'">
+        <option value="Tous">Tous les itinéraires</option>
+        <option *ngFor="let route of itineraires" [value]="route">{{ route }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="statut">Statut synch.</label>
+      <select id="statut" [(ngModel)]="statutFiltre" (change)="filtrer()">
+        <option value="Tous">Tous les statuts</option>
+        <option value="Synchronisé">Synchronisé</option>
+        <option value="En attente">En attente</option>
+        <option value="Échec">Échec</option>
+      </select>
+    </div>
+    <div class="field" *ngIf="ongletActif !== 'Versements'">
+      <label for="carte">Carte client</label>
+      <input id="carte" type="search" [(ngModel)]="rechercheCarte" (input)="filtrer()" placeholder="Rechercher une carte..." />
+    </div>
+    <button type="button" class="btn primary export-btn" (click)="exporterCsv()"><i class="fa-solid fa-download"></i> Exporter CSV</button>
+  </section>
+
+  <section class="stat-grid" aria-label="Indicateurs des recettes">
+    <article class="stat-card stats-blue">
+      <div class="stat-icon"><i class="fa-solid fa-credit-card"></i></div>
+      <div class="stat-copy"><span>Total des paiements</span><strong>{{ paiementsFiltres.length }}</strong><small>Transactions visibles</small></div>
+    </article>
+    <article class="stat-card stats-green">
+      <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div class="stat-copy"><span>Somme totale</span><strong>{{ formatBif(totalPaiements) }}</strong><small>Montant des paiements filtrés</small></div>
+    </article>
+    <article class="stat-card stats-cream status-stat">
+      <div class="donut" [style.background]="donutStyle"><span>{{ tauxSynchronisation }}%</span></div>
+      <div class="stat-copy"><span>Répartition par statut</span>
+        <small><i class="legend synced"></i> Synchronisés : {{ paiementsSynchronises }}</small>
+        <small><i class="legend waiting"></i> En attente : {{ paiementsAttente }}</small>
+        <small><i class="legend failed"></i> En échec : {{ paiementsEchec }}</small>
+      </div>
+    </article>
+    <article class="stat-card stats-lilac">
+      <div class="stat-icon"><i class="fa-solid fa-coins"></i></div>
+      <div class="stat-copy"><span>Montant moyen par paiement</span><strong>{{ formatBif(montantMoyen) }}</strong><small>Moyenne des paiements filtrés</small></div>
+    </article>
+  </section>
+
+  <div class="work-grid">
+    <main class="work-main">
+      <section class="panel list-panel" *ngIf="ongletActif === 'Paiements' || ongletActif === 'Rapport par carte'">
+        <div class="panel-title"><h2><i class="fa-solid fa-credit-card"></i> Liste des paiements</h2><span>{{ paiementsFiltres.length }} résultats</span></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Date &amp; Heure</th><th>Bus</th><th>Chauffeur</th><th>Itinéraire</th><th>Montant</th><th>Carte client</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let p of paiementsAffiches" [class.selected-row]="selectionId === p.id">
+                <td>{{ p.date }}</td><td class="bus-cell"><i class="fa-solid fa-bus"></i> {{ p.bus }}</td><td>{{ p.chauffeur }}</td>
+                <td>{{ p.itineraire }}</td><td class="amount">{{ formatBif(p.montant) }}</td><td>**** {{ p.carte }}</td>
+                <td><span class="status-pill" [ngClass]="statutClass(p.statut)">{{ p.statut }}</span></td>
+                <td><button class="view-btn" type="button" (click)="voirPaiement(p)" title="Voir le paiement" [attr.aria-label]="'Voir le paiement ' + p.id"><i class="fa-solid fa-eye"></i></button></td>
+              </tr>
+              <tr *ngIf="!paiementsFiltres.length"><td class="empty" colspan="8">Aucun paiement ne correspond aux filtres.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer"><span>Affichage de {{ debutAffichage }} à {{ finAffichage }} sur {{ paiementsFiltres.length }} paiements</span>
+          <div class="pagination"><button type="button" (click)="changerPage(page-1)" [disabled]="page===1">‹</button>
+            <button *ngFor="let n of pagesVisibles" type="button" (click)="changerPage(n)" [class.active]="page===n">{{ n }}</button>
+            <button type="button" (click)="changerPage(page+1)" [disabled]="page===totalPages">›</button></div>
+        </div>
+      </section>
+
+      <section class="panel list-panel" *ngIf="ongletActif === 'Versements'">
+        <div class="panel-title"><h2><i class="fa-solid fa-wallet"></i> Historique des versements</h2><span>{{ versementsFiltres.length }} résultats</span></div>
+        <p class="panel-intro">Versements enregistrés exclusivement via le POS. Utilisez les filtres pour choisir une période ou un véhicule.</p>
+        <div class="table-scroll"><table>
+          <thead><tr><th>Référence</th><th>Date &amp; Heure</th><th>Bus</th><th>Chauffeur</th><th>Montant</th><th>Mode</th><th>Statut</th></tr></thead>
+          <tbody><tr *ngFor="let v of versementsAffiches"><td>{{ v.id }}</td><td>{{ v.date }}</td><td class="bus-cell"><i class="fa-solid fa-bus"></i> {{ v.bus }}</td>
+            <td>{{ v.chauffeur }}</td><td class="amount">{{ formatBif(v.montant) }}</td><td>POS</td><td><span class="status-pill" [ngClass]="statutClass(v.statut)">{{ v.statut }}</span></td></tr>
+            <tr *ngIf="!versementsFiltres.length"><td class="empty" colspan="7">Aucun versement ne correspond aux filtres.</td></tr></tbody>
+        </table></div>
+        <div class="table-footer"><span>Affichage de {{ debutAffichage }} à {{ finAffichage }} sur {{ versementsFiltres.length }} versements</span>
+          <div class="pagination"><button type="button" (click)="changerPage(page-1)" [disabled]="page===1">‹</button>
+            <button *ngFor="let n of pagesVisibles" type="button" (click)="changerPage(n)" [class.active]="page===n">{{ n }}</button>
+            <button type="button" (click)="changerPage(page+1)" [disabled]="page===totalPages">›</button></div>
+        </div>
+      </section>
+
+      <section class="panel list-panel" *ngIf="ongletActif === 'Comparatif Recettes / Versements'">
+        <div class="panel-title"><h2><i class="fa-solid fa-chart-column"></i> Comparatif Recettes / Versements</h2><span>Par véhicule</span></div>
+        <p class="panel-intro">Comparaison illustrative à partir des paiements et versements du jeu de démonstration filtré ; les totaux ne représentent pas une comptabilité réelle.</p>
+        <div class="table-scroll"><table><thead><tr><th>Véhicule</th><th>Recettes</th><th>Versements</th><th>Écart</th><th>Taux</th></tr></thead>
+          <tbody><tr *ngFor="let ligne of comparatif"><td class="bus-cell"><i class="fa-solid fa-bus"></i> {{ ligne.bus }}</td>
+            <td>{{ formatBif(ligne.recettes) }}</td><td>{{ formatBif(ligne.versements) }}</td>
+            <td [class.negative]="ligne.ecart<0">{{ formatBif(ligne.ecart) }}</td><td>{{ ligne.taux }} %</td></tr></tbody></table></div>
+      </section>
+
+      <div class="lower-grid">
+        <section class="panel sync-panel">
+          <div class="panel-title"><h2><i class="fa-solid fa-rotate"></i> Suivi de la synchronisation</h2></div>
+          <div class="sync-grid">
+            <div class="sync-tile ok"><i class="fa-solid fa-circle-check"></i><span>Synchronisées</span><strong>{{ paiementsSynchronises }}</strong></div>
+            <div class="sync-tile wait"><i class="fa-solid fa-clock"></i><span>En attente</span><strong>{{ paiementsAttente }}</strong></div>
+            <div class="sync-tile fail"><i class="fa-solid fa-circle-exclamation"></i><span>En échec</span><strong>{{ paiementsEchec }}</strong></div>
+            <div class="sync-tile time"><i class="fa-solid fa-stopwatch"></i><span>Délai cible</span><strong>2 min</strong></div>
+          </div>
+          <h3>Transactions à vérifier</h3>
+          <div class="table-scroll inner-table"><table><thead><tr><th>Date</th><th>Bus</th><th>Montant</th><th>Action</th></tr></thead><tbody>
+            <tr *ngFor="let p of paiementsFiltres" [hidden]="p.statut === 'Synchronisé'"><td>{{ p.date }}</td><td>{{ p.bus }}</td><td>{{ formatBif(p.montant) }}</td>
+              <td><button class="mini-btn" type="button" (click)="forcerSynchronisation(p.id)">Vérifier</button></td></tr>
+          </tbody></table></div>
+        </section>
+        <section class="panel comparison-panel">
+          <div class="panel-title"><h2><i class="fa-solid fa-scale-balanced"></i> Comparatif Recettes / Versements</h2></div>
+          <div class="table-scroll inner-table"><table><thead><tr><th>Véhicule</th><th>Recettes</th><th>Versements</th><th>Écart</th><th>Taux</th></tr></thead><tbody>
+            <tr *ngFor="let ligne of comparatif | slice:0:5"><td>{{ ligne.bus }}</td><td>{{ formatBif(ligne.recettes) }}</td><td>{{ formatBif(ligne.versements) }}</td>
+              <td [class.negative]="ligne.ecart<0">{{ formatBif(ligne.ecart) }}</td><td>{{ ligne.taux }} %</td></tr>
+          </tbody></table></div>
+          <div class="info-strip"><i class="fa-solid fa-circle-info"></i> Chiffres de démonstration : à relier aux données réelles.</div>
+        </section>
+      </div>
+    </main>
+
+    <aside class="work-aside">
+      <section class="panel detail-panel">
+        <div class="panel-title"><h2><i class="fa-solid fa-screwdriver-wrench"></i> Détail du paiement</h2><span *ngIf="selection" class="status-pill" [ngClass]="statutClass(selection.statut)">{{ selection.statut }}</span></div>
+        <ng-container *ngIf="selection as p; else emptyDetails">
+          <div class="details-list">
+            <div class="detail"><i class="fa-solid fa-key"></i><div><span>ID du POS</span><strong>{{ p.id }}</strong></div></div>
+            <div class="detail"><i class="fa-regular fa-calendar"></i><div><span>Date réelle</span><strong>{{ p.date }}</strong></div></div>
+            <div class="detail"><i class="fa-solid fa-rotate"></i><div><span>Date de synchronisation</span><strong>{{ p.synchronisation }}</strong></div></div>
+            <div class="detail"><i class="fa-solid fa-bus"></i><div><span>Bus</span><strong>{{ p.bus }} ({{ p.modele }})</strong></div></div>
+            <div class="detail"><i class="fa-solid fa-route"></i><div><span>Itinéraire</span><strong>{{ p.itineraire }}</strong></div></div>
+            <div class="detail"><i class="fa-solid fa-coins"></i><div><span>Montant</span><strong>{{ formatBif(p.montant) }}</strong></div></div>
+            <div class="detail"><i class="fa-solid fa-credit-card"></i><div><span>Carte client</span><strong>**** {{ p.carte }}</strong></div></div>
+            <div class="detail driver-detail"><i class="fa-solid fa-user-tie"></i><div><span>Chauffeur</span><strong>{{ p.chauffeur }}</strong></div></div>
+          </div>
+        </ng-container>
+        <ng-template #emptyDetails><div class="empty-detail"><i class="fa-regular fa-eye"></i><p>Cliquez sur l’œil d’une ligne pour voir le détail de ce paiement.</p></div></ng-template>
+      </section>
+      <section class="panel card-report" *ngIf="rapportCarteOuvert">
+        <div class="panel-title"><h2><i class="fa-solid fa-id-card"></i> Rapport par carte</h2>
+          <button type="button" class="plain-icon" (click)="rapportCarteOuvert = false" title="Masquer le rapport" aria-label="Masquer le rapport"><i class="fa-solid fa-xmark"></i></button></div>
+        <label for="rapport-carte" class="sr-only">Numéro de carte</label>
+        <input id="rapport-carte" type="search" [(ngModel)]="rechercheCarte" (input)="filtrer()" placeholder="Rechercher par numéro de carte..." />
+        <ng-container *ngIf="carteRecherche || selection; else emptyCard">
+          <div class="card-summary"><i class="fa-solid fa-id-card"></i><div><strong>Carte **** {{ carteRecherche || selection?.carte }}</strong><small>Déplacements : {{ paiementsCarte.length }}</small><small>Total : {{ formatBif(montantCarte) }}</small></div></div>
+          <h3>Historique des déplacements</h3>
+          <div class="table-scroll inner-table"><table><thead><tr><th>Date</th><th>Bus</th><th>Montant</th></tr></thead>
+            <tbody><tr *ngFor="let p of paiementsCarte"><td>{{ p.date }}</td><td>{{ p.bus }}</td><td>{{ formatBif(p.montant) }}</td></tr>
+              <tr *ngIf="!paiementsCarte.length"><td colspan="3" class="empty">Aucune opération trouvée.</td></tr></tbody></table></div>
+        </ng-container>
+        <ng-template #emptyCard><p class="panel-intro">Sélectionnez un paiement ou recherchez les derniers chiffres d’une carte.</p></ng-template>
+      </section>
+      <button *ngIf="!rapportCarteOuvert" class="reopen-report" type="button" (click)="rapportCarteOuvert=true">Afficher le rapport par carte</button>
+    </aside>
+  </div>
+  <div class="toast" role="status" *ngIf="message">{{ message }} <button type="button" (click)="message=''" aria-label="Fermer">×</button></div>
+</div>
