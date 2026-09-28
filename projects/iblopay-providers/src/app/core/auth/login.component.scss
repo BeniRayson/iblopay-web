@@ -1,9 +1,47 @@
 :host {
-  display: block;
+  width: 100%;
   min-height: 100dvh;
-  font-family: 'Segoe UI', Inter, Arial, sans-serif;
+
+  display: grid;
+  place-items: center;
+
+  padding:
+    clamp(10px, 2.3vh, 22px)
+    clamp(10px, 2vw, 24px);
+
+  box-sizing: border-box;
+
+  font-family:
+    'Segoe UI',
+    Inter,
+    Arial,
+    sans-serif;
+
   color: #18375f;
+
+  background:
+    radial-gradient(
+      circle at 16% 14%,
+      rgba(72, 81, 94, 0.18),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 88% 85%,
+      rgba(44, 54, 67, 0.14),
+      transparent 38%
+    ),
+    linear-gradient(
+      140deg,
+      #181a1f 0%,
+      #101216 53%,
+      #07090c 100%
+    );
 }
+
+
+/* =========================================================
+   RESET
+========================================================= */
 
 *,
 *::before,
@@ -11,394 +49,1152 @@
   box-sizing: border-box;
 }
 
+
+/* =========================================================
+   CONTENEUR PRINCIPAL
+
+   Taille volontairement moyenne.
+   Même à 90 / 100 % de zoom, le bloc reste compact.
+========================================================= */
+
 .login-page {
+  width: min(960px, 94vw);
+
+  height: min(
+    560px,
+    calc(100dvh - 36px)
+  );
+
+  min-height: 480px;
+
   display: grid;
-  grid-template-columns: minmax(0, 59%) minmax(0, 41%);
-  min-height: 100dvh;
-  width: 100%;
-  background: #f7fbff;
+
+  grid-template-columns:
+    minmax(0, 55%)
+    minmax(0, 45%);
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(232, 243, 255, 0.55);
+
+  border-radius: 18px;
+
+  background: #eef7ff;
+
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.50),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
+
+
+/* =========================================================
+   PARTIE GAUCHE
+========================================================= */
 
 .login-visual {
-  min-width: 0;
-  min-height: 100dvh;
   position: relative;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  overflow: hidden;
-  background: linear-gradient(180deg, #f5fbff 0%, #edf7ff 100%);
-  padding: 0;
-}
 
-.login-visual img {
-  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center center;
-  background: #f5fbff;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: block;
+
+  overflow: hidden;
+
+  margin: 0;
+  padding: 0;
+
+  background: #dcecff;
 }
+
+
+/* =========================================================
+   IMAGE GAUCHE
+========================================================= */
+
+.login-visual img {
+  position: absolute;
+
+  inset: 0;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  object-fit: cover;
+
+  object-position:
+    center
+    top;
+}
+
+
+/* =========================================================
+   PARTIE DROITE
+========================================================= */
 
 .login-form-side {
   position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
-  min-width: 0;
-  min-height: 100dvh;
-  padding: 28px clamp(20px, 3vw, 54px);
+
+  padding:
+    18px
+    clamp(18px, 2.5vw, 30px);
+
   overflow: hidden;
+
   isolation: isolate;
-  background: linear-gradient(165deg, #f6fbff 0%, #edf7ff 100%);
+
+  background:
+    linear-gradient(
+      165deg,
+      #f6fbff 0%,
+      #edf7ff 100%
+    );
 }
+
+
+/* =========================================================
+   CERCLE DECORATIF
+========================================================= */
 
 .decor-circle {
   position: absolute;
-  width: 330px;
-  height: 330px;
-  top: -175px;
-  right: -105px;
+
+  width: 250px;
+  height: 250px;
+
+  top: -140px;
+  right: -85px;
+
   z-index: -1;
+
   border-radius: 50%;
+
   background: #e2f0ff;
 }
 
+
+/* =========================================================
+   VAGUE BAS
+========================================================= */
+
 .decor-wave {
   position: absolute;
-  width: 135%;
-  height: 175px;
-  left: -15%;
-  bottom: -112px;
+
+  width: 140%;
+  height: 135px;
+
+  left: -18%;
+  bottom: -92px;
+
   z-index: -1;
-  transform: rotate(-3deg);
-  border-radius: 50% 50% 0 0;
-  background: linear-gradient(100deg, #53b4f0, #1e71ce);
+
+  transform:
+    rotate(-3deg);
+
+  border-radius:
+    50%
+    50%
+    0
+    0;
+
+  background:
+    linear-gradient(
+      100deg,
+      #53b4f0,
+      #1e71ce
+    );
 }
 
+
+/* =========================================================
+   CARTE LOGIN
+
+   Ancienne largeur : 450px
+   Nouvelle largeur : 360px
+========================================================= */
+
 .login-card {
-  width: min(100%, 470px);
-  padding: clamp(30px, 3.2vw, 42px);
-  border: 1px solid #e3ecf6;
-  border-radius: 24px;
+  width: min(100%, 360px);
+
+  padding:
+    clamp(
+      20px,
+      2vw,
+      25px
+    );
+
+  border:
+    1px solid
+    #e3ecf6;
+
+  border-radius: 18px;
+
   background: #ffffff;
-  box-shadow: 0 14px 36px rgba(32, 80, 133, 0.09);
+
+  box-shadow:
+    0 11px 28px
+    rgba(
+      32,
+      80,
+      133,
+      0.08
+    );
 }
+
+
+/* =========================================================
+   ENTETE
+========================================================= */
 
 .card-heading {
   text-align: center;
-  margin-bottom: 30px;
+
+  margin-bottom: 20px;
 }
 
+
+/* =========================================================
+   ICONE ENTETE
+========================================================= */
+
 .card-heading-icon {
+  width: 42px;
+  height: 42px;
+
   display: grid;
+
   place-items: center;
-  width: 54px;
-  height: 54px;
-  margin: 0 auto 16px;
-  border-radius: 15px;
+
+  margin:
+    0
+    auto
+    11px;
+
+  border-radius: 11px;
+
   color: #1a6acc;
+
   background: #eaf4ff;
-  font-size: 24px;
+
+  font-size: 18px;
 }
+
+
+/* =========================================================
+   TITRE
+========================================================= */
 
 .card-heading h1 {
   margin: 0;
-  font-size: clamp(24px, 2.2vw, 30px);
+
+  font-size:
+    clamp(
+      18px,
+      1.55vw,
+      21px
+    );
+
   line-height: 1.2;
+
   font-weight: 800;
-  letter-spacing: -0.03em;
+
+  letter-spacing:
+    -0.025em;
+
   color: #17385f;
 }
+
 
 .card-heading h1 span {
   color: #1871d3;
 }
 
+
+/* =========================================================
+   SOUS TITRE
+========================================================= */
+
 .card-heading p {
-  margin: 9px 0 0;
-  font-size: 13px;
+  margin:
+    6px
+    0
+    0;
+
+  font-size: 10px;
+
+  line-height: 1.45;
+
   color: #7286a0;
 }
 
+
+/* =========================================================
+   FORMULAIRE
+========================================================= */
+
 .login-card form {
   display: grid;
-  gap: 20px;
+
+  gap: 13px;
 }
+
+
+/* =========================================================
+   FIELD
+========================================================= */
 
 .form-field {
   min-width: 0;
 }
 
+
 .form-field label {
   display: block;
-  margin-bottom: 8px;
+
+  margin-bottom: 5px;
+
   color: #35516f;
-  font-size: 13px;
+
+  font-size: 10px;
+
   font-weight: 700;
 }
+
+
+/* =========================================================
+   INPUT SHELL
+========================================================= */
 
 .input-shell {
   position: relative;
 }
 
+
+/* =========================================================
+   ICONE INPUT
+========================================================= */
+
 .input-shell > i {
   position: absolute;
+
   top: 50%;
-  left: 16px;
-  transform: translateY(-50%);
+  left: 13px;
+
+  transform:
+    translateY(-50%);
+
   color: #7790ad;
-  font-size: 16px;
+
+  font-size: 13px;
+
   pointer-events: none;
 }
 
+
+/* =========================================================
+   INPUT
+
+   Ancienne hauteur : 52px
+   Nouvelle hauteur : 44px
+========================================================= */
+
 .input-shell input {
   display: block;
+
   width: 100%;
-  height: 52px;
-  border: 1px solid #ceddeb;
-  border-radius: 12px;
-  padding: 0 48px 0 45px;
+  height: 44px;
+
+  border:
+    1px solid
+    #ceddeb;
+
+  border-radius: 9px;
+
+  padding:
+    0
+    39px
+    0
+    37px;
+
   background: #ffffff;
+
   color: #18375f;
+
   font: inherit;
-  font-size: 14px;
+
+  font-size: 11px;
+
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
+
 
 .input-shell input::placeholder {
   color: #97a6b8;
 }
 
+
 .input-shell input:focus {
   border-color: #73a5db;
-  box-shadow: 0 0 0 3px rgba(38, 124, 197, 0.08);
+
+  background: #ffffff;
+
+  box-shadow:
+    0
+    0
+    0
+    3px
+    rgba(
+      38,
+      124,
+      197,
+      0.07
+    );
 }
+
+
+/* =========================================================
+   BOUTON AFFICHER MOT DE PASSE
+========================================================= */
 
 .reveal-btn {
   position: absolute;
+
   top: 50%;
-  right: 8px;
-  transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
+  right: 6px;
+
+  transform:
+    translateY(-50%);
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
   border: 0;
-  border-radius: 8px;
+
+  border-radius: 7px;
+
   background: transparent;
+
   color: #6a83a0;
+
   cursor: pointer;
-}
 
-.reveal-btn:focus-visible,
-.submit-btn:focus-visible {
-  outline: 2px solid #2683de;
-  outline-offset: 2px;
-}
-
-.field-error {
-  display: block;
-  margin: 5px 0 0;
-  color: #bc4650;
-  font-size: 11px;
-}
-
-.login-error {
-  margin: 0;
-  padding: 10px;
-  color: #a33d47;
-  background: #fff2f3;
-  border-radius: 8px;
   font-size: 12px;
 }
 
-.submit-btn {
-  width: 100%;
-  height: 50px;
-  margin-top: 4px;
-  border: 0;
-  border-radius: 12px;
-  background: linear-gradient(100deg, #2b80df, #1765c8);
-  color: #ffffff;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 6px 16px rgba(33, 107, 207, 0.12);
+
+.reveal-btn:hover {
+  color: #176bc9;
+
+  background: #eef5fd;
 }
 
-.submit-btn:hover:not(:disabled) {
-  background: linear-gradient(100deg, #2174d3, #1559b7);
+
+/* =========================================================
+   ACCESSIBILITE
+========================================================= */
+
+.reveal-btn:focus-visible,
+.submit-btn:focus-visible {
+  outline:
+    2px solid
+    #2683de;
+
+  outline-offset: 2px;
 }
+
+
+/* =========================================================
+   ERREUR CHAMP
+========================================================= */
+
+.field-error {
+  display: block;
+
+  margin:
+    4px
+    0
+    0;
+
+  color: #bc4650;
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   ERREUR LOGIN
+========================================================= */
+
+.login-error {
+  margin: 0;
+
+  padding: 8px;
+
+  border-radius: 7px;
+
+  color: #a33d47;
+
+  background: #fff2f3;
+
+  font-size: 9px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   BOUTON CONNEXION
+
+   Ancienne hauteur : 50px
+   Nouvelle hauteur : 43px
+========================================================= */
+
+.submit-btn {
+  width: 100%;
+  height: 43px;
+
+  margin-top: 1px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      100deg,
+      #2b80df,
+      #1765c8
+    );
+
+  color: #ffffff;
+
+  font: inherit;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0
+    5px
+    13px
+    rgba(
+      33,
+      107,
+      207,
+      0.12
+    );
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.submit-btn:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      100deg,
+      #2174d3,
+      #1559b7
+    );
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0
+    7px
+    16px
+    rgba(
+      33,
+      107,
+      207,
+      0.17
+    );
+}
+
+
+.submit-btn:active:not(:disabled) {
+  transform:
+    translateY(0);
+}
+
 
 .submit-btn:disabled {
   opacity: 0.65;
+
   cursor: wait;
 }
 
+
+/* =========================================================
+   COPYRIGHT
+========================================================= */
+
 .copyright {
   position: relative;
-  margin: 18px 0 0;
+
+  margin:
+    13px
+    0
+    0;
+
   color: #7891ac;
-  font-size: 11px;
+
+  font-size: 8px;
+
   text-align: center;
 }
 
-@media (max-width: 1180px) {
+
+/* =========================================================
+   LAPTOP STANDARD
+   1366 x 768, 1280 x 720, etc.
+========================================================= */
+
+@media (max-width: 1366px) {
+
   .login-page {
-    grid-template-columns: minmax(0, 57%) minmax(0, 43%);
+    width: min(900px, 92vw);
+
+    height:
+      min(
+        520px,
+        calc(100dvh - 32px)
+      );
+
+    min-height: 455px;
   }
+
 
   .login-card {
-    width: min(100%, 455px);
+    width: min(100%, 340px);
+
+    padding: 20px;
   }
 
-  .login-visual img {
-    object-fit: cover;
-    object-position: 42% center;
-  }
-}
-
-@media (max-width: 900px) {
-  .login-page {
-    grid-template-columns: 1fr;
-  }
-
-  .login-visual {
-    height: clamp(270px, 62vw, 470px);
-    min-height: unset;
-  }
-
-  .login-visual img {
-    object-fit: cover;
-    object-position: center 38%;
-  }
-
-  .login-form-side {
-    min-height: 450px;
-    padding: 28px 16px 46px;
-  }
-
-  .login-card {
-    width: min(100%, 500px);
-    padding: 30px 24px;
-  }
-
-  .decor-wave {
-    height: 130px;
-    bottom: -95px;
-  }
-}
-
-@media (max-width: 420px) {
-  .login-visual {
-    height: 290px;
-  }
-
-  .login-form-side {
-    padding: 20px 12px 34px;
-  }
-
-  .login-card {
-    padding: 24px 18px;
-    border-radius: 18px;
-  }
 
   .card-heading {
-    margin-bottom: 22px;
+    margin-bottom: 17px;
   }
+
+
+  .card-heading-icon {
+    width: 39px;
+    height: 39px;
+
+    margin-bottom: 9px;
+
+    font-size: 17px;
+  }
+
 
   .card-heading h1 {
-    font-size: 24px;
+    font-size: 18px;
   }
+
+
+  .login-card form {
+    gap: 11px;
+  }
+
 
   .input-shell input {
-    height: 50px;
-    font-size: 13px;
+    height: 41px;
   }
+
 
   .submit-btn {
-    height: 48px;
+    height: 41px;
   }
+
 }
 
-/* ===== VERSION MOYENNE : bloc centré, sans remplir tout l'écran ===== */
-:host {
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: clamp(12px, 3.5vh, 34px) clamp(12px, 3vw, 38px);
-  /* Fond extérieur sombre : encadre la page sans assombrir la photo ni le formulaire. */
-  background:
-    radial-gradient(circle at 16% 14%, rgba(72, 81, 94, .19), transparent 42%),
-    radial-gradient(circle at 88% 85%, rgba(44, 54, 67, .16), transparent 37%),
-    linear-gradient(140deg, #181a1f 0%, #101216 53%, #07090c 100%);
+
+/* =========================================================
+   ECRAN INTERMEDIAIRE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .login-page {
+    width: min(860px, 92vw);
+
+    grid-template-columns:
+      minmax(0, 53%)
+      minmax(0, 47%);
+  }
+
+
+  .login-card {
+    width: min(100%, 330px);
+  }
+
+
+  .login-form-side {
+    padding:
+      16px
+      22px;
+  }
+
 }
 
-.login-page {
-  width: min(100%, 1160px);
-  min-height: 0;
-  height: min(690px, calc(100dvh - 54px));
-  grid-template-columns: minmax(0, 55%) minmax(0, 45%);
-  overflow: hidden;
-  border: 1px solid rgba(232, 243, 255, .65);
-  border-radius: 22px;
-  box-shadow: 0 26px 65px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .08);
-}
 
-.login-visual {
-  height: 100%;
-  min-height: 0;
-  background: #eaf5ff;
-}
-.login-visual img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* ne recadre ni le bus, ni le taxi, ni le texte intégré */
-  object-position: center;
-}
-.login-form-side {
-  height: 100%;
-  min-height: 0;
-  padding: 22px clamp(16px, 3vw, 42px);
-}
-.login-card {
-  width: min(100%, 450px);
-  padding: clamp(26px, 3vw, 38px);
-}
+/* =========================================================
+   TABLETTE
+========================================================= */
 
 @media (max-width: 900px) {
-  :host { padding: 12px; }
+
+  :host {
+    display: block;
+
+    padding: 12px;
+
+    overflow-y: auto;
+  }
+
+
   .login-page {
-    width: min(100%, 620px);
+    width: min(100%, 540px);
+
     height: auto;
+
+    min-height: 0;
+
+    margin: 0 auto;
+
     grid-template-columns: 1fr;
-    border-radius: 18px;
+
+    border-radius: 16px;
   }
+
+
   .login-visual {
-    height: clamp(245px, 61vw, 390px);
+    position: relative;
+
+    width: 100%;
+
+    height:
+      clamp(
+        220px,
+        52vw,
+        330px
+      );
+
     min-height: 0;
   }
+
+
   .login-visual img {
-    object-fit: contain;
-    object-position: center;
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    object-position:
+      center
+      top;
   }
+
+
   .login-form-side {
-    min-height: 0;
+    width: 100%;
+
     height: auto;
-    padding: 24px 18px 30px;
+
+    min-height: 0;
+
+    padding:
+      22px
+      16px
+      27px;
   }
-  .login-card { width: min(100%, 470px); }
-}
-@media (max-width: 420px) {
-  .login-visual { height: 260px; }
-  .login-form-side { padding: 16px 12px 25px; }
+
+
+  .login-card {
+    width: min(100%, 360px);
+
+    padding:
+      21px
+      20px;
+  }
+
+
+  .decor-circle {
+    width: 230px;
+    height: 230px;
+
+    top: -140px;
+    right: -100px;
+  }
+
+
+  .decor-wave {
+    height: 105px;
+
+    bottom: -75px;
+  }
+
 }
 
-/* Écrans peu hauts : laisser défiler sans couper le formulaire. */
-@media (max-height: 640px) and (min-width: 901px) {
-  :host { min-height: 100dvh; padding: 10px; }
-  .login-page { height: auto; min-height: 520px; }
-  .login-form-side { min-height: 520px; }
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 520px) {
+
+  :host {
+    padding: 8px;
+  }
+
+
+  .login-page {
+    width: 100%;
+
+    border-radius: 15px;
+  }
+
+
+  .login-visual {
+    height: 220px;
+  }
+
+
+  .login-form-side {
+    padding:
+      18px
+      12px
+      25px;
+  }
+
+
+  .login-card {
+    width: min(100%, 345px);
+
+    padding:
+      19px
+      16px;
+
+    border-radius: 15px;
+  }
+
+
+  .card-heading {
+    margin-bottom: 17px;
+  }
+
+
+  .card-heading-icon {
+    width: 38px;
+    height: 38px;
+
+    margin-bottom: 9px;
+
+    border-radius: 10px;
+
+    font-size: 16px;
+  }
+
+
+  .card-heading h1 {
+    font-size: 17px;
+  }
+
+
+  .card-heading p {
+    font-size: 9px;
+  }
+
+
+  .form-field label {
+    font-size: 9px;
+  }
+
+
+  .input-shell input {
+    height: 41px;
+
+    font-size: 10px;
+  }
+
+
+  .submit-btn {
+    height: 41px;
+
+    font-size: 10px;
+  }
+
+}
+
+
+/* =========================================================
+   PETIT TELEPHONE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  :host {
+    padding: 6px;
+  }
+
+
+  .login-visual {
+    height: 195px;
+  }
+
+
+  .login-form-side {
+    padding:
+      15px
+      9px
+      22px;
+  }
+
+
+  .login-card {
+    width: 100%;
+
+    padding:
+      17px
+      14px;
+  }
+
+
+  .input-shell input {
+    height: 39px;
+  }
+
+
+  .submit-btn {
+    height: 39px;
+  }
+
+
+  .copyright {
+    margin-top: 10px;
+  }
+
+}
+
+
+/* =========================================================
+   ECRANS PEU HAUTS
+
+   Très important pour les laptops quand le navigateur
+   est à 90% ou 100%.
+========================================================= */
+
+@media
+  (max-height: 700px)
+  and
+  (min-width: 901px) {
+
+  :host {
+    padding: 8px;
+  }
+
+
+  .login-page {
+    width: min(850px, 91vw);
+
+    height:
+      min(
+        470px,
+        calc(100dvh - 16px)
+      );
+
+    min-height: 430px;
+  }
+
+
+  .login-form-side {
+    padding:
+      12px
+      22px;
+  }
+
+
+  .login-card {
+    width: min(100%, 315px);
+
+    padding:
+      16px
+      18px;
+  }
+
+
+  .card-heading {
+    margin-bottom: 13px;
+  }
+
+
+  .card-heading-icon {
+    width: 34px;
+    height: 34px;
+
+    margin-bottom: 7px;
+
+    font-size: 15px;
+  }
+
+
+  .card-heading h1 {
+    font-size: 16px;
+  }
+
+
+  .card-heading p {
+    margin-top: 4px;
+
+    font-size: 8px;
+  }
+
+
+  .login-card form {
+    gap: 9px;
+  }
+
+
+  .form-field label {
+    margin-bottom: 4px;
+
+    font-size: 8px;
+  }
+
+
+  .input-shell input {
+    height: 37px;
+
+    border-radius: 8px;
+
+    font-size: 9px;
+  }
+
+
+  .input-shell > i {
+    font-size: 11px;
+  }
+
+
+  .reveal-btn {
+    width: 29px;
+    height: 29px;
+  }
+
+
+  .submit-btn {
+    height: 37px;
+
+    border-radius: 8px;
+
+    font-size: 9px;
+  }
+
+
+  .copyright {
+    margin-top: 9px;
+
+    font-size: 7px;
+  }
+
+}
+
+
+/* =========================================================
+   ECRANS TRES PEU HAUTS
+========================================================= */
+
+@media
+  (max-height: 560px)
+  and
+  (min-width: 901px) {
+
+  :host {
+    align-items: center;
+
+    overflow-y: auto;
+  }
+
+
+  .login-page {
+    width: min(800px, 90vw);
+
+    height: 430px;
+
+    min-height: 430px;
+  }
+
+
+  .login-card {
+    width: min(100%, 300px);
+
+    padding:
+      14px
+      16px;
+  }
+
+
+  .card-heading-icon {
+    width: 31px;
+    height: 31px;
+
+    margin-bottom: 5px;
+  }
+
+
+  .card-heading h1 {
+    font-size: 15px;
+  }
+
+
+  .input-shell input,
+  .submit-btn {
+    height: 35px;
+  }
+
 }

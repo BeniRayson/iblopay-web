@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './workflows-list.component.html',
-  styleUrl: './workflows-list.component.css'
+  styleUrl: './workflows-list.component.scss'
 })
 export class WorkflowsListComponent {
 

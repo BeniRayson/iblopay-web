@@ -1,124 +1,485 @@
-<div class="auth-page">
-    <!-- Fond animé (optionnel, purement décoratif) -->
-    <div class="auth-bg">
-        <div class="bg-gradient"></div>
-        <div class="bg-pattern"></div>
-        <div class="floating-shapes">
-            <div class="shape shape-1"></div>
-            <div class="shape shape-2"></div>
-            <div class="shape shape-3"></div>
+<section class="login-page">
+
+  <!-- =====================================================
+       DECORATION DE FOND
+       ===================================================== -->
+  <div class="page-background" aria-hidden="true">
+    <div class="background-grid"></div>
+    <div class="glow glow-one"></div>
+    <div class="glow glow-two"></div>
+  </div>
+
+
+  <!-- =====================================================
+       CONTENEUR PRINCIPAL
+       ===================================================== -->
+  <main class="login-shell">
+
+    <!-- ===================================================
+         PARTIE GAUCHE
+         =================================================== -->
+    <section class="brand-panel">
+
+      <!-- LOGO -->
+      <div class="brand-header">
+
+        <div class="brand-logo">
+          <i class="fa-solid fa-bus"></i>
         </div>
-    </div>
 
-    <div class="auth-container">
-        <!-- Panneau branding (masqué en dessous de 900px via le SCSS) -->
-        <div class="auth-branding">
-            <div class="branding-content">
-                <div class="logo-section">
-                    <div class="logo-icon">
-                        <!-- ton SVG logo ici -->
-                    </div>
-                    <span class="brand-name">IBLO PAY</span>
-                </div>
+        <div class="brand-identity">
+          <span class="brand-name">
+            IBLOPAY
+          </span>
 
-                <div class="branding-text">
-                    <h2>Gérez vos transactions en toute sécurité</h2>
-                    <p>Plateforme d'administration IBLO PAY.</p>
-                </div>
+          <span class="brand-module">
+            Transport
+          </span>
+        </div>
 
-                <div class="branding-features">
-                    <div class="feature-item">
-                        <div class="feature-icon">🔒</div>
-                        <div class="feature-text">
-                            <strong>Sécurisé</strong>
-                            <span>Authentification par PIN</span>
-                        </div>
-                    </div>
-                </div>
+      </div>
+
+
+      <!-- CONTENU -->
+      <div class="brand-content">
+
+        <span class="brand-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          Plateforme sécurisée
+        </span>
+
+
+        <h1>
+          Pilotez votre activité
+          de transport
+          <span>simplement.</span>
+        </h1>
+
+
+        <p class="brand-description">
+          Accédez à votre espace de gestion pour suivre
+          votre flotte, vos chauffeurs, vos transactions
+          et vos opérations depuis une interface centralisée.
+        </p>
+
+
+        <!-- FONCTIONNALITES -->
+        <div class="features">
+
+          <!-- FEATURE 1 -->
+          <article class="feature">
+
+            <span class="feature-icon">
+              <i class="fa-solid fa-chart-line"></i>
+            </span>
+
+            <div class="feature-text">
+              <strong>
+                Suivi en temps réel
+              </strong>
+
+              <p>
+                Visualisez l'activité de votre flotte
+                depuis un seul espace.
+              </p>
             </div>
-        </div>
 
-        <!-- Formulaire -->
-        <div class="auth-form-section">
-            <div class="auth-form-wrapper">
-                <div class="mobile-logo">
-                    <div class="logo-icon-sm"></div>
-                    <span class="mobile-brand">IBLO PAY</span>
-                </div>
+          </article>
 
-                <div class="form-header">
-                    <h2>Connexion</h2>
-                    <p>Accédez à votre espace administrateur</p>
-                </div>
 
-                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-                    <div *ngIf="errorMessage" class="alert alert-error">
-                        {{ errorMessage }}
-                    </div>
+          <!-- FEATURE 2 -->
+          <article class="feature">
 
-                    <div *ngIf="sessionExpired" class="alert alert-warning">
-                        Votre session a expiré. Veuillez vous reconnecter.
-                    </div>
+            <span class="feature-icon">
+              <i class="fa-solid fa-wallet"></i>
+            </span>
 
-                    <!-- Téléphone -->
-                    <div class="form-group" [class.has-error]="
-              loginForm.get('phone_number')?.invalid &&
-              loginForm.get('phone_number')?.touched
-            ">
-                        <label for="phone_number">Numéro de téléphone</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="phone_number" formControlName="phone_number"
-                                placeholder="Entrez votre numéro" autocomplete="tel" />
-                        </div>
-                        <div *ngIf="
-                loginForm.get('phone_number')?.hasError('required') &&
-                loginForm.get('phone_number')?.touched
-              " class="field-error">
-                            Le numéro de téléphone est requis
-                        </div>
-                    </div>
+            <div class="feature-text">
+              <strong>
+                Gestion des recettes
+              </strong>
 
-                    <!-- PIN -->
-                    <div class="form-group" [class.has-error]="
-              loginForm.get('pin')?.invalid && loginForm.get('pin')?.touched
-            ">
-                        <label for="pin">Code PIN</label>
-                        <div class="input-wrapper">
-                            <input [type]="showPin ? 'text' : 'password'" id="pin" formControlName="pin"
-                                placeholder="Entrez votre code PIN" autocomplete="current-password" />
-                            <button type="button" class="toggle-pin" (click)="togglePinVisibility()">
-                                <span *ngIf="!showPin">Afficher</span>
-                                <span *ngIf="showPin">Masquer</span>
-                            </button>
-                        </div>
-                        <div *ngIf="
-                loginForm.get('pin')?.hasError('required') &&
-                loginForm.get('pin')?.touched
-              " class="field-error">
-                            Le code PIN est requis
-                        </div>
-                    </div>
-
-                    <div class="form-actions-top">
-                        <a href="/authentication/forgot-password" class="forgot-link">
-                            Mot de passe oublié?
-                        </a>
-                    </div>
-
-                    <button type="submit" class="btn-login" [class.loading]="isLoading"
-                        [disabled]="isLoading || loginForm.invalid">
-                        <span *ngIf="!isLoading">Se connecter</span>
-                        <span *ngIf="isLoading" class="btn-loader">
-                            <span class="spinner"></span>
-                            Connexion en cours...
-                        </span>
-                    </button>
-                </form>
-
-                <div class="form-footer">
-                    <p>&copy; 2026 IBLO PAY</p>
-                </div>
+              <p>
+                Centralisez les paiements,
+                versements et transactions.
+              </p>
             </div>
+
+          </article>
+
+
+          <!-- FEATURE 3 -->
+          <article class="feature">
+
+            <span class="feature-icon">
+              <i class="fa-solid fa-shield-halved"></i>
+            </span>
+
+            <div class="feature-text">
+              <strong>
+                Accès sécurisé
+              </strong>
+
+              <p>
+                Vos données et vos opérations
+                sont protégées.
+              </p>
+            </div>
+
+          </article>
+
         </div>
-    </div>
-</div>
+
+      </div>
+
+
+      <!-- FOOTER GAUCHE -->
+      <div class="brand-footer">
+
+        <span class="system-status">
+          <i class="fa-solid fa-circle-check"></i>
+          Système opérationnel
+        </span>
+
+        <span>
+          IBLOPAY Transport
+        </span>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         PARTIE DROITE
+         =================================================== -->
+    <section class="login-panel">
+
+      <div class="login-wrapper">
+
+
+        <!-- LOGO MOBILE -->
+        <div class="mobile-brand">
+
+          <span class="mobile-logo">
+            <i class="fa-solid fa-bus"></i>
+          </span>
+
+          <div>
+            <strong>
+              IBLOPAY
+            </strong>
+
+            <small>
+              Transport
+            </small>
+          </div>
+
+        </div>
+
+
+        <!-- HEADER -->
+        <header class="login-header">
+
+          <span class="eyebrow">
+            <i class="fa-solid fa-lock"></i>
+            Accès administrateur
+          </span>
+
+
+          <h2>
+            Bon retour
+          </h2>
+
+
+          <p>
+            Connectez-vous pour accéder à votre
+            espace de gestion.
+          </p>
+
+        </header>
+
+
+        <!-- =================================================
+             SESSION EXPIREE
+             ================================================= -->
+        <div
+          class="alert warning"
+          *ngIf="sessionExpired">
+
+          <span class="alert-icon">
+            <i class="fa-regular fa-clock"></i>
+          </span>
+
+
+          <div class="alert-content">
+            <strong>
+              Session expirée
+            </strong>
+
+            <p>
+              Votre session a expiré.
+              Veuillez vous reconnecter.
+            </p>
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             MESSAGE ERREUR
+             ================================================= -->
+        <div
+          class="alert error"
+          *ngIf="errorMessage">
+
+          <span class="alert-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </span>
+
+
+          <div class="alert-content">
+
+            <strong>
+              Connexion impossible
+            </strong>
+
+            <p>
+              {{ errorMessage }}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FORMULAIRE
+             ================================================= -->
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()"
+          novalidate>
+
+
+          <!-- ===============================================
+               IDENTIFIANT
+               =============================================== -->
+          <div
+            class="form-group"
+            [class.invalid]="
+              loginForm.get('identifier')?.invalid &&
+              loginForm.get('identifier')?.touched
+            ">
+
+            <label for="identifier">
+              Identifiant
+              <span class="required">*</span>
+            </label>
+
+
+            <div class="input-control">
+
+              <span class="input-icon">
+                <i class="fa-regular fa-user"></i>
+              </span>
+
+
+              <input
+                id="identifier"
+                type="text"
+                formControlName="identifier"
+                autocomplete="username"
+                placeholder="Nom d'utilisateur ou téléphone">
+
+
+              <span
+                class="field-status success"
+                *ngIf="
+                  loginForm.get('identifier')?.valid &&
+                  loginForm.get('identifier')?.touched
+                ">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+              </span>
+
+            </div>
+
+
+            <div
+              class="field-error"
+              *ngIf="getFieldError('identifier')">
+
+              <i class="fa-solid fa-circle-exclamation"></i>
+
+              <span>
+                {{ getFieldError('identifier') }}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- ===============================================
+               CODE PIN
+               =============================================== -->
+          <div
+            class="form-group"
+            [class.invalid]="
+              loginForm.get('pin')?.invalid &&
+              loginForm.get('pin')?.touched
+            ">
+
+            <label for="pin">
+              Code PIN
+              <span class="required">*</span>
+            </label>
+
+
+            <div class="input-control">
+
+              <span class="input-icon">
+                <i class="fa-solid fa-key"></i>
+              </span>
+
+
+              <input
+                id="pin"
+                [type]="showPin ? 'text' : 'password'"
+                formControlName="pin"
+                autocomplete="current-password"
+                placeholder="Entrez votre code PIN">
+
+
+              <button
+                class="toggle-pin"
+                type="button"
+                (click)="togglePinVisibility()"
+                [attr.aria-label]="
+                  showPin
+                    ? 'Masquer le code PIN'
+                    : 'Afficher le code PIN'
+                ">
+
+                <i
+                  [class]="
+                    showPin
+                      ? 'fa-regular fa-eye-slash'
+                      : 'fa-regular fa-eye'
+                  ">
+                </i>
+
+              </button>
+
+            </div>
+
+
+            <div
+              class="field-error"
+              *ngIf="getFieldError('pin')">
+
+              <i class="fa-solid fa-circle-exclamation"></i>
+
+              <span>
+                {{ getFieldError('pin') }}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- ===============================================
+               AIDE
+               =============================================== -->
+          <div class="login-help">
+
+            <span>
+              <i class="fa-solid fa-circle-info"></i>
+              Utilisez vos identifiants professionnels.
+            </span>
+
+          </div>
+
+
+          <!-- ===============================================
+               BOUTON CONNEXION
+               =============================================== -->
+          <button
+            type="submit"
+            class="login-button"
+            [class.loading]="isLoading"
+            [disabled]="isLoading">
+
+
+            <!-- ETAT NORMAL -->
+            <ng-container *ngIf="!isLoading">
+
+              <span>
+                Se connecter
+              </span>
+
+              <i class="fa-solid fa-arrow-right"></i>
+
+            </ng-container>
+
+
+            <!-- CHARGEMENT -->
+            <ng-container *ngIf="isLoading">
+
+              <span class="spinner"></span>
+
+              <span>
+                Connexion en cours...
+              </span>
+
+            </ng-container>
+
+          </button>
+
+        </form>
+
+
+        <!-- =================================================
+             SECURITE
+             ================================================= -->
+        <div class="security-note">
+
+          <span class="security-icon">
+            <i class="fa-solid fa-shield-halved"></i>
+          </span>
+
+          <span>
+            Connexion sécurisée. Ne communiquez jamais
+            votre identifiant ou votre code PIN.
+          </span>
+
+        </div>
+
+
+        <!-- =================================================
+             FOOTER
+             ================================================= -->
+        <footer class="login-footer">
+
+          <span>
+            © {{ currentYear }} IBLOPAY
+          </span>
+
+          <span class="footer-dot"></span>
+
+          <span>
+            Tous droits réservés
+          </span>
+
+        </footer>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</section>

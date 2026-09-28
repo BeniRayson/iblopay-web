@@ -46,9 +46,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
         { icon: 'fa-solid fa-money-bill-transfer', label: 'Transactions', link: '/transactions' },
         { icon: 'fa-solid fa-coins', label: 'Commissions', link: '/commissions' },
         { icon: 'fa-solid fa-credit-card', label: 'Cartes', link: '/cards' },
-        { icon: 'fa-solid fa-building-columns', label: 'Services publics', link: '/services-publics', badge: '12' },
+        { icon: 'fa-solid fa-building-columns', label: 'Services', link: '/services-publics', badge: '12' },
         { icon: 'fa-solid fa-user-tie', label: 'Supers Agents', link: '/agents' },
-        { icon: 'fa-solid fa-clock', label: 'Demandes en attente', link: '/requests', badge: '7' },
         { icon: 'fa-solid fa-chart-line', label: 'Rapports', link: '/reports' },
         { icon: 'fa-solid fa-gear', label: 'Paramètres', link: '/settings' }
     ];

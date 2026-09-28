@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './intra-agricole-list.component.html',
-  styleUrl: './intra-agricole-list.component.css'
+  styleUrl: './intra-agricole-list.component.scss'
 })
 export class IntraAgricoleListComponent {
 

@@ -83,7 +83,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     { name: 'Samuel Niyonkuru', type: 'Nouvel agent' },
     { name: 'Smart Shop', type: 'Nouveau marchand' },
     { name: 'Innocent Manirakiza', type: 'Nouveau super agent' },
-    { name: 'Permis de construire', type: 'Nouveau service public' }
+    { name: 'Permis de construire', type: 'Nouveau service' }
   ];
 
   pendingRequests = [
@@ -91,7 +91,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     { label: "Demande d'augmentation de plafond", value: 8 },
     { label: 'Validation de documents KYC', value: 23 },
     { label: "Demande d'habilitation agent", value: 5 },
-    { label: 'Création de service public', value: 7 }
+    { label: 'Création de service', value: 7 }
   ];
 
   agentActivities = [
@@ -182,7 +182,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Construit le graphique "Évolution des transactions" (Dépôts / Retraits / Services publics).
+   * Construit le graphique "Évolution des transactions" (Dépôts / Retraits / Services).
    * Utilisée à la fois pour l'affichage initial et pour le changement de période.
    */
   private createChart(ctx: CanvasRenderingContext2D, period: number): void {
@@ -235,7 +235,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             pointHoverRadius: 6
           },
           {
-            label: 'Services Publics (M Fbu)',
+            label: 'Services (M Fbu)',
             data: evolutionData.services,
             borderColor: '#ec4899',
             backgroundColor: gradientServices,

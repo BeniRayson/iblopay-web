@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './super-agents-list.component.html',
-  styleUrl: './super-agents-list.component.css'
+  styleUrl: './super-agents-list.component.scss'
 })
 export class SuperAgentsListComponent {
 

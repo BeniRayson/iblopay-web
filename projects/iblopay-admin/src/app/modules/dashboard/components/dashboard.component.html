@@ -68,7 +68,7 @@
     <div class="stat-card highlight">
         <div class="stat-top">
             <div class="stat-icon gold"><i class="fa-solid fa-coins"></i></div>
-            <div class="stat-label">Commission État</div>
+            <div class="stat-label">Commission des agents</div>
         </div>
         <div class="stat-value">{{ formatAmount(statsData.commissionEtat) }}</div>
         <div class="stat-change positive">+18.9% <span class="stat-change-sub">vs mois</span></div>
@@ -97,96 +97,9 @@
     </div>
 </div>
 
-<!-- ===== GRID 1 - PANELS (Dépôts / Transactions / Commissions en parallèle) ===== -->
+<!-- ===== GRID 1 - PANELS ===== -->
 <div class="panels-row">
-    <!-- DÉPÔTS PAR PROVINCE -->
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-arrow-down"></i> Dépôts par province</div>
-            <select class="period-select">
-                <option>Aujourd'hui</option>
-            </select>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:13px;color:var(--text-dim);">Total dépôts: <b
-                    style="color:var(--green);font-size:18px;">{{ formatAmount(provinceTotals.depots) }}</b></span>
-            <span style="font-size:11px;color:var(--green);">+12.4%</span>
-        </div>
-        <div class="province-list">
-            <div class="province-item" *ngFor="let p of provinceData.depots">
-                <span class="province-name"><i class="fa-solid fa-location-dot"></i> {{ p.name }}</span>
-                <span class="province-amount green">{{ formatAmount(p.amount) }}</span>
-            </div>
-        </div>
-        <div class="depot-total-row">
-            <span class="total-label">📊 Total général</span>
-            <span class="total-value green">{{ formatAmount(provinceTotals.depots) }}</span>
-        </div>
-        <div style="margin-top:8px;text-align:center;">
-            <a routerLink="/deposits" class="panel-link" style="font-size:11px;">Voir tous les détails <i
-                    class="fa-solid fa-arrow-right"></i></a>
-        </div>
-    </div>
-
-    <!-- TRANSACTIONS PAR PROVINCE -->
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-arrows-rotate"></i> Transactions par province</div>
-            <select class="period-select">
-                <option>Aujourd'hui</option>
-            </select>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:13px;color:var(--text-dim);">Total: <b style="color:var(--blue);font-size:18px;">{{
-                    formatAmount(provinceTotals.transactions) }}</b></span>
-            <span style="font-size:11px;color:var(--green);">+14.6%</span>
-        </div>
-        <div class="province-list">
-            <div class="province-item" *ngFor="let p of provinceData.transactions">
-                <span class="province-name"><i class="fa-solid fa-location-dot"></i> {{ p.name }}</span>
-                <span class="province-amount blue">{{ formatAmount(p.amount) }}</span>
-            </div>
-        </div>
-        <div class="tx-total-row">
-            <span class="total-label">📊 Total général</span>
-            <span class="total-value blue">{{ formatAmount(provinceTotals.transactions) }}</span>
-        </div>
-        <div style="margin-top:8px;text-align:center;">
-            <a routerLink="/transactions" class="panel-link" style="font-size:11px;">Voir tous les détails <i
-                    class="fa-solid fa-arrow-right"></i></a>
-        </div>
-    </div>
-
-    <!-- COMMISSIONS PAR PROVINCE -->
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-coins"></i> Commissions par province</div>
-            <select class="period-select">
-                <option>Aujourd'hui</option>
-            </select>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:13px;color:var(--text-dim);">Total: <b style="color:var(--purple);font-size:18px;">{{
-                    formatAmount(provinceTotals.commissions) }}</b></span>
-            <span style="font-size:11px;color:var(--green);">+9.8%</span>
-        </div>
-        <div class="province-list">
-            <div class="province-item" *ngFor="let p of provinceData.commissions">
-                <span class="province-name"><i class="fa-solid fa-location-dot"></i> {{ p.name }}</span>
-                <span class="province-amount purple">{{ formatAmount(p.amount) }}</span>
-            </div>
-        </div>
-        <div class="comm-total-row">
-            <span class="total-label">📊 Total général</span>
-            <span class="total-value purple">{{ formatAmount(provinceTotals.commissions) }}</span>
-        </div>
-        <div style="margin-top:8px;text-align:center;">
-            <a routerLink="/commissions" class="panel-link" style="font-size:11px;">Voir tous les détails <i
-                    class="fa-solid fa-arrow-right"></i></a>
-        </div>
-    </div>
-
-    <!-- GRAPHIQUE ÉVOLUTION DES TRANSACTIONS (en parallèle avec Commissions) -->
+    <!-- GRAPHIQUE ÉVOLUTION DES TRANSACTIONS -->
     <div class="panel chart-panel">
         <div class="panel-header">
             <div class="panel-title"><i class="fa-solid fa-chart-line"></i> Évolution des transactions</div>

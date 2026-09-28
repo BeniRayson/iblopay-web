@@ -79,11 +79,13 @@ $breakpoint-mobile: 480px;
 }
 
 .sidebar-logo {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 24px 20px;
     border-bottom: 1px solid var(--border-soft, rgba(255, 255, 255, 0.05));
+    overflow: hidden;
 }
 
 .logo-icon {
@@ -127,6 +129,7 @@ $breakpoint-mobile: 480px;
     padding: 0 12px;
     overflow-y: auto;
     list-style: none;
+    margin: 0;
 }
 
 .nav-item {
@@ -905,7 +908,6 @@ $breakpoint-mobile: 480px;
 
     .sidebar {
         background: #111c44;
-        
     }
 
     .sidebar-logo {
