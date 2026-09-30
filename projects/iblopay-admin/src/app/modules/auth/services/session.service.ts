@@ -1,4 +1,3 @@
-// src/app/modules/auth/services/session.service.ts
 import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -19,59 +18,44 @@ export class SessionService {
     private ngZone: NgZone
   ) {}
 
-  /**
-   * Start monitoring user activity for session timeout
-   */
+
   startSessionMonitoring(): void {
     this.lastActivity = Date.now();
     this.setupActivityListeners();
     this.startSessionTimer();
   }
 
-  /**
-   * Stop session monitoring (on logout)
-   */
+
   stopSessionMonitoring(): void {
     this.clearSessionTimer();
     this.removeActivityListeners();
   }
 
-  /**
-   * Reset the session timer on user activity
-   */
+
   resetSession(): void {
     this.lastActivity = Date.now();
   }
 
-  /**
-   * Check if the session is still valid
-   */
+
   isSessionValid(): boolean {
     if (!this.tokenService.hasTokens()) return false;
     if (this.tokenService.isTokenExpired()) return false;
 
-   // const elapsed = (Date.now() - this.lastActivity) / 1000;
     return this.getRemainingTime() > 0;
   }
 
-  /**
-   * Get remaining session time in seconds
-   */
+
   getRemainingTime(): number {
     const elapsed = (Date.now() - this.lastActivity) / 1000;
     return Math.max(0, AUTH_CONSTANTS.SESSION_TIMEOUT - elapsed);
   }
 
-  /**
-   * Store session data
-   */
+
   setSessionData(data: Record<string, any>): void {
     sessionStorage.setItem(AUTH_CONSTANTS.SESSION_KEY, JSON.stringify(data));
   }
 
-  /**
-   * Get stored session data
-   */
+
   getSessionData(): Record<string, any> | null {
     const data = sessionStorage.getItem(AUTH_CONSTANTS.SESSION_KEY);
     if (!data) return null;
@@ -82,9 +66,7 @@ export class SessionService {
     }
   }
 
-  /**
-   * Clear session data
-   */
+
   clearSession(): void {
     sessionStorage.removeItem(AUTH_CONSTANTS.SESSION_KEY);
     this.stopSessionMonitoring();

@@ -1,38 +1,24 @@
-/* ================================================================
-   REGISTRE — Système de design institutionnel
-   ================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-$ink: #16293a;
-$ink-soft: #46586a;
-$paper: #f5f1e7;
-$surface: #ffffff;
-$surface-alt: #faf7ef;
+// Thème partagé avec la liste et le formulaire (même design partout)
+@import '../../styles/service-theme';
 
-$brass: #a9803d;
-$brass-dark: #85661f;
+// Alias : conserve les noms de variables utilisés plus bas dans ce fichier
+$ink-soft:     $text;
+$paper:        $page-bg;
+$brass:        $blue;
+$brass-dark:   $blue-dark;
+$line:         $border;
+$line-white:   $border;
+$font-display: $font;
+$font-ui:      $font;
+$font-mono:    $font;
+$transition:   all 0.15s ease;
 
-$line: #e1d9c4;
-$line-white: #e7e2d5;
-
-$green: #386a4e;
-$red: #9c4033;
-$blue: #2c5b76;
-$muted: #7c8790;
-
-$radius: 3px;
-$font-display: 'Fraunces', Georgia, serif;
-$font-ui: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-$font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
-$transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-/* ------------------------------------------------------ DEMANDES EN ATTENTE */
 .demandes-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: $line-white;
-    border: 1px solid $line-white;
-    margin-bottom: 22px;
+    gap: 10px;
+    margin-bottom: 14px;
 }
 
 .demande-ref {
@@ -100,432 +86,401 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     gap: 6px;
     flex-wrap: wrap;
 }
+:host { @include page-base; }
+
 .services-publics-detail {
-    padding: 32px 40px 60px;
-    background: $paper;
-    background-image: linear-gradient(180deg, rgba(169, 128, 61, 0.05), transparent 220px);
-    min-height: 100vh;
-    font-family: $font-ui;
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    font-family: $font;
     color: $ink;
 
-    /* ------------------------------------------------------ RETOUR / ÉTATS */
-    .back-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: none;
-        border: none;
-        color: $muted;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        padding: 0;
-        margin-bottom: 20px;
-        font-family: $font-ui;
-        transition: $transition;
+    * { box-sizing: border-box; }
+    button { font-family: inherit; }
+    h2, h3, p { margin: 0; }
 
-        &:hover {
-            color: $brass-dark;
-            transform: translateX(-3px);
-        }
-    }
-
+    // ─── Retour ─────────────────────────────────────────────
     .loading,
     .not-found {
+        min-height: 180px;
+        padding: 24px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 90px 20px;
-        color: $muted;
-        gap: 16px;
-        font-size: 13.5px;
+        gap: 10px;
+        color: $text;
+        font-size: 12px;
+        text-align: center;
+        @include card;
 
-        svg {
-            stroke: $brass;
-            opacity: 0.7;
-        }
+        svg { stroke: #b5c3de; width: 32px; height: 32px; }
 
         .loader-spinner {
-            width: 32px;
-            height: 32px;
-            border: 2px solid $line;
-            border-top-color: $brass;
+            width: 26px;
+            height: 26px;
+            border: 3px solid #dbe8fb;
+            border-top-color: $blue;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
     }
 
-    /* ------------------------------------------------------ CARTE PRINCIPALE */
-    .detail-card {
-        background: $surface;
-        border-radius: $radius;
-        border: 1px solid $line-white;
-        border-top: 3px solid $ink;
-        margin-bottom: 22px;
+    // ─── Carte d'identité du service ────────────────────────
+    // ─── Pastilles (type / statut / priorité...) ────────────
+    .badge {
+        @include chip($text, $border-soft);
+        text-transform: none;
+        letter-spacing: 0;
+        border: 0;
+
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+        &.badge-interne, &.badge-fixe { color: $blue; background: $blue-soft; }
+        &.badge-externe, &.badge-percentage { color: $teal; background: $teal-soft; }
+        &.badge-actif { color: #0a8f56; background: $green-soft; }
+        &.badge-inactif, &.badge-suspendu { color: $red; background: $red-soft; }
+    }
+
+
+    // ─── UNE SEULE CARTE (largeur et hauteur moyennes) ──────
+    .detail-shell {
+        width: 100%;
+        max-width: 980px;
+        height: 640px;
+        min-height: 420px;
+        max-height: calc(100vh - 36px);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
+        @include card;
     }
 
     .detail-header {
+        padding: 12px 16px;
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
+        align-items: center;
+        gap: 12px;
         flex-wrap: wrap;
-        padding: 28px 30px 22px;
-        border-bottom: 1px dashed $line;
-        background: $surface-alt;
+        border-bottom: 1px solid $border-soft;
 
         .detail-title {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
 
             .detail-icon {
-                width: 56px;
-                height: 56px;
+                width: 40px;
+                height: 40px;
+                flex: 0 0 40px;
+                display: grid;
+                place-items: center;
+                color: #fff;
                 border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: $paper;
-                font-family: $font-display;
-                font-weight: 600;
-                font-size: 22px;
-                flex-shrink: 0;
-                border: 1px dashed rgba(245, 241, 231, 0.5);
-                box-shadow: 0 0 0 3px $surface, 0 0 0 4px $line;
+                font-size: 14px;
+                font-weight: 800;
+                letter-spacing: .02em;
             }
 
-            h2 {
-                margin: 0 0 3px;
-                font-family: $font-display;
-                font-size: 23px;
-                font-weight: 600;
-                color: $ink;
-            }
-
-            .detail-id {
-                font-family: $font-mono;
-                font-size: 12px;
-                color: $brass-dark;
-                letter-spacing: 0.03em;
-            }
+            h2 { font-size: 16px; line-height: 1.2; font-weight: 800; }
+            .detail-id { margin-top: 2px; display: block; color: $muted; font-size: 11px; font-weight: 600; }
         }
 
-        .detail-badges {
-            display: flex;
-            gap: 8px;
-        }
+        .detail-badges { display: flex; align-items: center; gap: 6px; }
     }
 
+    // Zone défilante : seule cette partie bouge, l'en-tête, les onglets et le pied restent fixes
+    .detail-scroll {
+        flex: 1;
+        min-height: 0;
+        padding: 14px 16px;
+        overflow-y: auto;
+    }
+
+    .detail-footer {
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        background: $surface-alt;
+        border-top: 1px solid $border-soft;
+    }
+
+    // ─── Retour (en bas de la carte) ────────────────────────
+    .back-btn {
+        @include btn;
+        @include btn-outline;
+        svg { width: 14px; height: 14px; }
+    }
+
+    // ─── Informations du service (dans l'aperçu) ────────────
     .detail-body {
-        padding: 24px 30px 30px;
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        background: $surface-alt;
+        border: 1px solid $border-soft;
+        border-radius: $radius-sm;
 
         .detail-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px 28px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px 20px;
         }
 
         .detail-item {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
 
-            &.full-width {
-                grid-column: 1 / -1;
-            }
+            &.full-width { grid-column: 1 / -1; }
 
-            .label {
-                font-size: 10.5px;
-                text-transform: uppercase;
-                letter-spacing: 0.07em;
-                color: $muted;
-                font-weight: 600;
-            }
+            .label { color: $muted; font-size: 10.5px; font-weight: 700; }
 
             .value {
-                font-size: 14px;
                 color: $ink;
-                font-weight: 500;
+                font-size: 12.5px;
+                font-weight: 600;
+                line-height: 1.5;
+                overflow-wrap: anywhere;
 
-                a {
-                    color: $blue;
-                    text-decoration: none;
-                    border-bottom: 1px solid rgba(44, 91, 118, 0.35);
-
-                    &:hover {
-                        border-bottom-color: $blue;
-                    }
-                }
+                a { color: $blue; text-decoration: none; &:hover { text-decoration: underline; } }
             }
         }
     }
 
-    /* ------------------------------------------------------ BADGES */
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-family: $font-mono;
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        padding: 4px 9px;
-        border-radius: 2px;
-        background: transparent;
-        white-space: nowrap;
-        border: 1px solid $muted;
-        color: $ink-soft;
-
-        .status-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        &.badge-interne,
-        &.badge-fixe {
-            color: $blue;
-            border-color: $blue;
-        }
-
-        &.badge-externe,
-        &.badge-percentage {
-            color: $brass-dark;
-            border-color: $brass-dark;
-        }
-
-        &.badge-actif {
-            color: $green;
-            border-color: $green;
-        }
-
-        &.badge-inactif,
-        &.badge-suspendu {
-            color: $red;
-            border-color: $red;
-        }
+    // Boutons d'action doux
+    .btn-edit,
+    .btn-add {
+        @include btn;
+        color: $blue;
+        background: $blue-soft;
+        text-transform: none;
+        svg { width: 14px; height: 14px; }
+        &:hover { background: #d8e6ff; }
     }
 
-    /* ------------------------------------------------------ NAVBAR DES MODULES */
+    .btn-delete {
+        @include btn;
+        color: #d6303f;
+        background: $red-soft;
+        &:hover { background: #ffd0d5; }
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: $radius-sm;
+        cursor: pointer;
+        transition: background-color .15s, transform .15s;
+
+        &:hover { transform: translateY(-1px); }
+
+        &.view   { color: $blue;    background: $blue-soft;   &:hover { background: #d8e6ff; } }
+        &.edit   { color: #c77700;  background: $orange-soft; &:hover { background: #ffe6b3; } }
+        &.toggle { color: #0a8f56;  background: $green-soft;  &:hover { background: #c4f0dc; } }
+        &.delete { color: #d6303f;  background: $red-soft;    &:hover { background: #ffd0d5; } }
+    }
+
+    // ─── Activités : liste en colonne ───────────────────────
+    .act-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+
+    .act {
+        padding: 10px 14px;
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 12px;
+        border-bottom: 1px solid $border-soft;
+        transition: background-color .15s;
+
+        &:last-child { border-bottom: 0; }
+        &:hover { background: $surface-alt; }
+
+        &__icon {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            color: $text;
+            background: $border-soft;
+            border-radius: 50%;
+        }
+
+        &__body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+
+        &__title {
+            color: $ink;
+            font-size: 12.5px;
+            font-weight: 700;
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+
+        &__meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+
+        &__tag {
+            padding: 1px 7px;
+            color: $text;
+            background: $border-soft;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        &__user { color: $muted; font-size: 11px; }
+
+        &__time {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+            color: $text;
+            font-size: 11.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            small { color: $muted; font-size: 10.5px; font-weight: 600; }
+        }
+
+        &--paiement    .act__icon { color: #c77700; background: $orange-soft; }
+        &--paiement    .act__tag  { color: #c77700; background: $orange-soft; }
+        &--utilisateur .act__icon { color: $blue;   background: $blue-soft; }
+        &--utilisateur .act__tag  { color: $blue;   background: $blue-soft; }
+        &--categorie   .act__icon { color: $purple; background: $purple-soft; }
+        &--categorie   .act__tag  { color: $purple; background: $purple-soft; }
+        &--type-rnf    .act__icon { color: $teal;   background: $teal-soft; }
+        &--type-rnf    .act__tag  { color: $teal;   background: $teal-soft; }
+    }
+
+    .detail-scroll .activity-card { box-shadow: none; }
+
+    // ─── Onglets ────────────────────────────────────────────
     .modules-navbar {
+        padding: 8px 12px;
         display: flex;
         gap: 4px;
-        border-bottom: 2px solid $ink;
-        margin-bottom: 24px;
         overflow-x: auto;
+        border-bottom: 1px solid $border-soft;
     }
 
     .module-tab {
+        min-height: 32px;
+        padding: 0 12px;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        font-family: $font-ui;
-        font-size: 13px;
-        font-weight: 600;
-        color: $muted;
+        gap: 6px;
+        color: $text;
         background: transparent;
-        border: none;
-        padding: 12px 18px;
-        cursor: pointer;
-        position: relative;
+        border: 0;
+        border-radius: $radius-sm;
+        font-size: 12px;
+        font-weight: 700;
         white-space: nowrap;
+        cursor: pointer;
         transition: $transition;
 
-        svg {
-            stroke: currentColor;
-        }
+        svg { width: 14px; height: 14px; stroke: currentColor; }
 
-        &:hover {
-            color: $ink;
-        }
+        &:hover { background: $surface-alt; color: $ink; }
 
         &.active {
-            color: $ink;
+            color: #fff;
+            background: $blue;
+            box-shadow: 0 3px 10px rgba($blue, .26);
 
-            &::after {
-                content: '';
-                position: absolute;
-                left: 0;
-                right: 0;
-                bottom: -2px;
-                height: 2px;
-                background: $brass;
-            }
-
-            .tab-badge {
-                background: $ink;
-                color: $paper;
-                border-color: $ink;
-            }
+            .tab-badge { color: $blue; background: #fff; }
         }
 
         .tab-badge {
-            font-family: $font-mono;
-            font-size: 10.5px;
-            font-weight: 600;
-            color: $ink-soft;
-            border: 1px solid $line;
-            border-radius: 10px;
-            padding: 1px 7px;
+            min-width: 18px;
+            padding: 1px 6px;
+            color: $text;
+            background: $border-soft;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            text-align: center;
         }
     }
 
-    .module-content {
-        animation: fadeIn 0.25s ease;
-    }
+    .module-content { animation: fadeIn 0.2s ease; }
 
     .module-header {
+        margin-bottom: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 16px;
+        gap: 10px;
 
-        h3 {
-            font-family: $font-display;
-            font-size: 18px;
-            font-weight: 600;
-            color: $ink;
-            margin: 0;
-        }
-
-        .module-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .total-amount {
-            font-family: $font-mono;
-            font-size: 12.5px;
-            color: $brass-dark;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-        }
+        h3 { color: $ink; font-size: 15px; font-weight: 800; }
+        .module-actions { display: flex; align-items: center; gap: 8px; }
+        .total-amount { color: $blue; font-size: 12px; font-weight: 800; }
     }
 
     .btn-add,
     .btn-export-sm {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-family: $font-ui;
-        font-size: 12.5px;
-        font-weight: 600;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-        padding: 9px 16px;
-        border-radius: $radius;
-        cursor: pointer;
-        transition: $transition;
+        @include btn;
+        text-transform: none;
+        letter-spacing: 0;
     }
 
-    .btn-add {
-        background: $ink;
-        color: $paper;
-        border: 1px solid $ink;
+    .btn-export-sm { @include btn-outline; }
 
-        &:hover {
-            background: $brass-dark;
-            border-color: $brass-dark;
-        }
-    }
-
-    .btn-export-sm {
-        background: $surface;
-        color: $ink;
-        border: 1px solid $line;
-
-        &:hover {
-            border-color: $ink;
-        }
-    }
-
-    /* ------------------------------------------------------ STATS HORIZONTALES */
+    // ─── Statistiques ───────────────────────────────────────
     .stats-horizontal {
+        margin-bottom: 14px;
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 1px;
-        background: $line-white;
-        border: 1px solid $line-white;
-        margin-bottom: 22px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
     }
 
     .stat-card-horizontal {
-        background: $surface;
-        padding: 18px 18px;
+        min-height: 64px;
+        padding: 12px 14px;
         display: flex;
         align-items: center;
         gap: 12px;
+        @include card;
 
         .stat-icon {
-            width: 34px;
-            height: 34px;
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            border: 0;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 1px solid currentColor;
 
-            &.total {
-                color: $ink;
-            }
+            svg { width: 18px; height: 18px; }
 
-            &.active {
-                color: $green;
-            }
-
-            &.categories {
-                color: $blue;
-            }
-
-            &.types {
-                color: $brass-dark;
-            }
-
-            &.paiements {
-                color: #734531;
-            }
+            &.total      { background: $blue; }
+            &.active     { background: $green; }
+            &.categories { background: $purple; }
+            &.types      { background: $teal; }
+            &.paiements  { background: $orange; }
         }
 
         .stat-info {
+            min-width: 0;
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse;
+            gap: 1px;
 
-            .stat-value {
-                font-family: $font-display;
-                font-size: 20px;
-                font-weight: 600;
-                color: $ink;
-                line-height: 1.1;
-            }
-
-            .stat-label {
-                font-size: 9.5px;
-                text-transform: uppercase;
-                letter-spacing: 0.06em;
-                color: $muted;
-                font-weight: 600;
-                margin-top: 3px;
-            }
+            .stat-value { color: $ink; font-size: 20px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
+            .stat-label { margin: 0; color: $ink; font-size: 11.5px; font-weight: 700; text-transform: none; letter-spacing: 0; }
         }
     }
 
-    /* ------------------------------------------------------ ACTIVITÉS RÉCENTES */
+
     .activity-card {
-        background: $surface;
-        border: 1px solid $line-white;
-        border-radius: $radius;
         overflow: hidden;
+        @include card;
     }
 
     .activity-header {
@@ -535,11 +490,11 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         flex-wrap: wrap;
         gap: 10px;
         padding: 16px 22px;
-        border-bottom: 1px dashed $line;
+        border-bottom: 1px solid $border-soft;
 
         h3 {
             margin: 0;
-            font-family: $font-display;
+            font-family: $font;
             font-size: 16px;
             font-weight: 600;
             color: $ink;
@@ -549,11 +504,9 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .activity-realtime {
-            font-family: $font-mono;
+            font-family: $font;
             font-size: 10.5px;
             font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
             color: $green;
             display: inline-flex;
             align-items: center;
@@ -586,85 +539,6 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    .activity-list {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .activity-item {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 13px 22px;
-        border-bottom: 1px solid $line-white;
-        transition: $transition;
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        &:hover {
-            background: $surface-alt;
-        }
-
-        .activity-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 1px solid currentColor;
-
-            &.paiement {
-                color: $brass-dark;
-            }
-
-            &.utilisateur {
-                color: $blue;
-            }
-
-            &.categorie {
-                color: $green;
-            }
-
-            &.type-rnf {
-                color: $ink-soft;
-            }
-
-            &.system {
-                color: $muted;
-            }
-        }
-
-        .activity-content {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            min-width: 0;
-
-            .activity-title {
-                font-size: 13px;
-                color: $ink;
-                font-weight: 500;
-            }
-
-            .activity-date {
-                font-family: $font-mono;
-                font-size: 11px;
-                color: $muted;
-            }
-
-            .activity-user {
-                font-size: 11px;
-                color: $muted;
-                font-style: italic;
-            }
-        }
-    }
-
-    /* ------------------------------------------------------ TABLEAUX */
     .table-scroll {
         overflow-x: auto;
         background: $surface;
@@ -681,18 +555,16 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: left;
             padding: 12px 16px;
             font-size: 10.5px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
             color: $ink-soft;
             font-weight: 600;
             background: $surface-alt;
-            border-bottom: 2px solid $ink;
+            border-bottom: 1px solid $border;
             white-space: nowrap;
         }
 
         tbody td {
             padding: 12px 16px;
-            border-bottom: 1px solid $line-white;
+            border-bottom: 1px solid $border-soft;
             color: $ink;
             vertical-align: middle;
         }
@@ -711,45 +583,6 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         gap: 6px;
     }
 
-    .action-btn {
-        width: 28px;
-        height: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: 1px solid $line;
-        border-radius: $radius;
-        color: $ink-soft;
-        cursor: pointer;
-        transition: $transition;
-
-        &:hover {
-            border-color: $ink;
-            color: $ink;
-        }
-
-        &.view:hover {
-            border-color: $blue;
-            color: $blue;
-        }
-
-        &.edit:hover {
-            border-color: $brass-dark;
-            color: $brass-dark;
-        }
-
-        &.toggle:hover {
-            border-color: $green;
-            color: $green;
-        }
-
-        &.delete:hover {
-            border-color: $red;
-            color: $red;
-        }
-    }
-
     .table-footer {
         display: flex;
         justify-content: space-between;
@@ -761,7 +594,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         .pagination-info {
             font-size: 12px;
             color: $muted;
-            font-family: $font-mono;
+            font-family: $font;
         }
 
         .pagination-controls {
@@ -775,10 +608,10 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                 border: 1px solid $line;
                 background: $surface;
                 color: $ink-soft;
-                border-radius: $radius;
+                border-radius: $radius-sm;
                 cursor: pointer;
                 font-size: 12px;
-                font-family: $font-mono;
+                font-family: $font;
                 transition: $transition;
 
                 &:hover:not(:disabled) {
@@ -787,9 +620,9 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                 }
 
                 &.active {
-                    background: $ink;
-                    border-color: $ink;
-                    color: $paper;
+                    background: $blue;
+                    border-color: $blue;
+                    color: #fff;
                 }
 
                 &:disabled {
@@ -800,7 +633,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ------------------------------------------------------ CATÉGORIES (grille) */
+
     .categories-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -808,16 +641,12 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .category-card {
-        background: $surface;
-        border-radius: $radius;
-        border: 1px solid $line-white;
-        border-top: 3px solid $ink;
-        padding: 20px;
+        padding: 14px;
         transition: $transition;
+        @include card;
 
         &:hover {
-            border-top-color: $brass;
-            box-shadow: 0 10px 24px -14px rgba(22, 41, 58, 0.35);
+            box-shadow: 0 10px 24px -14px rgba(28, 64, 128, 0.14);
             transform: translateY(-2px);
         }
 
@@ -834,13 +663,11 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: $paper;
-                font-family: $font-display;
+                color: #fff;
+                font-family: $font;
                 font-weight: 600;
                 font-size: 15px;
                 flex-shrink: 0;
-                border: 1px dashed rgba(245, 241, 231, 0.5);
-                box-shadow: 0 0 0 3px $surface, 0 0 0 4px $line;
             }
 
             .category-info {
@@ -849,16 +676,15 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
                 h4 {
                     margin: 0 0 2px;
-                    font-family: $font-display;
+                    font-family: $font;
                     font-size: 15.5px;
                     font-weight: 600;
                     color: $ink;
                 }
 
                 .category-code {
-                    font-family: $font-mono;
+                    font-family: $font;
                     font-size: 11px;
-                    letter-spacing: 0.04em;
                     color: $brass-dark;
                 }
             }
@@ -879,7 +705,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                 font-size: 11px;
                 color: $muted;
                 margin-bottom: 12px;
-                font-family: $font-mono;
+                font-family: $font;
 
                 strong {
                     color: $ink;
@@ -891,8 +717,8 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             .category-stats {
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
-                border-top: 1px dashed $line;
-                border-bottom: 1px dashed $line;
+                border-top: 1px solid $border-soft;
+                border-bottom: 1px solid $border-soft;
                 padding: 10px 0;
 
                 .stat-item {
@@ -908,7 +734,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                     }
 
                     .stat-value {
-                        font-family: $font-display;
+                        font-family: $font;
                         font-size: 14px;
                         font-weight: 600;
                         color: $ink;
@@ -916,8 +742,6 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
                     .stat-label {
                         font-size: 8.5px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.05em;
                         color: $muted;
                     }
                 }
@@ -932,7 +756,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ------------------------------------------------------ TYPES RNF (grille) */
+
     .types-rnf-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -941,16 +765,12 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .type-rnf-card {
-        background: $surface;
-        border-radius: $radius;
-        border: 1px solid $line-white;
-        border-top: 3px solid $ink;
-        padding: 20px;
+        padding: 14px;
         transition: $transition;
+        @include card;
 
         &:hover {
-            border-top-color: $brass;
-            box-shadow: 0 10px 24px -14px rgba(22, 41, 58, 0.35);
+            box-shadow: 0 10px 24px -14px rgba(28, 64, 128, 0.14);
             transform: translateY(-2px);
         }
 
@@ -962,13 +782,11 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .type-badge {
-            font-family: $font-mono;
+            font-family: $font;
             font-size: 10px;
             font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
             padding: 3px 8px;
-            border-radius: 2px;
+            border-radius: 6px;
             border: 1px solid $blue;
             color: $blue;
         }
@@ -976,7 +794,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         .type-body {
             h4 {
                 margin: 0 0 6px;
-                font-family: $font-display;
+                font-family: $font;
                 font-size: 16px;
                 font-weight: 600;
                 color: $ink;
@@ -997,7 +815,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                 color: $muted;
                 margin-bottom: 12px;
                 padding-bottom: 12px;
-                border-bottom: 1px dashed $line;
+                border-bottom: 1px solid $border-soft;
 
                 strong {
                     color: $ink;
@@ -1013,20 +831,18 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
                 .sous-type-label {
                     font-size: 10.5px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
                     color: $muted;
                     font-weight: 600;
                     margin-right: 2px;
                 }
 
                 .sous-type-item {
-                    font-family: $font-mono;
+                    font-family: $font;
                     font-size: 10.5px;
                     color: $ink-soft;
                     background: $surface-alt;
                     border: 1px solid $line-white;
-                    border-radius: 2px;
+                    border-radius: 6px;
                     padding: 2px 7px;
                 }
             }
@@ -1037,12 +853,12 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             gap: 6px;
             margin-top: 14px;
             padding-top: 12px;
-            border-top: 1px solid $line-white;
+            border-top: 1px solid $border-soft;
             justify-content: flex-end;
         }
     }
 
-    /* ------------------------------------------------------ ÉTAT VIDE */
+
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -1055,7 +871,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         h3 {
-            font-family: $font-display;
+            font-family: $font;
             font-size: 16px;
             color: $ink;
             margin: 0 0 4px;
@@ -1068,70 +884,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ------------------------------------------------------ TIMELINE D'ACTIVITÉS */
-    .activity-timeline {
-        padding: 4px 22px;
 
-        .activity-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            padding: 12px 0;
-            border-bottom: none;
-
-            &:hover {
-                background: transparent;
-            }
-        }
-
-        .activity-rail {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            align-self: stretch;
-
-            .activity-icon {
-                margin: 0;
-            }
-
-            .activity-connector {
-                flex: 1;
-                width: 1px;
-                background: $line;
-                margin-top: 4px;
-            }
-        }
-
-        .activity-item:last-child .activity-connector {
-            display: none;
-        }
-
-        .activity-content {
-            padding-top: 4px;
-            padding-bottom: 10px;
-
-            .activity-meta {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                flex-wrap: wrap;
-                margin-top: 2px;
-            }
-
-            .activity-type-label {
-                font-family: $font-mono;
-                font-size: 9.5px;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: $brass-dark;
-                border: 1px solid $brass;
-                border-radius: 2px;
-                padding: 1px 6px;
-            }
-        }
-    }
-
-    /* ------------------------------------------------------ FILTRES D'ACTIVITÉS */
     .activity-filters {
         display: flex;
         flex-wrap: wrap;
@@ -1159,15 +912,15 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         &.active {
             background: $ink;
             border-color: $ink;
-            color: $paper;
+            color: #fff;
         }
     }
 
-    /* ------------------------------------------------------ MODALE (fiche rapide) */
+
     .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(22, 41, 58, 0.55);
+        background: rgba(16, 33, 79, 0.45);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1179,12 +932,11 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     .modal-content {
         background: $surface;
         border-radius: $radius;
-        border-top: 3px solid $ink;
         width: 100%;
         max-width: 520px;
         max-height: 88vh;
         overflow-y: auto;
-        box-shadow: 0 24px 60px -20px rgba(22, 41, 58, 0.5);
+        box-shadow: 0 24px 60px -20px rgba(16, 33, 79, 0.3);
     }
 
     .modal-header {
@@ -1192,11 +944,11 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         justify-content: space-between;
         align-items: center;
         padding: 20px 24px;
-        border-bottom: 1px dashed $line;
+        border-bottom: 1px solid $border-soft;
 
         h3 {
             margin: 0;
-            font-family: $font-display;
+            font-family: $font;
             font-size: 18px;
             font-weight: 600;
             color: $ink;
@@ -1211,7 +963,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         justify-content: center;
         background: transparent;
         border: 1px solid $line;
-        border-radius: $radius;
+        border-radius: $radius-sm;
         color: $ink-soft;
         cursor: pointer;
         transition: $transition;
@@ -1242,46 +994,14 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         justify-content: flex-end;
         gap: 10px;
         padding: 16px 24px;
-        border-top: 1px dashed $line;
+        border-top: 1px solid $border-soft;
     }
 
     .btn-cancel,
-    .btn-save {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-family: $font-ui;
-        font-size: 12.5px;
-        font-weight: 600;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-        padding: 10px 18px;
-        border-radius: $radius;
-        cursor: pointer;
-        transition: $transition;
-    }
+    .btn-save { @include btn; }
 
-    .btn-cancel {
-        background: $surface;
-        color: $ink-soft;
-        border: 1px solid $line;
-
-        &:hover {
-            border-color: $ink;
-            color: $ink;
-        }
-    }
-
-    .btn-save {
-        background: $ink;
-        color: $paper;
-        border: 1px solid $ink;
-
-        &:hover {
-            background: $brass-dark;
-            border-color: $brass-dark;
-        }
-    }
+    .btn-cancel { @include btn-outline; }
+    .btn-save   { @include btn-primary; }
 }
 
 @keyframes spin {
@@ -1314,4 +1034,13 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         opacity: 0.4;
         transform: scale(0.75);
     }
+}
+
+@media (max-width: 700px) {
+    :host { padding: 12px 10px 20px; }
+
+    .services-publics-detail .detail-shell { height: auto; max-height: none; }
+    .services-publics-detail .detail-scroll { overflow: visible; }
+    .services-publics-detail .act { grid-template-columns: 32px minmax(0, 1fr); }
+    .services-publics-detail .act__time { grid-column: 2; align-items: flex-start; flex-direction: row; gap: 6px; }
 }

@@ -1,6 +1,3 @@
-// ============================================================
-// MODÈLE SERVICE PUBLIC
-// ============================================================
 
 export interface ServicePublic {
     id: number;
@@ -24,9 +21,6 @@ export interface ServicePublic {
     statistiques?: Statistiques;
 }
 
-// ============================================================
-// DEMANDES EN ATTENTE
-// ============================================================
 export interface DemandeEnAttente {
     id: number;
     reference: string;
@@ -42,9 +36,6 @@ export interface DemandeEnAttente {
     serviceId?: number;
 }
 
-// ============================================================
-// CATÉGORIES DE SERVICES
-// ============================================================
 export interface Categorie {
     id: number;
     nom: string;
@@ -104,9 +95,6 @@ export interface CategorieStatistiques {
     };
 }
 
-// ============================================================
-// TYPES DE RNF (Basé sur le fichier Excel)
-// ============================================================
 export interface TypeRNF {
     id: number;
     numero: number;
@@ -149,9 +137,6 @@ export interface TypeRNFStatistiques {
     };
 }
 
-// ============================================================
-// PAIEMENTS DES RNF
-// ============================================================
 export interface PaiementRNF {
     id: number;
     reference: string;
@@ -175,9 +160,6 @@ export interface PaiementRNF {
     categorieId?: number;
 }
 
-// ============================================================
-// INSTITUTIONS
-// ============================================================
 export interface Institution {
     id: number;
     nom: string;
@@ -201,9 +183,6 @@ export interface InstitutionStatistiques {
     montantTotalPaiements: number;
 }
 
-// ============================================================
-// UTILISATEURS DU SERVICE
-// ============================================================
 export interface Utilisateur {
     id: number;
     nom: string;
@@ -217,9 +196,6 @@ export interface Utilisateur {
     serviceId: number;
 }
 
-// ============================================================
-// STATISTIQUES
-// ============================================================
 export interface Statistiques {
     totalUtilisateurs: number;
     utilisateursActifs: number;
@@ -240,9 +216,6 @@ export interface StatistiquesMensuelles {
     nouveauxTypes: number;
 }
 
-// ============================================================
-// ACTIVITÉS
-// ============================================================
 export interface Activite {
     id: number;
     type: 'paiement' | 'utilisateur' | 'categorie' | 'type-rnf' | 'system';

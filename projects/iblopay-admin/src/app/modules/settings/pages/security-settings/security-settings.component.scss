@@ -32,7 +32,6 @@
   color: var(--ib-text);
 }
 
-// ========== RESPONSIVE ==========
 @media (max-width: 1200px) {
   :host { padding: 24px; }
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
@@ -57,8 +56,7 @@
   .kpi-card__icon { width: 28px; height: 28px; font-size: 12px; }
   .activity-item { flex-wrap: wrap; gap: 4px; }
   .activity-item__desc { width: 100%; margin-left: 30px; }
-  
-  // Table responsive
+
   .table--responsive {
     min-width: unset;
     width: 100%;
@@ -115,7 +113,6 @@
   .audit-filters .filter-input, .audit-filters .filter-select { width: 100%; }
 }
 
-// ========== HEADER ==========
 .page-header {
   margin-bottom: 24px;
   .back-btn {
@@ -157,7 +154,6 @@
   }
 }
 
-// ========== TABS ==========
 .tabs-nav {
   display: flex;
   gap: 4px;
@@ -199,7 +195,6 @@
   }
 }
 
-// ========== PANEL ==========
 .panel {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -207,7 +202,7 @@
   box-shadow: var(--ib-shadow);
   overflow: hidden;
   padding: 20px;
-  
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -240,7 +235,6 @@
   &__actions { display: flex; gap: 8px; flex-wrap: wrap; }
 }
 
-// ========== ALERT BANNER ==========
 .alert-banner {
   display: flex;
   align-items: center;
@@ -258,7 +252,6 @@
   &__message { font-size: 13px; }
 }
 
-// ========== KPI CARDS ==========
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -326,7 +319,6 @@
   }
 }
 
-// ========== ACTIVITY ==========
 .activity-section {
   &__header {
     display: flex;
@@ -361,7 +353,6 @@
   &__desc { color: var(--ib-text-muted); font-size: 11px; }
 }
 
-// ========== AUDIT ==========
 .audit-filters {
   display: flex;
   gap: 10px;
@@ -382,7 +373,6 @@
   &:focus { outline: none; border-color: var(--ib-primary); box-shadow: 0 0 0 3px rgba(15, 110, 91, 0.1); }
 }
 
-// ========== TABLE ==========
 .table-wrap { overflow-x: auto; }
 
 .table {
@@ -415,13 +405,12 @@
 .text-muted { color: var(--ib-text-muted); }
 .amount--success { color: var(--ib-success); }
 .amount--danger { color: var(--ib-danger); }
-.amount { 
-  font-weight: 700; 
+.amount {
+  font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
   &__alert { font-size: 14px; margin-left: 4px; }
 }
 
-// ========== FRAUD ==========
 .fraud-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
 .fraud-card {
@@ -440,10 +429,7 @@
   &__actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
-// ========== KYC ==========
-// Styles hérités de .table
 
-// ========== AML ==========
 .aml-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
 .aml-card {
@@ -462,7 +448,6 @@
   &__date { font-size: 11px; color: var(--ib-text-muted); }
 }
 
-// ========== BADGES ==========
 .badge {
   display: inline-block;
   font-size: 10px;
@@ -490,7 +475,6 @@
   &--rejected { background: var(--ib-danger-light); color: var(--ib-danger); }
 }
 
-// ========== PAGINATION ==========
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -513,7 +497,6 @@
   }
 }
 
-// ========== BUTTONS ==========
 .btn {
   padding: 6px 14px;
   border: none;
@@ -536,7 +519,6 @@
   &--sm { padding: 4px 10px; font-size: 10px; }
 }
 
-// ========== MODAL ==========
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -572,7 +554,6 @@
   &__footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--ib-border); background: var(--ib-bg); flex-shrink: 0; flex-wrap: wrap; }
 }
 
-// ========== FORM ==========
 .config-form { padding: 8px 0; }
 
 .form-row {
@@ -625,7 +606,6 @@
   }
 }
 
-// ========== DETAIL GRID ==========
 .detail-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -643,7 +623,6 @@
   .detail-value { font-size: 13px; font-weight: 600; color: var(--ib-text); text-align: right; }
 }
 
-// ========== TOASTS ==========
 .toast-stack {
   position: fixed;
   bottom: 20px;
@@ -684,7 +663,6 @@
   &--info { background: var(--ib-primary-dark); }
 }
 
-// ========== ANIMATIONS ==========
 @keyframes modalIn {
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.98); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }

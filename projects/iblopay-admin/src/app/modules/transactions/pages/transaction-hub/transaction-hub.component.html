@@ -1,59 +1,402 @@
-<div class="hub-page">
-  <!-- Page Header -->
-  <div class="hub-page__header">
-    <div class="hub-page__title-block">
-      <h1 class="hub-page__title">Gestion des Transactions</h1>
-      <p class="hub-page__subtitle">Suivi et gestion des transactions IBLOPay Service Wallet</p>
+<div class="transactions-page">
+
+  <!-- ================= HEADER ================= -->
+  <header class="page-header">
+    <div>
+      <h1>Gestion des Transactions</h1>
+      <p>Suivi en temps réel des transactions IBLOPay Service Wallet</p>
     </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn--primary" (click)="refreshNow()">
+        <i class="fas fa-arrows-rotate"></i>
+        Actualiser
+      </button>
+
+      <button type="button" class="btn btn--success" (click)="exportTransactions()">
+        <i class="fas fa-download"></i>
+        Exporter
+      </button>
+
+      <button type="button" class="btn btn--purple" (click)="printReport()">
+        <i class="fas fa-chart-column"></i>
+        Rapport
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= KPI ================= -->
+  <section class="kpi-grid">
+    <article class="kpi-card">
+      <span class="kpi-card__icon kpi-card__icon--blue">
+        <i class="fas fa-arrow-right-arrow-left"></i>
+      </span>
+      <div>
+        <small>Total Transactions</small>
+        <strong>{{ totalTransactions | number:'1.0-0' }}</strong>
+      </div>
+    </article>
+
+    <article class="kpi-card">
+      <span class="kpi-card__icon kpi-card__icon--green">
+        <i class="far fa-circle-check"></i>
+      </span>
+      <div>
+        <small>Transactions Réussies</small>
+        <strong>{{ successfulTransactions | number:'1.0-0' }}</strong>
+      </div>
+    </article>
+
+    <article class="kpi-card">
+      <span class="kpi-card__icon kpi-card__icon--orange">
+        <i class="far fa-clock"></i>
+      </span>
+      <div>
+        <small>Transactions En attente</small>
+        <strong>{{ pendingTransactions | number:'1.0-0' }}</strong>
+      </div>
+    </article>
+
+    <article class="kpi-card">
+      <span class="kpi-card__icon kpi-card__icon--red">
+        <i class="fas fa-xmark"></i>
+      </span>
+      <div>
+        <small>Transactions Échouées</small>
+        <strong>{{ failedTransactions | number:'1.0-0' }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <!-- ================= FILTRES ================= -->
+  <section class="filters-card">
+    <div class="filter-group filter-group--period">
+      <label>Période</label>
+      <div class="period-box">
+        <i class="far fa-calendar"></i>
+        <input
+          type="date"
+          [value]="filters.dateFrom"
+          (change)="updateFilter('dateFrom', getInputValue($event))">
+        <span>-</span>
+        <input
+          type="date"
+          [value]="filters.dateTo"
+          (change)="updateFilter('dateTo', getInputValue($event))">
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Type de transaction</label>
+      <select
+        [value]="filters.type"
+        (change)="updateFilter('type', getInputValue($event))">
+        <option value="">Tous les types</option>
+        <option value="TRANSFER">Transfert</option>
+        <option value="DEPOSIT">Dépôt</option>
+        <option value="WITHDRAWAL">Retrait</option>
+        <option value="PAYMENT">Paiement</option>
+        <option value="COMMISSION">Commission</option>
+        <option value="REFUND">Remboursement</option>
+        <option value="FUND">Approvisionnement</option>
+        <option value="MERCHANT_PAYMENT">Paiement marchand</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Statut</label>
+      <select
+        [value]="filters.status"
+        (change)="updateFilter('status', getInputValue($event))">
+        <option value="">Tous les statuts</option>
+        <option value="SUCCESS">Réussie</option>
+        <option value="PENDING">En attente</option>
+        <option value="PROCESSING">En cours</option>
+        <option value="FAILED">Échouée</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Mode de paiement</label>
+      <select
+        [value]="filters.paymentMode"
+        (change)="updateFilter('paymentMode', getInputValue($event))">
+        <option value="">Tous les modes</option>
+        <option value="WALLET">Solde wallet</option>
+        <option value="CARD">Carte</option>
+        <option value="MOBILE_MONEY">Mobile Money</option>
+        <option value="BANK">Banque</option>
+      </select>
+    </div>
+
+    <button type="button" class="filter-btn" (click)="applyFilters()">
+      <i class="fas fa-search"></i>
+      Filtrer
+    </button>
+
+    <button type="button" class="reset-btn" (click)="resetFilters()">
+      <i class="fas fa-arrows-rotate"></i>
+      Réinitialiser
+    </button>
+  </section>
+
+  <!-- ================= CONTENT ================= -->
+  <div class="content-layout">
+
+    <!-- ================= TABLE ================= -->
+    <section class="table-card">
+      <div class="table-card__header">
+        <div>
+          <h2>Liste des transactions</h2>
+          <span>{{ filteredTransactions.length | number:'1.0-0' }} transaction(s) trouvée(s)</span>
+        </div>
+
+        <div class="live-update">
+          <span class="live-update__dot"></span>
+          Mise à jour en temps réel
+          <button type="button" class="icon-refresh" (click)="refreshNow()" title="Actualiser">
+            <i class="fas fa-arrows-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="transaction-table">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Type</th>
+              <th>Expéditeur</th>
+              <th>Bénéficiaire</th>
+              <th>Montant</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let tx of paginatedTransactions; trackBy: trackByTransaction">
+              <td>
+                <div class="reference-cell">
+                  <span class="tx-icon" [ngClass]="getTypeClass(tx.type)">
+                    <i [class]="getTypeIcon(tx.type)"></i>
+                  </span>
+                  <div>
+                    <strong>{{ tx.reference }}</strong>
+                    <small>{{ tx.transactionId }}</small>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="type-pill" [ngClass]="getTypePillClass(tx.type)">
+                  {{ getTypeLabel(tx.type) }}
+                </span>
+              </td>
+
+              <td>
+                <div class="actor-cell">
+                  <strong>{{ tx.senderName }}</strong>
+                  <small>{{ tx.senderPhone }}</small>
+                </div>
+              </td>
+
+              <td>
+                <div class="actor-cell">
+                  <strong>{{ tx.receiverName }}</strong>
+                  <small>{{ tx.receiverPhone }}</small>
+                </div>
+              </td>
+
+              <td>
+                <strong class="amount-cell">
+                  {{ tx.amount | number:'1.0-0' }} {{ tx.currency }}
+                </strong>
+              </td>
+
+              <td>
+                <div class="date-cell">
+                  <strong>{{ tx.date | date:'dd/MM/yyyy' }}</strong>
+                  <small>{{ tx.date | date:'HH:mm' }}</small>
+                </div>
+              </td>
+
+              <td>
+                <span class="status-pill" [ngClass]="getStatusClass(tx.status)">
+                  {{ getStatusLabel(tx.status) }}
+                </span>
+              </td>
+
+              <td class="text-center">
+                <button
+                  type="button"
+                  class="view-btn"
+                  title="Voir les détails"
+                  (click)="openDetails(tx)">
+                  <i class="far fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="paginatedTransactions.length === 0">
+              <td colspan="8" class="empty-row">
+                Aucune transaction ne correspond aux critères sélectionnés.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ================= PAGINATION ================= -->
+      <div class="table-footer">
+        <span>
+          Affichage de {{ startItem }} à {{ endItem }}
+          sur {{ filteredTransactions.length | number:'1.0-0' }} transactions
+        </span>
+
+        <div class="pagination">
+          <select
+            class="page-size"
+            [value]="pageSize"
+            (change)="changePageSize(getInputValue($event))">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+
+          <button
+            type="button"
+            [disabled]="currentPage === 1"
+            (click)="goToPage(currentPage - 1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <button
+            *ngFor="let page of visiblePages"
+            type="button"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+
+          <span class="dots" *ngIf="totalPages > 6">...</span>
+
+          <button
+            *ngIf="totalPages > 6"
+            type="button"
+            [class.active]="currentPage === totalPages"
+            (click)="goToPage(totalPages)">
+            {{ totalPages }}
+          </button>
+
+          <button
+            type="button"
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(currentPage + 1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DETAIL PANEL ================= -->
+    <aside class="details-panel" *ngIf="selectedTransaction">
+      <div class="details-panel__header">
+        <div>
+          <h3>Détails de la transaction</h3>
+        </div>
+
+        <button
+          type="button"
+          class="details-close"
+          (click)="closeDetails()">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="details-identity">
+        <span class="tx-icon tx-icon--blue">
+          <i class="fas fa-arrow-right-arrow-left"></i>
+        </span>
+
+        <div>
+          <strong>{{ selectedTransaction.reference }}</strong>
+          <small>{{ selectedTransaction.transactionId }}</small>
+        </div>
+
+        <span
+          class="status-pill"
+          [ngClass]="getStatusClass(selectedTransaction.status)">
+          {{ getStatusLabel(selectedTransaction.status) }}
+        </span>
+      </div>
+
+      <div class="details-tabs">
+        <button type="button" class="active">Informations</button>
+        <button type="button">Historique</button>
+      </div>
+
+      <div class="details-body">
+        <div class="detail-row">
+          <span>Type</span>
+          <strong>{{ getTypeLabel(selectedTransaction.type) }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Montant</span>
+          <strong>{{ selectedTransaction.amount | number:'1.0-0' }} {{ selectedTransaction.currency }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Statut</span>
+          <strong>{{ getStatusLabel(selectedTransaction.status) }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Date</span>
+          <strong>{{ selectedTransaction.date | date:'dd/MM/yyyy HH:mm:ss' }}</strong>
+        </div>
+
+        <div class="detail-row detail-row--stack">
+          <span>Expéditeur</span>
+          <strong>{{ selectedTransaction.senderName }}</strong>
+          <small>{{ selectedTransaction.senderPhone }}</small>
+        </div>
+
+        <div class="detail-row detail-row--stack">
+          <span>Bénéficiaire</span>
+          <strong>{{ selectedTransaction.receiverName }}</strong>
+          <small>{{ selectedTransaction.receiverPhone }}</small>
+        </div>
+
+        <div class="detail-row">
+          <span>Mode de paiement</span>
+          <strong>{{ getPaymentModeLabel(selectedTransaction.paymentMode) }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Frais</span>
+          <strong>{{ selectedTransaction.fee | number:'1.0-0' }} {{ selectedTransaction.currency }}</strong>
+        </div>
+
+        <div class="detail-row detail-row--stack">
+          <span>Description</span>
+          <strong>{{ selectedTransaction.description }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Référence externe</span>
+          <strong>{{ selectedTransaction.externalReference || '—' }}</strong>
+        </div>
+      </div>
+
+      <button type="button" class="print-btn" (click)="printSelectedTransaction()">
+        <i class="fas fa-print"></i>
+        Imprimer
+      </button>
+    </aside>
+
   </div>
 
-  <!-- KPI Cards -->
-  <app-kpi-cards [cards]="kpiCards"></app-kpi-cards>
-
-  <!-- Quick Actions -->
-  <app-quick-actions [actions]="quickActions"></app-quick-actions>
-
-  <!-- Filter Bar -->
-  <app-filter-bar (filterChange)="onPageChange(1)"></app-filter-bar>
-
-  <!-- Full-width Transaction Table (no detail panel) -->
-  <div class="hub-page__table-area">
-    <app-transaction-table
-      [rows]="transactions"
-      [total]="totalTransactions"
-      [currentPage]="currentPage"
-      (pageChange)="onPageChange($event)"
-      (rowClick)="onRowClick($event)"
-      (reverseClick)="onReverseClick($event)">
-    </app-transaction-table>
-  </div>
-
-  <!-- Analytics Row (4 panels) -->
-  <div class="hub-page__analytics">
-    <div class="hub-page__analytics-item hub-page__analytics-item--wide">
-      <app-traceability-timeline [data]="traceability"></app-traceability-timeline>
-    </div>
-    <div class="hub-page__analytics-item">
-      <app-volume-chart [labels]="chartLabels" [values]="chartValues"></app-volume-chart>
-    </div>
-  </div>
-
-  <div class="hub-page__analytics">
-    <div class="hub-page__analytics-item">
-      <app-top-actors [actors]="topActors"></app-top-actors>
-    </div>
-    <div class="hub-page__analytics-item">
-      <app-operation-types-donut [types]="operationTypes"></app-operation-types-donut>
-    </div>
-  </div>
-
-  <!-- Bottom Row -->
-  <div class="hub-page__analytics">
-    <div class="hub-page__analytics-item">
-      <app-alerts-list [alerts]="alerts"></app-alerts-list>
-    </div>
-    <div class="hub-page__analytics-item">
-      <app-system-activities [activities]="systemActivities"></app-system-activities>
-    </div>
-  </div>
 </div>

@@ -1,6 +1,6 @@
 <div class="report-detail">
 
-  <!-- ─── HEADER ─────────────────────────────────── -->
+
   <div class="detail-header">
     <button class="back-btn" (click)="goBack()">
       <i class="fa-solid fa-arrow-left"></i>
@@ -10,7 +10,7 @@
     <p class="detail-desc">{{ reportDef?.description }}</p>
   </div>
 
-  <!-- ─── KPI CARDS (stats above filters) ─────────── -->
+
   <div class="kpi-grid">
     <div class="kpi-card" *ngFor="let kpi of kpis">
       <div class="kpi__label">{{ kpi.label }}</div>
@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <!-- ─── FILTERS ─────────────────────────────────── -->
+
   <div class="filters-card">
     <div class="filters-grid">
       <div class="filter-group">
@@ -64,7 +64,7 @@
     </div>
   </div>
 
-  <!-- ─── CHARTS ──────────────────────────────────── -->
+
   <div class="charts-row">
     <div class="chart-card chart-card-wide">
       <div class="chart-card-header">
@@ -88,7 +88,7 @@
     </div>
   </div>
 
-  <!-- ─── DATA TABLE ───────────────────────────────── -->
+
   <div class="table-card">
     <div class="table-card-header">
       <div class="table-card-title">

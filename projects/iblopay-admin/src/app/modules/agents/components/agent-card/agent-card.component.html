@@ -1,0 +1,16 @@
+<div class="agent-card">
+      <div class="card-header">
+        <div class="agent-avatar">
+          {{ agent?.firstName?.[0] }}{{ agent?.lastName?.[0] }}
+        </div>
+        <div class="agent-info">
+          <h3>{{ agent?.firstName }} {{ agent?.lastName }}</h3>
+          <p>{{ agent?.code }}</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>Email:</strong> {{ agent?.email }}</p>
+        <p><strong>Téléphone:</strong> {{ agent?.phone }}</p>
+        <p><strong>Statut:</strong> {{ getStatusLabel(agent?.status) }}</p>
+      </div>
+    </div>

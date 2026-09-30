@@ -1,15 +1,13 @@
-/**
- * Modèles partagés pour le module Paramètres Administrateur IBLOPAY
- */
+
 
 export interface SettingsAction {
   label: string;
   icon?: string;
-  /** Identifiant utilisé pour router l'action vers le bon handler / endpoint */
+
   actionId: string;
-  /** Action sensible => nécessite confirmation avant exécution */
+
   requiresConfirmation?: boolean;
-  /** Action destructive (suspendre, supprimer, bloquer, etc.) => style d'alerte */
+
   danger?: boolean;
 }
 
@@ -23,9 +21,9 @@ export interface SettingsSection {
   title: string;
   icon: string;
   description?: string;
-  /** Actions directes (sans sous-groupe) */
+
   actions?: SettingsAction[];
-  /** Sous-groupes (ex: Clients / Agents / Super Agents dans "Utilisateurs") */
+
   groups?: SettingsSubGroup[];
 }
 

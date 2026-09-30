@@ -47,7 +47,7 @@
       </details>
     </section>
 
-    <!-- Sweep detail: only shown for SWEEP / SWEEP_INVERSE transactions -->
+
     <section class="info-section" *ngIf="transaction.transactionType === TransactionType.SWEEP || transaction.transactionType === TransactionType.SWEEP_INVERSE">
       <h2>Sweep details</h2>
       <div *ngIf="isLoadingSweep" class="state-message">Loading sweep details…</div>
@@ -66,7 +66,7 @@
       </dl>
     </section>
 
-    <!-- Commission detail: only shown for COMMISSION transactions -->
+
     <section class="info-section" *ngIf="transaction.transactionType === TransactionType.COMMISSION">
       <h2>Commission details</h2>
       <div *ngIf="isLoadingCommission" class="state-message">Loading commission details…</div>

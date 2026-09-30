@@ -1,7 +1,4 @@
-/* ==========================================================
-   CARD PREVIEW (COMPOSANT APERÇU DE CARTE)
-   Adapté aux modes clair et sombre
-   ========================================================== */
+
 
 .card-preview {
   position: relative;
@@ -11,14 +8,14 @@
   border-radius: 20px;
   padding: 24px;
 
-  /* Arrière-plan premium adaptatif avec effet glassmorphism */
+
   background: linear-gradient(135deg,
       var(--surface-2, rgba(255, 255, 255, 0.08)) 0%,
       var(--surface, rgba(255, 255, 255, 0.03)) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 
-  /* Contour subtil et visible dans tous les thèmes */
+
   border: 1px solid var(--border, rgba(255, 255, 255, 0.15));
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 
@@ -26,7 +23,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
-  /* Effet de brillance d'arrière-plan */
+
   &::before {
     content: '';
     position: absolute;
@@ -45,7 +42,7 @@
     filter: grayscale(60%);
   }
 
-  /* --- EN-TÊTE DE LA CARTE --- */
+
   &__top {
     display: flex;
     justify-content: space-between;
@@ -63,7 +60,7 @@
     opacity: 0.9;
   }
 
-  /* --- NUMÉRO DE CARTE --- */
+
   &__pan {
     margin-top: 32px;
     font-family: 'Courier New', Courier, monospace;
@@ -77,7 +74,7 @@
     z-index: 1;
   }
 
-  /* --- BLOC SOLDE --- */
+
   &__balance {
     margin-top: 20px;
     display: flex;
@@ -102,7 +99,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* --- PIED DE CARTE --- */
+
   &__bottom {
     margin-top: 28px;
     display: flex;

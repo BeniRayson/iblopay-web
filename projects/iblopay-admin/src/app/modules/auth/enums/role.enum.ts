@@ -1,4 +1,3 @@
-// src/app/modules/auth/enums/role.enum.ts
 export enum Role {
   SYSTEM_ADMIN = 'SYSTEM_ADMIN',
   ADMIN = 'ADMIN'

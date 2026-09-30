@@ -60,9 +60,6 @@ interface SystemParam {
   active: boolean;
 }
 
-// ============================================================
-// INTERFACES POUR LES BARÈMES
-// ============================================================
 interface TrancheSimple {
   min: number;
   max: number;
@@ -110,7 +107,6 @@ export class SystemSettingsComponent implements OnInit {
   toasts: Toast[] = [];
   private toastSeq = 0;
 
-  // État pour les barèmes
   sectionBaremeOuverte: 'retrait-client' | 'retrait-marchand' | 'recharge-client' | 'carte-agent' | null = null;
   modeEditionBareme: boolean = false;
   enregistrementBaremeEnCours: boolean = false;
@@ -304,11 +300,7 @@ export class SystemSettingsComponent implements OnInit {
     }
   ];
 
-  // ============================================================
-  // BARÈMES DE COMMISSION (D'APRÈS LES IMAGES)
-  // ============================================================
 
-  // Barème 1 : Retrait Client
   baremeRetraitClient: Bareme<TrancheRepartie> = {
     id: 'retrait-client',
     titre: "Agahembo k'umukozi (Agent) / uwukurira umukozi wa Lumiash (SA) — igihe umunywanyi abikishije (FBU)",
@@ -333,7 +325,6 @@ export class SystemSettingsComponent implements OnInit {
     ]
   };
 
-  // Barème 2 : Retrait Marchand
   baremeRetraitMarchand: Bareme<TrancheSimple> = {
     id: 'retrait-marchand',
     titre: "Agahembo k'umukozi (Agent) / uwukurira umukozi wa Lumiash (SA) — igihe umudandaza abikuye (FBU)",
@@ -352,7 +343,6 @@ export class SystemSettingsComponent implements OnInit {
     ]
   };
 
-  // Barème 3 : Recharge Client
   baremeRechargeClient: Bareme<TrancheRepartie> = {
     id: 'recharge-client',
     titre: "Agahembo k'umukozi (Agent) / uwukurira umukozi wa Lumiash (SA) — igihe umunywanyi abikuye (FBU)",
@@ -377,7 +367,6 @@ export class SystemSettingsComponent implements OnInit {
     ]
   };
 
-  // Barème 4 : Carte Agent
   baremeCarteAgent: Bareme<TrancheCarte> = {
     id: 'carte-agent',
     titre: 'Ibiciro — Frais de depot et de retrait (carte agent)',
@@ -402,14 +391,12 @@ export class SystemSettingsComponent implements OnInit {
     ]
   };
 
-  // Sauvegarde pour annulation
   private snapshotBaremes: string | null = null;
 
   constructor() { }
 
   ngOnInit(): void { }
 
-  // ========== NAVIGATION ==========
 
   setActiveTab(tab: string): void {
     if (this.modeEditionBareme && tab !== 'baremes') {
@@ -421,7 +408,6 @@ export class SystemSettingsComponent implements OnInit {
     this.activeTab = tab;
   }
 
-  // ========== COMPTES ==========
 
   getActiveFeesCount(): number {
     return this.fees.filter(f => f.active).length;
@@ -439,7 +425,6 @@ export class SystemSettingsComponent implements OnInit {
     return this.systemParams.filter(p => p.active).length;
   }
 
-  // ========== LIMITS SUMMARY ==========
 
   getLimitsSummary(): any[] {
     return this.limits.filter(l => l.active && l.currentUsage !== undefined).map(l => {
@@ -457,7 +442,6 @@ export class SystemSettingsComponent implements OnInit {
     });
   }
 
-  // ========== FEE ACTIONS ==========
 
   configureFee(fee: Fee): void {
     this.selectedItem = fee;
@@ -480,7 +464,6 @@ export class SystemSettingsComponent implements OnInit {
     }
   }
 
-  // ========== LIMIT ACTIONS ==========
 
   configureLimit(limit: Limit): void {
     this.selectedItem = limit;
@@ -503,7 +486,6 @@ export class SystemSettingsComponent implements OnInit {
     }
   }
 
-  // ========== NOTIFICATION ACTIONS ==========
 
   configureNotification(notification: Notification): void {
     this.selectedItem = notification;
@@ -551,7 +533,6 @@ export class SystemSettingsComponent implements OnInit {
     }
   }
 
-  // ========== PARAM ACTIONS ==========
 
   configureParam(param: SystemParam): void {
     this.selectedItem = param;
@@ -580,9 +561,6 @@ export class SystemSettingsComponent implements OnInit {
     }
   }
 
-  // ============================================================
-  // ACTIONS BARÈMES
-  // ============================================================
 
   basculerSectionBareme(section: 'retrait-client' | 'retrait-marchand' | 'recharge-client' | 'carte-agent'): void {
     if (this.sectionBaremeOuverte === section) {
@@ -638,7 +616,6 @@ export class SystemSettingsComponent implements OnInit {
     return valeur.toLocaleString('fr-FR');
   }
 
-  // ========== SYSTEM ACTIONS ==========
 
   clearCache(): void {
     if (confirm('Voulez-vous vraiment vider le cache systeme ?')) {
@@ -664,7 +641,6 @@ export class SystemSettingsComponent implements OnInit {
     this.toast('Export des donnees demarre', 'info');
   }
 
-  // ========== MODAL ==========
 
   closeModal(): void {
     this.showModal = false;
@@ -672,7 +648,6 @@ export class SystemSettingsComponent implements OnInit {
     this.formData = {};
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;

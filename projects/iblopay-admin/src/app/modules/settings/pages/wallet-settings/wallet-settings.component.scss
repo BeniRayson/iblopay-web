@@ -596,7 +596,6 @@
   }
 }
 
-// ========== PAGINATION ==========
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -666,7 +665,6 @@
   }
 }
 
-// ========== MODAL ==========
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -761,7 +759,6 @@
   }
 }
 
-// ========== MODALE SOLDE ==========
 .modal--solde {
   width: 480px;
 
@@ -942,7 +939,6 @@
   }
 }
 
-// ========== WALLET INFO ==========
 .wallet-info {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -984,7 +980,6 @@
   }
 }
 
-// ========== FORM ==========
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1037,7 +1032,6 @@ select.form-control {
   padding-right: 30px;
 }
 
-// ========== HISTORY ==========
 .history-preview {
   max-height: 300px;
   overflow-y: auto;
@@ -1128,7 +1122,6 @@ select.form-control {
   }
 }
 
-// ========== BUTTONS ==========
 .btn-primary, .btn-secondary {
   border: none;
   border-radius: var(--ib-radius-sm);
@@ -1165,7 +1158,6 @@ select.form-control {
   &:hover:not(:disabled) { background: var(--ib-bg); }
 }
 
-// ========== TOASTS ==========
 .toast-stack {
   position: fixed;
   bottom: 20px;

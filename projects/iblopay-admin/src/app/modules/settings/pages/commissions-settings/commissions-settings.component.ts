@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-// ========== INTERFACES ==========
 
 interface Agent {
   id: string;
@@ -140,34 +139,33 @@ export class CommissionsSettingsComponent implements OnInit {
     this.updateCounts();
   }
 
-  // ========== GENERATION DES NOMS ==========
 
   private generateAgentNames(count: number, prefix: string, role: 'agent' | 'super_agent'): { id: string; nom: string }[] {
     const prenoms = [
-      'Pierre', 'Claire', 'Jean-Bosco', 'Marie', 'Emmanuel', 'David', 'Esther', 'Fabrice', 
-      'Gracieuse', 'Hervé', 'Isabelle', 'Jean-Pierre', 'Karine', 'Léonard', 'Martine', 
-      'Noël', 'Odette', 'Patrick', 'Rose', 'Samuel', 'Thérèse', 'Urbain', 'Valérie', 
-      'William', 'Xavier', 'Yvonne', 'Zacharie', 'Anne', 'Benoît', 'Céline', 'Alain', 
-      'Bernadette', 'Charles', 'Dominique', 'Emilie', 'Françoise', 'Gisèle', 'Henri', 
-      'Inès', 'Jacques', 'Katherine', 'Louis', 'Madeleine', 'Nicolas', 'Odile', 
-      'Philippe', 'Quentin', 'Rachel', 'Stéphane', 'Ursula', 'Victor', 'Wendy', 
-      'Xénia', 'Yves', 'Zoé', 'Antoine', 'Béatrice', 'Christophe', 'Diane', 'Éric', 
-      'Florence', 'Gérard', 'Hélène', 'Irène', 'Joël', 'Laurence', 'Michel', 
+      'Pierre', 'Claire', 'Jean-Bosco', 'Marie', 'Emmanuel', 'David', 'Esther', 'Fabrice',
+      'Gracieuse', 'Hervé', 'Isabelle', 'Jean-Pierre', 'Karine', 'Léonard', 'Martine',
+      'Noël', 'Odette', 'Patrick', 'Rose', 'Samuel', 'Thérèse', 'Urbain', 'Valérie',
+      'William', 'Xavier', 'Yvonne', 'Zacharie', 'Anne', 'Benoît', 'Céline', 'Alain',
+      'Bernadette', 'Charles', 'Dominique', 'Emilie', 'Françoise', 'Gisèle', 'Henri',
+      'Inès', 'Jacques', 'Katherine', 'Louis', 'Madeleine', 'Nicolas', 'Odile',
+      'Philippe', 'Quentin', 'Rachel', 'Stéphane', 'Ursula', 'Victor', 'Wendy',
+      'Xénia', 'Yves', 'Zoé', 'Antoine', 'Béatrice', 'Christophe', 'Diane', 'Éric',
+      'Florence', 'Gérard', 'Hélène', 'Irène', 'Joël', 'Laurence', 'Michel',
       'Nathalie', 'Olivier', 'Pascale', 'René', 'Sandrine', 'Thierry', 'Véronique'
     ];
-    
+
     const noms = [
-      'NIZIGIYIMANA', 'NDIKUMANA', 'NSABIMANA', 'NTAKIRUTIMANA', 'NDAYISABA', 
-      'NIYONKURU', 'HAKIZIMANA', 'NIBITANGA', 'NDAYIZEYE', 'KARORERO', 
+      'NIZIGIYIMANA', 'NDIKUMANA', 'NSABIMANA', 'NTAKIRUTIMANA', 'NDAYISABA',
+      'NIYONKURU', 'HAKIZIMANA', 'NIBITANGA', 'NDAYIZEYE', 'KARORERO',
       'MANIRAKIZA', 'NIMUBONA', 'NISHIMWE', 'NTIRANDEKURA', 'NZAJIMANA',
       'BIGIRIMANA', 'BUCUMI', 'HABONIMANA', 'HATEGEKIMANA', 'IRAKOZE',
       'KABAYIZA', 'KAMANA', 'MANIRAKIZA', 'MPOZENZI', 'MUNYAKAZI',
       'NAHAYO', 'NDAYISENGA', 'NDIKUMANA', 'NIBISHAKA', 'NIMUBONA'
     ];
-    
+
     const result: { id: string; nom: string }[] = [];
     const prefixId = prefix === 'AG' ? 'AG' : 'SA';
-    
+
     for (let i = 1; i <= count; i++) {
       const prenomIndex = (i - 1) % prenoms.length;
       const nomIndex = (i - 1) % noms.length;
@@ -175,18 +173,16 @@ export class CommissionsSettingsComponent implements OnInit {
       const nom = `${prenoms[prenomIndex]} ${noms[nomIndex]}`;
       result.push({ id, nom });
     }
-    
+
     return result;
   }
 
-  // ========== INITIALISATION ==========
 
   private initializeData(): void {
     if (this.agents.length > 0) return;
 
     const agentsData: any[] = [];
 
-    // 100 Agents normaux
     const agentNames = this.generateAgentNames(100, 'AG', 'agent');
     for (let i = 0; i < agentNames.length; i++) {
       const a = agentNames[i];
@@ -205,7 +201,6 @@ export class CommissionsSettingsComponent implements OnInit {
       }
     }
 
-    // 100 Super Agents
     const superAgentNames = this.generateAgentNames(100, 'SA', 'super_agent');
     for (let i = 0; i < superAgentNames.length; i++) {
       const a = superAgentNames[i];
@@ -224,7 +219,6 @@ export class CommissionsSettingsComponent implements OnInit {
       }
     }
 
-    // État
     agentsData.push({
       id: 'ET-001',
       nom: 'Trésor Public - État',
@@ -251,12 +245,12 @@ export class CommissionsSettingsComponent implements OnInit {
   private generateCommissions(): void {
     const agents = this.agents.filter(a => a.role !== 'etat');
     const statuts: ('calculee' | 'payee' | 'en_attente')[] = ['calculee', 'payee', 'en_attente'];
-    
+
     agents.forEach((agent) => {
       const nbCommissions = 2 + Math.floor(Math.random() * 4);
       let totalCommission = 0;
       let totalVolume = 0;
-      
+
       for (let i = 0; i < nbCommissions; i++) {
         const nbTransactions = 3 + Math.floor(Math.random() * 30);
         const volume = 20000 + Math.floor(Math.random() * 500000);
@@ -264,7 +258,7 @@ export class CommissionsSettingsComponent implements OnInit {
         const montant = volume * (taux / 100);
         const commissionEtat = montant * 0.1;
         const statusIndex = i % statuts.length;
-        
+
         const commission: Commission = {
           id: `COM-${String(100000 + this.commissions.length + 1).padStart(6, '0')}`,
           agentId: agent.id,
@@ -278,12 +272,12 @@ export class CommissionsSettingsComponent implements OnInit {
           date: new Date(Date.now() - (i * 86400000 * 2)).toLocaleDateString('fr-FR'),
           commissionEtat: Math.round(commissionEtat)
         };
-        
+
         this.commissions.push(commission);
         totalCommission += montant;
         totalVolume += volume;
       }
-      
+
       const agentIndex = this.agents.findIndex(a => a.id === agent.id);
       if (agentIndex !== -1) {
         const agentToUpdate = this.agents[agentIndex];
@@ -309,7 +303,7 @@ export class CommissionsSettingsComponent implements OnInit {
   private generateHistorique(): void {
     const agents = this.agents.filter(a => a.role !== 'etat');
     const statuts: HistoriqueCommission['statut'][] = ['effectue', 'effectue', 'en_attente', 'echoue'];
-    
+
     agents.forEach(agent => {
       for (let i = 0; i < 2; i++) {
         const commission = this.commissions.find(c => c.agentId === agent.id);
@@ -349,7 +343,6 @@ export class CommissionsSettingsComponent implements OnInit {
     }
   }
 
-  // ========== DATA PERSISTENCE ==========
 
   private loadData(): void {
     const saved = localStorage.getItem(this.STORAGE_KEY);
@@ -376,7 +369,6 @@ export class CommissionsSettingsComponent implements OnInit {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
   }
 
-  // ========== GETTERS ==========
 
   getAgents(): Agent[] {
     return this.agents.filter(a => a.role === 'agent');
@@ -402,7 +394,6 @@ export class CommissionsSettingsComponent implements OnInit {
     return this.transfertsEtat.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
-  // ========== PAGINATION ==========
 
   getCurrentPage(type: string): number {
     return this.currentPages[type] || 1;
@@ -465,7 +456,6 @@ export class CommissionsSettingsComponent implements OnInit {
     });
   }
 
-  // ========== KPI DATA ==========
 
   getKpiData(): KpiData[] {
     const totalCommissions = this.commissions.reduce((sum, c) => sum + c.montant, 0);
@@ -534,7 +524,6 @@ export class CommissionsSettingsComponent implements OnInit {
     ];
   }
 
-  // ========== PIN MODAL ==========
 
   openPinModal(): void {
     this.pinCode = '';
@@ -566,7 +555,6 @@ export class CommissionsSettingsComponent implements OnInit {
     this.pinCode = '';
   }
 
-  // ========== TRANSFERT VERS L'ÉTAT ==========
 
   openTransfertEtat(): void {
     const commissionsPayees = this.commissions.filter(c => c.statut === 'payee' && c.commissionEtat && c.commissionEtat > 0);
@@ -588,7 +576,7 @@ export class CommissionsSettingsComponent implements OnInit {
     }
 
     const totalMontant = commissionsToTransfer.reduce((sum, c) => sum + (c.commissionEtat || 0), 0);
-    
+
     const transfert: TransfertEtat = {
       id: `TRF-${String(100000 + this.transfertsEtat.length + 1).padStart(6, '0')}`,
       date: new Date().toLocaleDateString('fr-FR'),
@@ -627,7 +615,6 @@ export class CommissionsSettingsComponent implements OnInit {
     this.closeModal();
   }
 
-  // ========== MODALES ==========
 
   openVoirCommission(item: any): void {
     this.selectedItem = item;
@@ -682,7 +669,7 @@ export class CommissionsSettingsComponent implements OnInit {
   private payerCommission(): void {
     if (!this.selectedItem) return;
     this.selectedItem.statut = 'payee';
-    
+
     this.historique.push({
       id: `HIS-${String(100000 + this.historique.length + 1).padStart(6, '0')}`,
       date: new Date().toLocaleDateString('fr-FR'),
@@ -695,13 +682,12 @@ export class CommissionsSettingsComponent implements OnInit {
       statut: 'effectue',
       description: `Paiement commission ${this.selectedItem.agentNom}`
     });
-    
+
     this.saveData();
     this.updateCounts();
     this.toast(`Commission payée à ${this.selectedItem.agentNom}`, 'success');
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;
@@ -713,7 +699,6 @@ export class CommissionsSettingsComponent implements OnInit {
     this.toasts = this.toasts.filter(t => t.id !== id);
   }
 
-  // ========== MÉTHODES POUR LE TEMPLATE ==========
 
   getStatutLabel(statut: string): string {
     const labels: Record<string, string> = {

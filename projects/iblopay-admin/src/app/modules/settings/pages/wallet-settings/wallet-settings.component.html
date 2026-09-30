@@ -1,8 +1,8 @@
 <div class="settings-page">
   <header class="page-header">
-  
+
     <div class="page-header__title">
-      
+
       <div>
         <h1>Gestion des Wallets</h1>
         <p>Wallet Client, Agent et Super Agent — Solde, transactions et historique.</p>
@@ -10,7 +10,7 @@
     </div>
   </header>
 
-  <!-- Statistiques globales -->
+
   <div class="stats-grid">
     <div class="stat-card" (click)="setActiveTab('client')" [class.active]="activeTab === 'client'">
       <span class="stat-card__icon">👤</span>
@@ -46,7 +46,7 @@
     </div>
   </div>
 
-  <!-- Onglets -->
+
   <nav class="tabs">
     <button type="button" class="tab" [class.active]="activeTab === 'client'" (click)="setActiveTab('client')">
       <span class="tab__icon">👤</span>
@@ -65,9 +65,9 @@
     </button>
   </nav>
 
-  <!-- Liste des wallets -->
+
   <div class="table-wrapper">
-    <!-- CLIENTS -->
+
     <div *ngIf="activeTab === 'client'" class="table-container">
       <div class="table-header">
         <h3>Liste des Clients ({{ getWalletsByType('client').length }})</h3>
@@ -122,7 +122,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Pagination Clients -->
+
       <div class="pagination" *ngIf="getTotalPages('client') > 1">
         <div class="pagination__controls">
           <button type="button" class="pagination__btn" (click)="previousPage('client')" [disabled]="getCurrentPage('client') === 1">‹</button>
@@ -133,7 +133,7 @@
       </div>
     </div>
 
-    <!-- AGENTS -->
+
     <div *ngIf="activeTab === 'agent'" class="table-container">
       <div class="table-header">
         <h3>Liste des Agents ({{ getWalletsByType('agent').length }})</h3>
@@ -193,7 +193,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Pagination Agents -->
+
       <div class="pagination" *ngIf="getTotalPages('agent') > 1">
         <div class="pagination__controls">
           <button type="button" class="pagination__btn" (click)="previousPage('agent')" [disabled]="getCurrentPage('agent') === 1">‹</button>
@@ -204,7 +204,7 @@
       </div>
     </div>
 
-    <!-- SUPER AGENTS -->
+
     <div *ngIf="activeTab === 'super-agent'" class="table-container">
       <div class="table-header">
         <h3>Liste des Super Agents ({{ getWalletsByType('super-agent').length }})</h3>
@@ -262,7 +262,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Pagination Super Agents -->
+
       <div class="pagination" *ngIf="getTotalPages('super-agent') > 1">
         <div class="pagination__controls">
           <button type="button" class="pagination__btn" (click)="previousPage('super-agent')" [disabled]="getCurrentPage('super-agent') === 1">‹</button>
@@ -274,7 +274,7 @@
     </div>
   </div>
 
-  <!-- MODALE SOLDE AVEC AVATAR -->
+
   <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
   <div class="modal modal--solde" *ngIf="modalOpen && modalAction === 'solde'">
     <div class="modal__header">
@@ -326,7 +326,7 @@
     </div>
   </div>
 
-  <!-- MODALE ACTIONS -->
+
   <div class="modal-overlay" *ngIf="modalOpen && modalAction !== 'solde'" (click)="closeModal()"></div>
   <div class="modal" *ngIf="modalOpen && modalAction !== 'solde'">
     <div class="modal__header">
@@ -429,7 +429,7 @@
     </div>
   </div>
 
-  <!-- TOASTS -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       {{ t.message }}

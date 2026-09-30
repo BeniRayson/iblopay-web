@@ -79,7 +79,6 @@
   }
 }
 
-// ========== KPI GRID ==========
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -120,7 +119,7 @@
   &:hover {
     transform: translateY(-3px);
     box-shadow: var(--ib-shadow-md);
-    
+
     &::after {
       transform: scale(1);
     }
@@ -191,7 +190,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-// ========== TABS ==========
 .tabs-nav {
   display: flex;
   gap: 4px;
@@ -244,7 +242,6 @@
   }
 }
 
-// ========== PANEL ==========
 .panel {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -292,7 +289,6 @@
   }
 }
 
-// ========== BUTTONS ==========
 .btn {
   padding: 6px 14px;
   border: none;
@@ -336,7 +332,6 @@
   }
 }
 
-// ========== TABLE ==========
 .table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -382,7 +377,6 @@
 .text-center { text-align: center; }
 .text-muted { color: var(--ib-text-muted); }
 
-// ========== BADGES ==========
 .badge {
   display: inline-block;
   font-size: 10px;
@@ -415,7 +409,6 @@
   &--rejete { background: var(--ib-danger-light); color: var(--ib-danger); }
 }
 
-// ========== AMOUNTS ==========
 .amount {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
@@ -424,7 +417,6 @@
   &--danger { color: var(--ib-danger); }
 }
 
-// ========== ACTIONS ==========
 .action-group {
   display: flex;
   gap: 4px;
@@ -475,7 +467,6 @@
   }
 }
 
-// ========== PAGINATION ==========
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -527,7 +518,6 @@
   }
 }
 
-// ========== RAPPORTS ==========
 .rapports-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -586,7 +576,6 @@
   }
 }
 
-// ========== RAPPORT CONTENT ==========
 .rapport-content {
   background: var(--ib-bg);
   border-radius: var(--ib-radius-sm);
@@ -611,7 +600,6 @@
   }
 }
 
-// ========== CONFIGURATION ==========
 .config-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -672,7 +660,6 @@
   }
 }
 
-// ========== DETAIL CARD ==========
 .detail-card {
   &--bordered {
     border: 1px solid var(--ib-border);
@@ -720,7 +707,6 @@
   }
 }
 
-// ========== MODAL ==========
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -817,7 +803,6 @@
   }
 }
 
-// ========== FORM ==========
 .form-group {
   display: flex;
   flex-direction: column;
@@ -871,7 +856,6 @@ select.form-control {
   }
 }
 
-// ========== PREVIEW BOX ==========
 .preview-box {
   border: 1px solid var(--ib-border);
   border-radius: var(--ib-radius);
@@ -904,7 +888,6 @@ select.form-control {
   }
 }
 
-// ========== TOASTS ==========
 .toast-stack {
   position: fixed;
   bottom: 20px;

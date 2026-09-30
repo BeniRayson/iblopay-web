@@ -1,4 +1,3 @@
-// src/app/modules/users/data/burundi-locations.data.ts
 
 export interface BurundiProvince {
   code: string;

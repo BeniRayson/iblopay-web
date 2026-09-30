@@ -1,4 +1,3 @@
-// src/app/modules/dashboard/models/dashboard.model.ts
 export interface DashboardStats {
     totalAgents: number;
     totalTransactions: number;

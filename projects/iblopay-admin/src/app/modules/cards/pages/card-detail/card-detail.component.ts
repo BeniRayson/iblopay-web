@@ -15,8 +15,6 @@ export class CardDetailComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
 
-  // Backed by CardService.getCardTransactions, which now calls a real
-  // endpoint (see that service for the wallet-join assumption).
   transactions: CardTransaction[] = [];
   isLoadingTransactions = true;
 

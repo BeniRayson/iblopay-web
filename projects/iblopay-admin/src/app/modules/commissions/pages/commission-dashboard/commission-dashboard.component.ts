@@ -1,490 +1,2561 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
 
-// ─── Types ──────────────────────────────────────────────────────
-export type TransactionType = 'DEPOT' | 'RETRAIT' | 'PAIEMENT_NFC' | 'TRANSFERT';
-export type PersonRole = 'agent' | 'super_agent';
+import {
+  CommonModule
+} from '@angular/common';
 
-export interface CommissionSplit {
-  etat: number;
-  iblopay: number;
-  tierce: number;
-  personnelle: number;
-}
+import {
+  FormsModule
+} from '@angular/forms';
 
-export interface Transaction {
+
+type OperationType =
+  | 'TRANSFER'
+  | 'DEPOSIT'
+  | 'WITHDRAWAL'
+  | 'PAYMENT'
+  | 'MERCHANT_PAYMENT'
+  | 'FUND';
+
+
+type CommissionStatus =
+  | 'SUCCESS'
+  | 'PENDING'
+  | 'FAILED';
+
+
+type ActorRole =
+  | 'AGENT'
+  | 'SUPER_AGENT'
+  | 'SHAREHOLDER'
+  | 'COMPANY';
+
+
+interface CommissionRecord {
+
   reference: string;
+
   date: Date;
-  type: TransactionType;
-  montant: number;
-  commissions: CommissionSplit;
+
+  clientWallet: string;
+
+  operationType: OperationType;
+
+  transactionAmount: number;
+
+  agentName: string;
+
+  agentWallet: string;
+
+  agentCommission: number;
+
+  superAgentName: string;
+
+  superAgentWallet: string;
+
+  superAgentCommission: number;
+
+  shareholderName: string;
+
+  shareholderCode: string;
+
+  shareholderCommission: number;
+
+  companyName: string;
+
+  companyCode: string;
+
+  companyCommission: number;
+
+  status: CommissionStatus;
+
 }
 
-export interface Person {
-  id: string;
-  nom: string;
-  prenom: string;
-  wallet: string;
-  contact: string;
-  transactions: Transaction[];
-  role: PersonRole;
-  superAgentNom?: string;
+
+interface CommissionFilters {
+
+  dateFrom: string;
+
+  dateTo: string;
+
+  operationType: string;
+
+  status: string;
+
+  actorRole: string;
+
+  actorSearch: string;
+
 }
 
-export interface PersonRow {
-  person: Person;
-  totalCommissionEtat: number;
-  totalCommissionIblopay: number;
-  totalCommissionTierce: number;
-  totalCommissionPersonnelle: number;
-  totalToutesCommissions: number;
+
+interface ActorSummary {
+
+  role: ActorRole;
+
+  roleLabel: string;
+
+  identifier: string;
+
+  name: string;
+
   initials: string;
+
+  totalCommission: number;
+
+  transactionCount: number;
+
 }
 
-// ─── DUMMY DATA GENERATION ──────────────────────────────────────
-const AGENT_NAMES: { nom: string; prenom: string }[] = [
-  { nom: 'Hakizimana', prenom: 'Jean-Pierre' },
-  { nom: 'Ndayishimiye', prenom: 'Marie-Claire' },
-  { nom: 'Ciza', prenom: 'Pierre' },
-  { nom: 'Habimana', prenom: 'Anastasie' },
-  { nom: 'Mbonimpa', prenom: 'David' },
-  { nom: 'Ntakirutimana', prenom: 'Jacqueline' },
-  { nom: 'Bigirimana', prenom: 'Christophe' },
-  { nom: 'Kamwenubusa', prenom: 'Béatrice' },
-];
 
-const SUPER_AGENT_NAMES: { nom: string; prenom: string }[] = [
-  { nom: 'Niyonzima', prenom: 'Alphonse' },
-  { nom: 'Rwasa', prenom: 'Emmanuel' },
-  { nom: 'Mpundu', prenom: 'Sylvie' },
-  { nom: 'Nkurunziza', prenom: 'Pascal' },
-  { nom: 'Barancira', prenom: 'Marguerite' },
-];
-
-const TRANSACTION_TYPES: TransactionType[] = ['DEPOT', 'RETRAIT', 'PAIEMENT_NFC', 'TRANSFERT'];
-
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function randomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}
-
-function randomDate(start: Date, end: Date): Date {
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-}
-
-function generateWallet(): string {
-  return `79${String(randomInt(10000000, 99999999))}`;
-}
-
-function generateContact(): string {
-  return `+257 ${String(randomInt(70000000, 79999999))}`;
-}
-
-function generateTransactionRef(index: number): string {
-  const prefixes = ['TXN', 'PAY', 'DEP', 'WTH'];
-  return `${randomItem(prefixes)}-${String(2026000 + index).padStart(7, '0')}`;
-}
-
-const COMMISSION_RATES = {
-  etat: 0.0025,
-  iblopay: 0.004,
-  tierce: 0.003,
-  personnelle: 0.006,
-};
-
-function generateTransaction(index: number, date: Date): Transaction {
-  const types = TRANSACTION_TYPES;
-  const type = types[randomInt(0, types.length - 1)]!;
-  const montant = randomInt(5000, 500000);
-  const montantNum = montant;
-
-  return {
-    reference: generateTransactionRef(index),
-    date,
-    type,
-    montant: montantNum,
-    commissions: {
-      etat: Math.round(montantNum * COMMISSION_RATES.etat),
-      iblopay: Math.round(montantNum * COMMISSION_RATES.iblopay),
-      tierce: Math.round(montantNum * COMMISSION_RATES.tierce),
-      personnelle: Math.round(montantNum * COMMISSION_RATES.personnelle),
-    },
-  };
-}
-
-function getInitials(nom: string, prenom: string): string {
-  return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
-}
-
-// ─── Generate all persons ────────────────────────────────────────
-function generateAllPersons(): Person[] {
-  const startDate = new Date('2026-07-01');
-  const endDate = new Date('2026-07-31');
-  const persons: Person[] = [];
-  let txIndex = 0;
-
-  // Generate 8 Agents
-  for (let i = 0; i < AGENT_NAMES.length; i++) {
-    const agentEntry = AGENT_NAMES[i]!;
-    const { nom, prenom } = agentEntry;
-    const saIndex = Math.floor(i / 2) % SUPER_AGENT_NAMES.length;
-    const sa = SUPER_AGENT_NAMES[saIndex]!;
-    const txCount = randomInt(4, 17);
-    const transactions: Transaction[] = [];
-
-    for (let t = 0; t < txCount; t++) {
-      transactions.push(generateTransaction(txIndex++, randomDate(startDate, endDate)));
-    }
-
-    transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
-
-    persons.push({
-      id: `AGT-${String(i + 1).padStart(3, '0')}`,
-      nom,
-      prenom,
-      wallet: generateWallet(),
-      contact: generateContact(),
-      transactions,
-      role: 'agent',
-      superAgentNom: `${sa.prenom} ${sa.nom}`,
-    });
-  }
-
-  // Generate 5 Super-Agents
-  for (let i = 0; i < SUPER_AGENT_NAMES.length; i++) {
-    const saEntry = SUPER_AGENT_NAMES[i]!;
-    const { nom, prenom } = saEntry;
-    const txCount = randomInt(6, 20);
-    const transactions: Transaction[] = [];
-
-    for (let t = 0; t < txCount; t++) {
-      transactions.push(generateTransaction(txIndex++, randomDate(startDate, endDate)));
-    }
-
-    transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
-
-    persons.push({
-      id: `SA-${String(i + 1).padStart(3, '0')}`,
-      nom,
-      prenom,
-      wallet: generateWallet(),
-      contact: generateContact(),
-      transactions,
-      role: 'super_agent',
-    });
-  }
-
-  return persons;
-}
-
-// ─── Component ──────────────────────────────────────────────────
 @Component({
-  selector: 'app-commission-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './commission-dashboard.component.html',
-  styleUrls: ['./commission-dashboard.component.scss'],
+
+  selector:
+    'app-commission-dashboard',
+
+  standalone:
+    true,
+
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
+
+  templateUrl:
+    './commission-dashboard.component.html',
+
+  styleUrls: [
+    './commission-dashboard.component.scss'
+  ]
+
 })
-export class CommissionDashboardComponent implements OnInit {
-  // Data
-  allPersons: Person[] = [];
-  filteredPersons: Person[] = [];
+export class CommissionDashboardComponent
+  implements OnInit {
 
-  // Pre-computed rows for current tab (avoid getter re-creation issues)
-  agentRows: PersonRow[] = [];
-  superAgentRows: PersonRow[] = [];
 
-  activeTab: PersonRole = 'agent';
+  /* =========================================================
+     DONNEES
+  ========================================================= */
 
-  // Search
-  searchQuery = '';
+  commissions:
+    CommissionRecord[] = [];
 
-  // Modal
-  selectedPerson: Person | null = null;
-  isModalOpen = false;
 
-  // Modal precomputed totals
-  modalTotalMontant = 0;
-  modalTotalEtat = 0;
-  modalTotalIblopay = 0;
-  modalTotalTierce = 0;
-  modalTotalPersonnelle = 0;
+  filteredCommissions:
+    CommissionRecord[] = [];
 
-  // KPI computed values
-  totalCommissionEtat = 0;
-  totalCommissionIblopay = 0;
-  totalCommissionTierce = 0;
-  totalCommissionPersonnelle = 0;
-  totalToutesCommissions = 0;
 
-  // Precomputed totals for the table footer
-  totalsEtat = 0;
-  totalsIblopay = 0;
-  totalsTierce = 0;
-  totalsPersonnelle = 0;
-  totalsGlobale = 0;
+  selectedCommission:
+    CommissionRecord | null = null;
+
+
+  actorHistory:
+    ActorSummary | null = null;
+
+
+  /* =========================================================
+     FILTRES
+  ========================================================= */
+
+  filters:
+    CommissionFilters = {
+
+    dateFrom:
+      '',
+
+    dateTo:
+      '',
+
+    operationType:
+      '',
+
+    status:
+      '',
+
+    actorRole:
+      '',
+
+    actorSearch:
+      ''
+
+  };
+
+
+  /* =========================================================
+     PAGINATION
+  ========================================================= */
+
+  currentPage =
+    1;
+
+
+  pageSize =
+    10;
+
+
+  /* =========================================================
+     INIT
+  ========================================================= */
 
   ngOnInit(): void {
-    this.allPersons = generateAllPersons();
-    this.applyFilter();
-  }
 
-  private toRow(person: Person): PersonRow {
-    const etat = person.transactions.reduce((s, t) => s + t.commissions.etat, 0);
-    const iblopay = person.transactions.reduce((s, t) => s + t.commissions.iblopay, 0);
-    const tierce = person.transactions.reduce((s, t) => s + t.commissions.tierce, 0);
-    const personnelle = person.transactions.reduce((s, t) => s + t.commissions.personnelle, 0);
-    return {
-      person,
-      totalCommissionEtat: etat,
-      totalCommissionIblopay: iblopay,
-      totalCommissionTierce: tierce,
-      totalCommissionPersonnelle: personnelle,
-      totalToutesCommissions: etat + iblopay + tierce + personnelle,
-      initials: getInitials(person.nom, person.prenom),
-    };
-  }
+    this.commissions =
+      this.createCommissionData();
 
-  get currentRows(): PersonRow[] {
-    return this.activeTab === 'agent' ? this.agentRows : this.superAgentRows;
-  }
-
-  switchTab(tab: PersonRole): void {
-    this.activeTab = tab;
-    this.computeTableTotals();
-  }
-
-  onSearch(): void {
-    this.applyFilter();
-  }
-
-  private applyFilter(): void {
-    const q = this.searchQuery.toLowerCase().trim();
-    if (!q) {
-      this.filteredPersons = [...this.allPersons];
-    } else {
-      this.filteredPersons = this.allPersons.filter(
-        p =>
-          p.nom.toLowerCase().includes(q) ||
-          p.prenom.toLowerCase().includes(q) ||
-          `${p.prenom} ${p.nom}`.toLowerCase().includes(q) ||
-          p.wallet.includes(q) ||
-          p.contact.includes(q)
-      );
-    }
-
-    // Pre-compute rows and totals in one pass
-    this.agentRows = this.filteredPersons
-      .filter(p => p.role === 'agent')
-      .map(p => this.toRow(p));
-
-    this.superAgentRows = this.filteredPersons
-      .filter(p => p.role === 'super_agent')
-      .map(p => this.toRow(p));
-
-    this.computeKpis();
-    this.computeTableTotals();
-  }
-
-  private computeKpis(): void {
-    const visible = this.filteredPersons;
-    this.totalCommissionEtat = visible.reduce((s, p) => s + p.transactions.reduce((t, tx) => t + tx.commissions.etat, 0), 0);
-    this.totalCommissionIblopay = visible.reduce((s, p) => s + p.transactions.reduce((t, tx) => t + tx.commissions.iblopay, 0), 0);
-    this.totalCommissionTierce = visible.reduce((s, p) => s + p.transactions.reduce((t, tx) => t + tx.commissions.tierce, 0), 0);
-    this.totalCommissionPersonnelle = visible.reduce((s, p) => s + p.transactions.reduce((t, tx) => t + tx.commissions.personnelle, 0), 0);
-    this.totalToutesCommissions = this.totalCommissionEtat + this.totalCommissionIblopay + this.totalCommissionTierce + this.totalCommissionPersonnelle;
-  }
-
-  private computeTableTotals(): void {
-    const rows = this.currentRows;
-    this.totalsEtat = rows.reduce((s, r) => s + r.totalCommissionEtat, 0);
-    this.totalsIblopay = rows.reduce((s, r) => s + r.totalCommissionIblopay, 0);
-    this.totalsTierce = rows.reduce((s, r) => s + r.totalCommissionTierce, 0);
-    this.totalsPersonnelle = rows.reduce((s, r) => s + r.totalCommissionPersonnelle, 0);
-    this.totalsGlobale = rows.reduce((s, r) => s + r.totalToutesCommissions, 0);
-  }
-
-  get selectedPersonRoleLabel(): string {
-    return this.selectedPerson?.role === 'agent' ? 'Agent' : 'Super-Agent';
-  }
-
-  get selectedPersonThirdCommissionLabel(): string {
-    return this.selectedPerson?.role === 'agent' ? 'Super-Agent' : 'Réseau';
-  }
-
-  get selectedPersonTransactionCount(): number {
-    return this.selectedPerson?.transactions.length ?? 0;
-  }
-
-  // ─── Modal ──────────────────────────────────────────────────────
-  openDetail(person: Person): void {
-    this.selectedPerson = person;
-    this.modalTotalMontant = person.transactions.reduce((s, t) => s + t.montant, 0);
-    this.modalTotalEtat = person.transactions.reduce((s, t) => s + t.commissions.etat, 0);
-    this.modalTotalIblopay = person.transactions.reduce((s, t) => s + t.commissions.iblopay, 0);
-    this.modalTotalTierce = person.transactions.reduce((s, t) => s + t.commissions.tierce, 0);
-    this.modalTotalPersonnelle = person.transactions.reduce((s, t) => s + t.commissions.personnelle, 0);
-    this.isModalOpen = true;
-    document.body.style.overflow = 'hidden';
-  }
-
-  closeModal(): void {
-    this.isModalOpen = false;
-    this.selectedPerson = null;
-    document.body.style.overflow = '';
-  }
-
-  // ─── CSV Export ──────────────────────────────────────────────────
-  downloadCsv(): void {
-    if (!this.selectedPerson) return;
-    const tx = this.selectedPerson.transactions;
-    const header = 'Référence;Date;Type;Montant (FBu);Commission État (FBu);Commission IBLOPay (FBu);Commission Tierce (FBu);Commission Personnelle (FBu);Total Commissions (FBu)';
-    const rows = tx.map(t => {
-      const totalCom = t.commissions.etat + t.commissions.iblopay + t.commissions.tierce + t.commissions.personnelle;
-      return [
-        t.reference,
-        this.formatDate(t.date),
-        this.transactionTypeLabel(t.type),
-        t.montant.toLocaleString('fr-FR'),
-        t.commissions.etat.toLocaleString('fr-FR'),
-        t.commissions.iblopay.toLocaleString('fr-FR'),
-        t.commissions.tierce.toLocaleString('fr-FR'),
-        t.commissions.personnelle.toLocaleString('fr-FR'),
-        totalCom.toLocaleString('fr-FR'),
-      ].join(';');
-    });
-
-    const totalRow = [
-      'TOTAUX',
-      '',
-      '',
-      this.modalTotalMontant.toLocaleString('fr-FR'),
-      this.modalTotalEtat.toLocaleString('fr-FR'),
-      this.modalTotalIblopay.toLocaleString('fr-FR'),
-      this.modalTotalTierce.toLocaleString('fr-FR'),
-      this.modalTotalPersonnelle.toLocaleString('fr-FR'),
-      (this.modalTotalEtat + this.modalTotalIblopay + this.modalTotalTierce + this.modalTotalPersonnelle).toLocaleString('fr-FR'),
-    ].join(';');
-
-    const csv = '\uFEFF' + header + '\n' + rows.join('\n') + '\n' + totalRow;
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const safeName = `${this.selectedPerson.prenom}_${this.selectedPerson.nom}`.replace(/\s+/g, '_');
-    a.href = url;
-    a.download = `commissions_${safeName}_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  getInitials(nom: string, prenom: string): string {
-    return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
-  }
-
-  // ─── Format helpers ──────────────────────────────────────────────
-  formatBif(amount: number): string {
-    return `${amount.toLocaleString('fr-FR')} FBu`;
-  }
-
-  formatDate(date: Date | string): string {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  formatDateShort(date: Date | string): string {
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  }
-
-  transactionTypeLabel(type: TransactionType): string {
-    const labels: Record<TransactionType, string> = {
-      DEPOT: 'Dépôt',
-      RETRAIT: 'Retrait',
-      PAIEMENT_NFC: 'Paiement NFC',
-      TRANSFERT: 'Transfert',
-    };
-    return labels[type] || type;
-  }
-
-  getTransactionTypeClass(type: TransactionType): string {
-    const classes: Record<string, string> = {
-      DEPOT: 'type-depot',
-      RETRAIT: 'type-retrait',
-      PAIEMENT_NFC: 'type-nfc',
-      TRANSFERT: 'type-transfert',
-    };
-    return classes[type] || '';
-  }
-
-  getAvatarColor(initials: string): string {
-    const colors: string[] = [
-      '#3b82f6', '#a855f7', '#22c55e', '#f97316',
-      '#ec4899', '#14b8a6', '#eab308', '#06b6d4',
+    this.filteredCommissions = [
+      ...this.commissions
     ];
-    let hash = 0;
-    for (let i = 0; i < initials.length; i++) {
-      hash = initials.charCodeAt(i) + ((hash << 5) - hash);
+
+  }
+
+
+  /* =========================================================
+     TOTALS
+  ========================================================= */
+
+  get totalAgentCommission():
+    number {
+
+    return this.filteredCommissions
+      .reduce(
+        (
+          total,
+          commission
+        ) =>
+          total +
+          commission.agentCommission,
+        0
+      );
+
+  }
+
+
+  get totalSuperAgentCommission():
+    number {
+
+    return this.filteredCommissions
+      .reduce(
+        (
+          total,
+          commission
+        ) =>
+          total +
+          commission.superAgentCommission,
+        0
+      );
+
+  }
+
+
+  get totalShareholderCommission():
+    number {
+
+    return this.filteredCommissions
+      .reduce(
+        (
+          total,
+          commission
+        ) =>
+          total +
+          commission.shareholderCommission,
+        0
+      );
+
+  }
+
+
+  get totalCompanyCommission():
+    number {
+
+    return this.filteredCommissions
+      .reduce(
+        (
+          total,
+          commission
+        ) =>
+          total +
+          commission.companyCommission,
+        0
+      );
+
+  }
+
+
+  get totalDistributedCommission():
+    number {
+
+    return (
+      this.totalAgentCommission +
+      this.totalSuperAgentCommission +
+      this.totalShareholderCommission +
+      this.totalCompanyCommission
+    );
+
+  }
+
+
+  get totalFilteredTransactionsAmount():
+    number {
+
+    return this.filteredCommissions
+      .reduce(
+        (
+          total,
+          commission
+        ) =>
+          total +
+          commission.transactionAmount,
+        0
+      );
+
+  }
+
+
+  /* =========================================================
+     FILTRAGE
+  ========================================================= */
+
+  onActorRoleChange(): void {
+
+    this.filters.actorSearch =
+      '';
+
+    this.applyFilters();
+
+  }
+
+
+  applyFilters(): void {
+
+    const from =
+      this.filters.dateFrom
+
+        ? new Date(
+            `${this.filters.dateFrom}T00:00:00`
+          )
+
+        : null;
+
+
+    const to =
+      this.filters.dateTo
+
+        ? new Date(
+            `${this.filters.dateTo}T23:59:59`
+          )
+
+        : null;
+
+
+    const actorSearch =
+      this.filters.actorSearch
+        .trim()
+        .toLowerCase();
+
+
+    this.filteredCommissions =
+      this.commissions.filter(
+        commission => {
+
+
+          if (
+            from &&
+            commission.date < from
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            to &&
+            commission.date > to
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            this.filters.operationType &&
+            commission.operationType !==
+              this.filters.operationType
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            this.filters.status &&
+            commission.status !==
+              this.filters.status
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            this.filters.actorRole &&
+            !this.matchesActorRole(
+              commission,
+              (this.filters.actorRole as ActorRole)
+            )
+          ) {
+
+            return false;
+
+          }
+
+
+          if (
+            actorSearch &&
+            !this.matchesActorSearch(
+              commission,
+              actorSearch
+            )
+          ) {
+
+            return false;
+
+          }
+
+
+          return true;
+
+        }
+      );
+
+
+    this.currentPage =
+      1;
+
+  }
+
+
+  resetFilters(): void {
+
+    this.filters = {
+
+      dateFrom:
+        '',
+
+      dateTo:
+        '',
+
+      operationType:
+        '',
+
+      status:
+        '',
+
+      actorRole:
+        '',
+
+      actorSearch:
+        ''
+
+    };
+
+
+    this.filteredCommissions = [
+      ...this.commissions
+    ];
+
+
+    this.currentPage =
+      1;
+
+  }
+
+
+  private matchesActorRole(
+
+    commission:
+      CommissionRecord,
+
+    role:
+      ActorRole
+
+  ): boolean {
+
+    switch (role) {
+
+      case 'AGENT':
+
+        return !!commission.agentWallet;
+
+
+      case 'SUPER_AGENT':
+
+        return !!commission.superAgentWallet;
+
+
+      case 'SHAREHOLDER':
+
+        return !!commission.shareholderCode;
+
+
+      case 'COMPANY':
+
+        return !!commission.companyCode;
+
+
+      default:
+
+        return true;
+
     }
-    return colors[Math.abs(hash) % colors.length]!;
+
   }
 
-  getMiniBarTitle(pct: { etat: number; iblopay: number; tierce: number; personnelle: number }): string {
-    const e = pct.etat.toFixed(0);
-    const i = pct.iblopay.toFixed(0);
-    const t = pct.tierce.toFixed(0);
-    const p = pct.personnelle.toFixed(0);
-    return `État ${e}% · IBLOPay ${i}% · Tierce ${t}% · Perso ${p}%`;
+
+  private matchesActorSearch(
+
+    commission:
+      CommissionRecord,
+
+    search:
+      string
+
+  ): boolean {
+
+    const role =
+      (this.filters.actorRole as ActorRole | '');
+
+
+    /*
+     * Important :
+     * le wallet client n'est volontairement
+     * jamais utilisé pour ce filtre.
+     */
+
+    if (
+      role === 'AGENT'
+    ) {
+
+      return this.containsAny(
+        search,
+        [
+          commission.agentWallet,
+          commission.agentName
+        ]
+      );
+
+    }
+
+
+    if (
+      role === 'SUPER_AGENT'
+    ) {
+
+      return this.containsAny(
+        search,
+        [
+          commission.superAgentWallet,
+          commission.superAgentName
+        ]
+      );
+
+    }
+
+
+    if (
+      role === 'SHAREHOLDER'
+    ) {
+
+      return this.containsAny(
+        search,
+        [
+          commission.shareholderCode,
+          commission.shareholderName
+        ]
+      );
+
+    }
+
+
+    if (
+      role === 'COMPANY'
+    ) {
+
+      return this.containsAny(
+        search,
+        [
+          commission.companyCode,
+          commission.companyName
+        ]
+      );
+
+    }
+
+
+    /*
+     * Si aucun rôle n'est sélectionné,
+     * on cherche dans tous les acteurs
+     * bénéficiaires sauf le client.
+     */
+    return this.containsAny(
+      search,
+      [
+        commission.agentWallet,
+        commission.agentName,
+        commission.superAgentWallet,
+        commission.superAgentName,
+        commission.shareholderCode,
+        commission.shareholderName,
+        commission.companyCode,
+        commission.companyName
+      ]
+    );
+
   }
 
-  getMiniBarPercentages(commissions: CommissionSplit): { etat: number; iblopay: number; tierce: number; personnelle: number } {
-    const total = commissions.etat + commissions.iblopay + commissions.tierce + commissions.personnelle;
-    if (total === 0) return { etat: 0, iblopay: 0, tierce: 0, personnelle: 0 };
-    return {
-      etat: (commissions.etat / total) * 100,
-      iblopay: (commissions.iblopay / total) * 100,
-      tierce: (commissions.tierce / total) * 100,
-      personnelle: (commissions.personnelle / total) * 100,
+
+  private containsAny(
+
+    search:
+      string,
+
+    values:
+      string[]
+
+  ): boolean {
+
+    return values.some(
+      value =>
+        String(value)
+          .toLowerCase()
+          .includes(search)
+    );
+
+  }
+
+
+  /* =========================================================
+     PAGINATION
+  ========================================================= */
+
+  get totalPages():
+    number {
+
+    return Math.max(
+      1,
+      Math.ceil(
+        this.filteredCommissions.length /
+        this.pageSize
+      )
+    );
+
+  }
+
+
+  get paginatedCommissions():
+    CommissionRecord[] {
+
+    const start =
+      (
+        this.currentPage - 1
+      ) *
+      this.pageSize;
+
+
+    return this.filteredCommissions.slice(
+      start,
+      start + this.pageSize
+    );
+
+  }
+
+
+  get startItem():
+    number {
+
+    if (
+      this.filteredCommissions.length === 0
+    ) {
+
+      return 0;
+
+    }
+
+
+    return (
+      (
+        this.currentPage - 1
+      ) *
+      this.pageSize
+    ) + 1;
+
+  }
+
+
+  get endItem():
+    number {
+
+    return Math.min(
+      this.currentPage *
+      this.pageSize,
+      this.filteredCommissions.length
+    );
+
+  }
+
+
+  get visiblePages():
+    number[] {
+
+    const max =
+      5;
+
+
+    let start =
+      Math.max(
+        1,
+        this.currentPage - 2
+      );
+
+
+    let end =
+      Math.min(
+        this.totalPages,
+        start + max - 1
+      );
+
+
+    if (
+      end - start + 1 <
+      max
+    ) {
+
+      start =
+        Math.max(
+          1,
+          end - max + 1
+        );
+
+    }
+
+
+    return Array.from(
+      {
+        length:
+          end - start + 1
+      },
+      (
+        _,
+        index
+      ) =>
+        start + index
+    );
+
+  }
+
+
+  goToPage(
+    page:
+      number
+  ): void {
+
+    if (
+      page < 1 ||
+      page > this.totalPages
+    ) {
+
+      return;
+
+    }
+
+
+    this.currentPage =
+      page;
+
+  }
+
+
+  /* =========================================================
+     DETAIL COMMISSION
+  ========================================================= */
+
+  openCommissionDetail(
+    commission:
+      CommissionRecord
+  ): void {
+
+    this.selectedCommission =
+      commission;
+
+  }
+
+
+  closeCommissionDetail(): void {
+
+    this.selectedCommission =
+      null;
+
+  }
+
+
+  getCommissionTotal(
+    commission:
+      CommissionRecord
+  ): number {
+
+    return (
+      commission.agentCommission +
+      commission.superAgentCommission +
+      commission.shareholderCommission +
+      commission.companyCommission
+    );
+
+  }
+
+
+  printCommission(
+    commission:
+      CommissionRecord
+  ): void {
+
+    const rows =
+      [
+
+        [
+          'Référence transaction',
+          commission.reference
+        ],
+
+        [
+          'Date',
+          this.formatDateTime(
+            commission.date
+          )
+        ],
+
+        [
+          'Wallet client',
+          commission.clientWallet
+        ],
+
+        [
+          'Type opération',
+          this.getOperationLabel(
+            commission.operationType
+          )
+        ],
+
+        [
+          'Montant transaction',
+          this.formatBif(
+            commission.transactionAmount
+          )
+        ],
+
+        [
+          'Agent',
+          `${commission.agentName} (${commission.agentWallet})`
+        ],
+
+        [
+          'Commission Agent',
+          this.formatBif(
+            commission.agentCommission
+          )
+        ],
+
+        [
+          'Super-Agent',
+          `${commission.superAgentName} (${commission.superAgentWallet})`
+        ],
+
+        [
+          'Part Super-Agent',
+          this.formatBif(
+            commission.superAgentCommission
+          )
+        ],
+
+        [
+          'Actionnaire / Pool',
+          `${commission.shareholderName} (${commission.shareholderCode})`
+        ],
+
+        [
+          'Part Actionnaires',
+          this.formatBif(
+            commission.shareholderCommission
+          )
+        ],
+
+        [
+          'Société',
+          `${commission.companyName} (${commission.companyCode})`
+        ],
+
+        [
+          'Part Société',
+          this.formatBif(
+            commission.companyCommission
+          )
+        ],
+
+        [
+          'Total commissions',
+          this.formatBif(
+            this.getCommissionTotal(
+              commission
+            )
+          )
+        ],
+
+        [
+          'Statut',
+          this.getStatusLabel(
+            commission.status
+          )
+        ]
+
+      ];
+
+
+    this.openPrintWindow(
+      `Commission ${commission.reference}`,
+      'Détail de la commission',
+      rows
+    );
+
+  }
+
+
+  /* =========================================================
+     HISTORIQUE ACTEUR
+  ========================================================= */
+
+  get actorSummaries():
+    ActorSummary[] {
+
+    const map =
+      new Map<
+        string,
+        ActorSummary
+      >();
+
+
+    for (
+      const commission
+      of this.filteredCommissions
+    ) {
+
+      this.accumulateActor(
+        map,
+        'AGENT',
+        commission.agentWallet,
+        commission.agentName,
+        commission.agentCommission
+      );
+
+
+      this.accumulateActor(
+        map,
+        'SUPER_AGENT',
+        commission.superAgentWallet,
+        commission.superAgentName,
+        commission.superAgentCommission
+      );
+
+
+      this.accumulateActor(
+        map,
+        'SHAREHOLDER',
+        commission.shareholderCode,
+        commission.shareholderName,
+        commission.shareholderCommission
+      );
+
+
+      this.accumulateActor(
+        map,
+        'COMPANY',
+        commission.companyCode,
+        commission.companyName,
+        commission.companyCommission
+      );
+
+    }
+
+
+    return Array.from(
+      map.values()
+    )
+      .sort(
+        (
+          a,
+          b
+        ) =>
+          b.totalCommission -
+          a.totalCommission
+      );
+
+  }
+
+
+  get topActors():
+    ActorSummary[] {
+
+    return this.actorSummaries.slice(
+      0,
+      6
+    );
+
+  }
+
+
+  get selectedActorSummary():
+    ActorSummary | null {
+
+    const search =
+      this.filters.actorSearch
+        .trim()
+        .toLowerCase();
+
+
+    if (!search) {
+
+      return null;
+
+    }
+
+
+    return (
+      this.actorSummaries.find(
+        actor =>
+          actor.identifier
+            .toLowerCase()
+            .includes(search) ||
+          actor.name
+            .toLowerCase()
+            .includes(search)
+      ) ??
+      null
+    );
+
+  }
+
+
+  private accumulateActor(
+
+    map:
+      Map<
+        string,
+        ActorSummary
+      >,
+
+    role:
+      ActorRole,
+
+    identifier:
+      string,
+
+    name:
+      string,
+
+    amount:
+      number
+
+  ): void {
+
+    const key =
+      `${role}-${identifier}`;
+
+
+    const existing =
+      map.get(key);
+
+
+    if (existing) {
+
+      existing.totalCommission +=
+        amount;
+
+      existing.transactionCount +=
+        1;
+
+      return;
+
+    }
+
+
+    map.set(
+      key,
+      {
+
+        role,
+
+        roleLabel:
+          this.getActorRoleLabel(
+            role
+          ),
+
+        identifier,
+
+        name,
+
+        initials:
+          this.getInitials(
+            name
+          ),
+
+        totalCommission:
+          amount,
+
+        transactionCount:
+          1
+
+      }
+    );
+
+  }
+
+
+  selectActor(
+    actor:
+      ActorSummary
+  ): void {
+
+    this.filters.actorRole =
+      actor.role;
+
+    this.filters.actorSearch =
+      actor.identifier;
+
+    this.applyFilters();
+
+    this.openActorHistory(
+      actor
+    );
+
+  }
+
+
+  openActorHistory(
+    actor:
+      ActorSummary
+  ): void {
+
+    this.actorHistory =
+      actor;
+
+  }
+
+
+  closeActorHistory(): void {
+
+    this.actorHistory =
+      null;
+
+  }
+
+
+  get actorHistoryCommissions():
+    CommissionRecord[] {
+
+    if (
+      !this.actorHistory
+    ) {
+
+      return [];
+
+    }
+
+
+    return this.commissions.filter(
+      commission =>
+        this.commissionBelongsToActor(
+          commission,
+          this.actorHistory!
+        )
+    );
+
+  }
+
+
+  get actorHistoryTotal():
+    number {
+
+    if (
+      !this.actorHistory
+    ) {
+
+      return 0;
+
+    }
+
+
+    return this.actorHistoryCommissions
+      .reduce(
+        (
+          total,
+          commission
+        ) =>
+          total +
+          this.getActorCommission(
+            commission,
+            this.actorHistory!.role
+          ),
+        0
+      );
+
+  }
+
+
+  private commissionBelongsToActor(
+
+    commission:
+      CommissionRecord,
+
+    actor:
+      ActorSummary
+
+  ): boolean {
+
+    switch (
+      actor.role
+    ) {
+
+      case 'AGENT':
+
+        return (
+          commission.agentWallet ===
+          actor.identifier
+        );
+
+
+      case 'SUPER_AGENT':
+
+        return (
+          commission.superAgentWallet ===
+          actor.identifier
+        );
+
+
+      case 'SHAREHOLDER':
+
+        return (
+          commission.shareholderCode ===
+          actor.identifier
+        );
+
+
+      case 'COMPANY':
+
+        return (
+          commission.companyCode ===
+          actor.identifier
+        );
+
+    }
+
+  }
+
+
+  getActorCommission(
+
+    commission:
+      CommissionRecord,
+
+    role:
+      ActorRole
+
+  ): number {
+
+    switch (
+      role
+    ) {
+
+      case 'AGENT':
+
+        return commission.agentCommission;
+
+
+      case 'SUPER_AGENT':
+
+        return commission.superAgentCommission;
+
+
+      case 'SHAREHOLDER':
+
+        return commission.shareholderCommission;
+
+
+      case 'COMPANY':
+
+        return commission.companyCommission;
+
+    }
+
+  }
+
+
+  exportActorHistoryCsv(): void {
+
+    if (
+      !this.actorHistory
+    ) {
+
+      return;
+
+    }
+
+
+    const actor =
+      this.actorHistory;
+
+
+    const rows =
+      this.actorHistoryCommissions.map(
+        commission => [
+
+          commission.reference,
+
+          this.formatDateTime(
+            commission.date
+          ),
+
+          commission.clientWallet,
+
+          this.getOperationLabel(
+            commission.operationType
+          ),
+
+          commission.transactionAmount,
+
+          this.getActorCommission(
+            commission,
+            actor.role
+          )
+
+        ]
+      );
+
+
+    this.downloadCsv(
+      `historique-${actor.role}-${actor.identifier}.csv`,
+      [
+        'Reference',
+        'Date',
+        'Wallet client',
+        'Operation',
+        'Montant transaction',
+        'Commission acteur'
+      ],
+      rows
+    );
+
+  }
+
+
+  printActorHistory(): void {
+
+    if (
+      !this.actorHistory
+    ) {
+
+      return;
+
+    }
+
+
+    const actor =
+      this.actorHistory;
+
+
+    const rows =
+      this.actorHistoryCommissions
+        .map(
+          commission => [
+
+            commission.reference,
+
+            this.formatDateTime(
+              commission.date
+            ),
+
+            commission.clientWallet,
+
+            this.getOperationLabel(
+              commission.operationType
+            ),
+
+            this.formatBif(
+              commission.transactionAmount
+            ),
+
+            this.formatBif(
+              this.getActorCommission(
+                commission,
+                actor.role
+              )
+            )
+
+          ]
+        );
+
+
+    this.openPrintTable(
+      `Historique ${actor.name}`,
+      `${actor.roleLabel} · ${actor.identifier}`,
+      [
+        'Référence',
+        'Date',
+        'Wallet client',
+        'Opération',
+        'Montant transaction',
+        'Commission acteur'
+      ],
+      rows
+    );
+
+  }
+
+
+  /* =========================================================
+     EXPORT GLOBAL
+  ========================================================= */
+
+  exportFilteredCsv(): void {
+
+    const rows =
+      this.filteredCommissions.map(
+        commission => [
+
+          commission.reference,
+
+          this.formatDateTime(
+            commission.date
+          ),
+
+          commission.clientWallet,
+
+          this.getOperationLabel(
+            commission.operationType
+          ),
+
+          commission.transactionAmount,
+
+          commission.agentWallet,
+
+          commission.agentCommission,
+
+          commission.superAgentWallet,
+
+          commission.superAgentCommission,
+
+          commission.shareholderCode,
+
+          commission.shareholderCommission,
+
+          commission.companyCode,
+
+          commission.companyCommission,
+
+          this.getStatusLabel(
+            commission.status
+          )
+
+        ]
+      );
+
+
+    this.downloadCsv(
+      'commissions-iblopay.csv',
+      [
+        'Reference transaction',
+        'Date',
+        'Wallet client',
+        'Operation',
+        'Montant transaction',
+        'Wallet agent',
+        'Commission agent',
+        'Wallet super-agent',
+        'Part super-agent',
+        'Code actionnaire',
+        'Part actionnaires',
+        'Code societe',
+        'Part societe',
+        'Statut'
+      ],
+      rows
+    );
+
+  }
+
+
+  printFilteredHistory(): void {
+
+    const rows =
+      this.filteredCommissions
+        .map(
+          commission => [
+
+            commission.reference,
+
+            commission.clientWallet,
+
+            this.getOperationLabel(
+              commission.operationType
+            ),
+
+            this.formatBif(
+              commission.transactionAmount
+            ),
+
+            this.formatBif(
+              commission.agentCommission
+            ),
+
+            this.formatBif(
+              commission.superAgentCommission
+            ),
+
+            this.formatBif(
+              commission.shareholderCommission
+            ),
+
+            this.formatBif(
+              commission.companyCommission
+            ),
+
+            this.getStatusLabel(
+              commission.status
+            )
+
+          ]
+        );
+
+
+    this.openPrintTable(
+      'Traçabilité des commissions',
+      `${this.filteredCommissions.length} transaction(s)`,
+      [
+        'Référence',
+        'Wallet client',
+        'Opération',
+        'Montant',
+        'Agent',
+        'Super-Agent',
+        'Actionnaires',
+        'Société',
+        'Statut'
+      ],
+      rows
+    );
+
+  }
+
+
+  /* =========================================================
+     HELPERS UI
+  ========================================================= */
+
+  getDistributionPercent(
+    value:
+      number
+  ): string {
+
+    if (
+      this.totalDistributedCommission <=
+      0
+    ) {
+
+      return '0.0';
+
+    }
+
+
+    return (
+      (
+        value /
+        this.totalDistributedCommission
+      ) *
+      100
+    ).toFixed(
+      1
+    );
+
+  }
+
+
+  getOperationLabel(
+    operation:
+      OperationType
+  ): string {
+
+    const labels:
+      Record<
+        OperationType,
+        string
+      > = {
+
+      TRANSFER:
+        'Transfert',
+
+      DEPOSIT:
+        'Dépôt',
+
+      WITHDRAWAL:
+        'Retrait',
+
+      PAYMENT:
+        'Paiement',
+
+      MERCHANT_PAYMENT:
+        'Paiement marchand',
+
+      FUND:
+        'Approvisionnement'
+
     };
+
+
+    return labels[operation];
+
   }
 
-  getBarPercentagesFromTotals(row: PersonRow): { etat: number; iblopay: number; tierce: number; personnelle: number } {
-    const total = row.totalToutesCommissions;
-    if (total === 0) return { etat: 0, iblopay: 0, tierce: 0, personnelle: 0 };
-    return {
-      etat: (row.totalCommissionEtat / total) * 100,
-      iblopay: (row.totalCommissionIblopay / total) * 100,
-      tierce: (row.totalCommissionTierce / total) * 100,
-      personnelle: (row.totalCommissionPersonnelle / total) * 100,
+
+  getOperationIcon(
+    operation:
+      OperationType
+  ): string {
+
+    const icons:
+      Record<
+        OperationType,
+        string
+      > = {
+
+      TRANSFER:
+        'fas fa-arrow-right-arrow-left',
+
+      DEPOSIT:
+        'fas fa-arrow-down',
+
+      WITHDRAWAL:
+        'fas fa-arrow-up',
+
+      PAYMENT:
+        'fas fa-wallet',
+
+      MERCHANT_PAYMENT:
+        'fas fa-store',
+
+      FUND:
+        'fas fa-plus'
+
     };
+
+
+    return icons[operation];
+
   }
 
-  get percentageEtatGlobale(): number {
-    return this.totalToutesCommissions > 0 ? (this.totalCommissionEtat / this.totalToutesCommissions) * 100 : 0;
+
+  getOperationClass(
+    operation:
+      OperationType
+  ): string {
+
+    return (
+      `operation--${operation
+        .toLowerCase()
+        .replace(
+          '_',
+          '-'
+        )}`
+    );
+
   }
-  get percentageIblopayGlobale(): number {
-    return this.totalToutesCommissions > 0 ? (this.totalCommissionIblopay / this.totalToutesCommissions) * 100 : 0;
+
+
+  getStatusLabel(
+    status:
+      CommissionStatus
+  ): string {
+
+    const labels:
+      Record<
+        CommissionStatus,
+        string
+      > = {
+
+      SUCCESS:
+        'Succès',
+
+      PENDING:
+        'En cours',
+
+      FAILED:
+        'Échec'
+
+    };
+
+
+    return labels[status];
+
   }
-  get percentageTierceGlobale(): number {
-    return this.totalToutesCommissions > 0 ? (this.totalCommissionTierce / this.totalToutesCommissions) * 100 : 0;
+
+
+  getStatusClass(
+    status:
+      CommissionStatus
+  ): string {
+
+    const classes:
+      Record<
+        CommissionStatus,
+        string
+      > = {
+
+      SUCCESS:
+        'status-pill--success',
+
+      PENDING:
+        'status-pill--pending',
+
+      FAILED:
+        'status-pill--failed'
+
+    };
+
+
+    return classes[status];
+
   }
-  get percentagePersonnelleGlobale(): number {
-    return this.totalToutesCommissions > 0 ? (this.totalCommissionPersonnelle / this.totalToutesCommissions) * 100 : 0;
+
+
+  getActorRoleLabel(
+    role:
+      ActorRole
+  ): string {
+
+    const labels:
+      Record<
+        ActorRole,
+        string
+      > = {
+
+      AGENT:
+        'Agent',
+
+      SUPER_AGENT:
+        'Super-Agent',
+
+      SHAREHOLDER:
+        'Actionnaire',
+
+      COMPANY:
+        'Société'
+
+    };
+
+
+    return labels[role];
+
   }
+
+
+  getActorClass(
+    role:
+      ActorRole
+  ): string {
+
+    return (
+      `actor-avatar--${role
+        .toLowerCase()
+        .replace(
+          '_',
+          '-'
+        )}`
+    );
+
+  }
+
+
+  getInitials(
+    name:
+      string
+  ): string {
+
+    return name
+      .split(
+        /\s+/
+      )
+      .filter(
+        Boolean
+      )
+      .slice(
+        0,
+        2
+      )
+      .map(
+        part =>
+          part
+            .charAt(0)
+            .toUpperCase()
+      )
+      .join('');
+
+  }
+
+
+  formatBif(
+    amount:
+      number
+  ): string {
+
+    return (
+      new Intl.NumberFormat(
+        'fr-FR',
+        {
+          maximumFractionDigits:
+            0
+        }
+      ).format(
+        amount
+      ) +
+      ' BIF'
+    );
+
+  }
+
+
+  formatDateTime(
+    date:
+      Date
+  ): string {
+
+    return new Intl.DateTimeFormat(
+      'fr-FR',
+      {
+
+        day:
+          '2-digit',
+
+        month:
+          '2-digit',
+
+        year:
+          'numeric',
+
+        hour:
+          '2-digit',
+
+        minute:
+          '2-digit'
+
+      }
+    ).format(
+      date
+    );
+
+  }
+
+
+  trackByCommission(
+
+    _:
+      number,
+
+    commission:
+      CommissionRecord
+
+  ): string {
+
+    return commission.reference;
+
+  }
+
+
+  /* =========================================================
+     PRINT / CSV
+  ========================================================= */
+
+  private downloadCsv(
+
+    filename:
+      string,
+
+    headers:
+      string[],
+
+    rows:
+      Array<
+        Array<
+          string | number
+        >
+      >
+
+  ): void {
+
+    const csv =
+      [
+
+        headers.join(
+          ';'
+        ),
+
+        ...rows.map(
+          row =>
+            row.map(
+              value =>
+                `"${String(value)
+                  .replace(
+                    /"/g,
+                    '""'
+                  )}"`
+            )
+            .join(
+              ';'
+            )
+        )
+
+      ].join(
+        '\n'
+      );
+
+
+    const blob =
+      new Blob(
+        [
+          '\uFEFF',
+          csv
+        ],
+        {
+          type:
+            'text/csv;charset=utf-8;'
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+
+    link.href =
+      url;
+
+    link.download =
+      filename;
+
+    link.click();
+
+
+    URL.revokeObjectURL(
+      url
+    );
+
+  }
+
+
+  private openPrintWindow(
+
+    title:
+      string,
+
+    heading:
+      string,
+
+    rows:
+      string[][]
+
+  ): void {
+
+    const popup =
+      window.open(
+        '',
+        '_blank',
+        'width=900,height=700'
+      );
+
+
+    if (!popup) {
+
+      return;
+
+    }
+
+
+    const bodyRows =
+      rows.map(
+        row =>
+          `
+            <tr>
+              <td>${this.escapeHtml(row[0] ?? '')}</td>
+              <td>${this.escapeHtml(row[1] ?? '')}</td>
+            </tr>
+          `
+      ).join('');
+
+
+    popup.document.write(
+      `
+        <!doctype html>
+        <html lang="fr">
+          <head>
+            <meta charset="utf-8">
+            <title>${this.escapeHtml(title)}</title>
+
+            <style>
+              body{
+                font-family:Arial,sans-serif;
+                color:#172554;
+                padding:30px
+              }
+
+              h1{
+                font-size:21px;
+                margin:0 0 20px
+              }
+
+              table{
+                width:100%;
+                border-collapse:collapse
+              }
+
+              td{
+                padding:10px;
+                border-bottom:1px solid #e2e8f0
+              }
+
+              td:first-child{
+                width:36%;
+                color:#64748b
+              }
+
+              td:last-child{
+                font-weight:700
+              }
+            </style>
+          </head>
+
+          <body>
+            <h1>${this.escapeHtml(heading)}</h1>
+            <table>${bodyRows}</table>
+
+            <script>
+              window.onload=function(){
+                window.print();
+              };
+            <\/script>
+          </body>
+        </html>
+      `
+    );
+
+
+    popup.document.close();
+
+  }
+
+
+  private openPrintTable(
+
+    title:
+      string,
+
+    subtitle:
+      string,
+
+    headers:
+      string[],
+
+    rows:
+      string[][]
+
+  ): void {
+
+    const popup =
+      window.open(
+        '',
+        '_blank',
+        'width=1200,height=800'
+      );
+
+
+    if (!popup) {
+
+      return;
+
+    }
+
+
+    const headerHtml =
+      headers.map(
+        header =>
+          `<th>${this.escapeHtml(header)}</th>`
+      ).join('');
+
+
+    const rowsHtml =
+      rows.map(
+        row =>
+          `
+            <tr>
+              ${row.map(
+                value =>
+                  `<td>${this.escapeHtml(value)}</td>`
+              ).join('')}
+            </tr>
+          `
+      ).join('');
+
+
+    popup.document.write(
+      `
+        <!doctype html>
+        <html lang="fr">
+          <head>
+            <meta charset="utf-8">
+            <title>${this.escapeHtml(title)}</title>
+
+            <style>
+              body{
+                font-family:Arial,sans-serif;
+                color:#172554;
+                padding:24px
+              }
+
+              h1{
+                margin:0;
+                font-size:20px
+              }
+
+              p{
+                color:#64748b;
+                margin:5px 0 18px
+              }
+
+              table{
+                width:100%;
+                border-collapse:collapse;
+                font-size:10px
+              }
+
+              th,
+              td{
+                padding:7px;
+                border:1px solid #e2e8f0;
+                text-align:left
+              }
+
+              th{
+                background:#f8fafc
+              }
+            </style>
+          </head>
+
+          <body>
+            <h1>${this.escapeHtml(title)}</h1>
+            <p>${this.escapeHtml(subtitle)}</p>
+
+            <table>
+              <thead>
+                <tr>${headerHtml}</tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+
+            <script>
+              window.onload=function(){
+                window.print();
+              };
+            <\/script>
+          </body>
+        </html>
+      `
+    );
+
+
+    popup.document.close();
+
+  }
+
+
+  private escapeHtml(
+    value:
+      string
+  ): string {
+
+    return String(value)
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+      .replace(
+        /'/g,
+        '&#039;'
+      );
+
+  }
+
+
+  /* =========================================================
+     DONNEES DEMO
+  ========================================================= */
+
+  private createCommissionData():
+    CommissionRecord[] {
+
+    const agents =
+      [
+
+        {
+          name:
+            'Jean HAKIZIMANA',
+          wallet:
+            'AGT-79001122'
+        },
+
+        {
+          name:
+            'Marie NDAYISHIMIYE',
+          wallet:
+            'AGT-79003344'
+        },
+
+        {
+          name:
+            'Pierre CIZA',
+          wallet:
+            'AGT-79005566'
+        },
+
+        {
+          name:
+            'Anastasie HABIMANA',
+          wallet:
+            'AGT-79007788'
+        }
+
+      ];
+
+
+    const superAgents =
+      [
+
+        {
+          name:
+            'Alphonse NIYONZIMA',
+          wallet:
+            'SA-78001111'
+        },
+
+        {
+          name:
+            'Emmanuel RWASA',
+          wallet:
+            'SA-78002222'
+        }
+
+      ];
+
+
+    const shareholders =
+      [
+
+        {
+          name:
+            'Pool Actionnaires A',
+          code:
+            'ACT-001'
+        },
+
+        {
+          name:
+            'Pool Actionnaires B',
+          code:
+            'ACT-002'
+        }
+
+      ];
+
+
+    const company =
+      {
+
+        name:
+          'IBLOPay S.A.',
+
+        code:
+          'IBLOPAY-SA'
+
+      };
+
+
+    const operations:
+      OperationType[] =
+      [
+
+        'TRANSFER',
+
+        'DEPOSIT',
+
+        'WITHDRAWAL',
+
+        'PAYMENT',
+
+        'MERCHANT_PAYMENT',
+
+        'FUND'
+
+      ];
+
+
+    const amounts =
+      [
+
+        50000,
+
+        75000,
+
+        100000,
+
+        125000,
+
+        150000,
+
+        200000,
+
+        250000,
+
+        300000,
+
+        500000
+
+      ];
+
+
+    const records:
+      CommissionRecord[] =
+      [];
+
+
+    for (
+      let index = 1;
+      index <= 68;
+      index++
+    ) {
+
+      const agent =
+        agents[
+          index %
+          agents.length
+        ];
+
+
+      const superAgent =
+        superAgents[
+          index %
+          superAgents.length
+        ];
+
+
+      const shareholder =
+        shareholders[
+          index %
+          shareholders.length
+        ];
+
+
+      const transactionAmount =
+        amounts[
+          index %
+          amounts.length
+        ];
+
+
+      /*
+       * Exemple de commission globale :
+       * 5 % de la transaction.
+       *
+       * Répartition :
+       * Agent        25 %
+       * Super-Agent  12,5 %
+       * Actionnaires 7,5 %
+       * Société      55 %
+       *
+       * Ces taux sont des données de démonstration
+       * et peuvent être remplacés par les vrais taux.
+       */
+      const totalCommission =
+        Math.round(
+          transactionAmount *
+          0.05
+        );
+
+
+      const agentCommission =
+        Math.round(
+          totalCommission *
+          0.25
+        );
+
+
+      const superAgentCommission =
+        Math.round(
+          totalCommission *
+          0.125
+        );
+
+
+      const shareholderCommission =
+        Math.round(
+          totalCommission *
+          0.075
+        );
+
+
+      const companyCommission =
+        (
+          totalCommission -
+          agentCommission -
+          superAgentCommission -
+          shareholderCommission
+        );
+
+
+      const status:
+        CommissionStatus =
+        index % 13 === 0
+
+          ? 'FAILED'
+
+          : index % 9 === 0
+
+            ? 'PENDING'
+
+            : 'SUCCESS';
+
+
+      const date =
+        new Date(
+          2026,
+          8,
+          29 -
+          Math.floor(
+            index / 7
+          ),
+          6 +
+          (
+            index %
+            12
+          ),
+          (
+            index *
+            7
+          ) %
+          60
+        );
+
+
+      records.push(
+        {
+
+          reference:
+            `TXN-202609-${String(index).padStart(5, '0')}`,
+
+          date,
+
+          clientWallet:
+            `2577${String(
+              1000000 +
+              index *
+              7919
+            ).slice(-7)}`,
+
+          operationType:
+            operations[
+              index %
+              operations.length
+            ],
+
+          transactionAmount,
+
+          agentName:
+            agent.name,
+
+          agentWallet:
+            agent.wallet,
+
+          agentCommission,
+
+          superAgentName:
+            superAgent.name,
+
+          superAgentWallet:
+            superAgent.wallet,
+
+          superAgentCommission,
+
+          shareholderName:
+            shareholder.name,
+
+          shareholderCode:
+            shareholder.code,
+
+          shareholderCommission,
+
+          companyName:
+            company.name,
+
+          companyCode:
+            company.code,
+
+          companyCommission,
+
+          status
+
+        }
+      );
+
+    }
+
+
+    return records.sort(
+      (
+        a,
+        b
+      ) =>
+        b.date.getTime() -
+        a.date.getTime()
+    );
+
+  }
+
 }

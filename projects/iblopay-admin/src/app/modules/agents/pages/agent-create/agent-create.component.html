@@ -1,422 +1,114 @@
-<div class="create-container">
-
-  <!-- ================= HEADER ================= -->
-
-  <div class="create-header">
-
-    <div class="header-left">
-
-    
-
-      <div>
-        <h1>Nouveau Super Agent</h1>
-        <p>
-          Remplissez les informations du nouveau super agent
-        </p>
-      </div>
-
+<div class="create-page">
+  <div class="page-heading">
+    <div>
+      <div class="breadcrumb">Accueil <i class="fas fa-chevron-right"></i> Super Agents <i class="fas fa-chevron-right"></i> <strong>Nouveau</strong></div>
+      <h1>Nouveau Super Agent</h1>
+      <p>Créez un nouveau super agent et configurez son accès au réseau IBLOPAY.</p>
     </div>
-
-    
-
-  </div>
-
-  <!-- ================= CARD ================= -->
-
-  <div class="main-card">
-
-    <form [formGroup]="agentForm" (ngSubmit)="onSubmit()">
-
-  <div class="form-grid">
-
-    <!-- ================================================= -->
-    <!-- COLONNE GAUCHE -->
-    <!-- ================================================= -->
-
-    <div class="column">
-
-      <!-- ================= INFORMATIONS PERSONNELLES ================= -->
-
-      <div class="form-section">
-
-        <div class="section-title">
-
-          <div class="icon-box">
-            <i class="fas fa-user"></i>
-          </div>
-
-          <div>
-            <h3>Informations personnelles</h3>
-            <span>Identité du super agent</span>
-          </div>
-
-        </div>
-
-        <div class="form-row">
-
-          <div class="form-group">
-            <label for="lastName">Nom *</label>
-
-            <input
-              id="lastName"
-              type="text"
-              formControlName="lastName"
-              placeholder="Nom">
-
-            <small *ngIf="agentForm.get('lastName')?.invalid && agentForm.get('lastName')?.touched">
-              Nom obligatoire
-            </small>
-          </div>
-
-          <div class="form-group">
-
-            <label for="firstName">Prénom *</label>
-
-            <input
-              id="firstName"
-              type="text"
-              formControlName="firstName"
-              placeholder="Prénom">
-
-            <small *ngIf="agentForm.get('firstName')?.invalid && agentForm.get('firstName')?.touched">
-              Prénom obligatoire
-            </small>
-
-          </div>
-
-        </div>
-
-        <div class="form-row">
-
-          <div class="form-group">
-
-            <label for="dateOfBirth">Date de naissance *</label>
-
-            <input
-              id="dateOfBirth"
-              type="date"
-              formControlName="dateOfBirth">
-
-          </div>
-
-          <div class="form-group">
-
-            <label for="cin">CNI *</label>
-
-            <input
-              id="cin"
-              type="text"
-              formControlName="cin"
-              placeholder="Numéro CNI">
-
-          </div>
-
-        </div>
-
-        <div class="form-row">
-
-          <div class="form-group">
-
-            <label for="phone">Téléphone *</label>
-
-            <input
-              id="phone"
-              type="text"
-              formControlName="phone"
-              placeholder="79XXXXXX">
-
-          </div>
-
-          <div class="form-group">
-
-            <label for="cardNumber">Numéro de carte *</label>
-
-            <input
-              id="cardNumber"
-              type="text"
-              formControlName="cardNumber"
-              placeholder="IBP-00001">
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- ================= INFORMATIONS LEGALES ================= -->
-
-      <div class="form-section">
-
-        <div class="section-title">
-
-          <div class="icon-box">
-            <i class="fas fa-file-contract"></i>
-          </div>
-
-          <div>
-            <h3>Informations légales</h3>
-            <span>Documents administratifs</span>
-          </div>
-
-        </div>
-
-        <div class="form-row">
-
-          <div class="form-group">
-
-            <label for="nif">NIF *</label>
-
-            <input
-              id="nif"
-              type="text"
-              formControlName="nif"
-              placeholder="Numéro NIF">
-
-          </div>
-
-          <div class="form-group">
-
-            <label for="commerceRegister">Registre du commerce *</label>
-
-            <input
-              id="commerceRegister"
-              type="text"
-              formControlName="commerceRegister"
-              placeholder="Registre">
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- ================= DOCUMENTS ================= -->
-
-      <div class="form-section">
-
-        <div class="section-title">
-
-          <div class="icon-box">
-            <i class="fas fa-cloud-upload-alt"></i>
-          </div>
-
-          <div>
-            <h3>Documents</h3>
-            <span>Importer les documents obligatoires</span>
-          </div>
-
-        </div>
-
-        <div
-          class="upload-zone"
-          [class.has-file]="agentForm.get('approvalLetter')?.value">
-
-          <input
-            id="approvalLetter"
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            (change)="onFileSelected($event)">
-
-          <i class="fas fa-cloud-upload-alt upload-icon"></i>
-
-          <h4>Déposer le fichier ici</h4>
-
-          <p>ou cliquez pour sélectionner un document</p>
-
-          <small>PDF, JPG ou PNG</small>
-
-          <div
-            class="file-name"
-            *ngIf="agentForm.get('approvalLetter')?.value">
-
-            <i class="fas fa-check-circle"></i>
-
-            {{ agentForm.get('approvalLetter')?.value?.name }}
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-        <!-- ================================================= -->
-    <!-- COLONNE DROITE -->
-    <!-- ================================================= -->
-
-    <div class="column">
-
-      <!-- ================= SECURITE ================= -->
-
-      <div class="form-section">
-
-        <div class="section-title">
-
-          <div class="icon-box">
-            <i class="fas fa-lock"></i>
-          </div>
-
-          <div>
-            <h3>Sécurité</h3>
-            <span>Créer les accès du compte</span>
-          </div>
-
-        </div>
-
-        <div class="form-group">
-
-          <label for="password">Mot de passe *</label>
-
-          <input
-            id="password"
-            type="password"
-            formControlName="password"
-            placeholder="********">
-
-        </div>
-
-        <div class="form-group">
-
-          <label for="confirmPassword">Confirmation *</label>
-
-          <input
-            id="confirmPassword"
-            type="password"
-            formControlName="confirmPassword"
-            placeholder="********">
-
-          <small
-            *ngIf="
-              agentForm.hasError('mismatch')
-              &&
-              agentForm.get('confirmPassword')?.touched">
-
-            Les mots de passe ne correspondent pas.
-
-          </small>
-
-        </div>
-
-      </div>
-
-      <!-- ================= ADRESSE ================= -->
-
-      <div class="form-section">
-
-        <div class="section-title">
-
-          <div class="icon-box">
-            <i class="fas fa-map-marker-alt"></i>
-          </div>
-
-          <div>
-            <h3>Adresse</h3>
-            <span>Localisation du super agent</span>
-          </div>
-
-        </div>
-
-        <div class="form-row">
-
-          <div class="form-group">
-
-            <label for="province">Province *</label>
-
-            <select id="province" formControlName="province">
-
-              <option value="">Sélectionner une province</option>
-
-              <option
-                *ngFor="let province of provinces"
-                [value]="province">
-
-                {{ province }}
-
-              </option>
-
-            </select>
-
-          </div>
-
-          <div class="form-group">
-
-            <label for="commune">Commune *</label>
-
-            <input
-              id="commune"
-              type="text"
-              formControlName="commune"
-              placeholder="Commune">
-
-          </div>
-
-        </div>
-
-        <div class="form-row">
-
-          <div class="form-group">
-
-            <label for="zone">Zone *</label>
-
-            <input
-              id="zone"
-              type="text"
-              formControlName="zone"
-              placeholder="Zone">
-
-          </div>
-
-          <div class="form-group">
-
-            <label for="colline">Colline / Quartier</label>
-
-            <input
-              id="colline"
-              type="text"
-              formControlName="colline"
-              placeholder="Colline ou quartier">
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- ================= ACTIONS ================= -->
-
-  <div class="form-actions">
-
-    <button
-      type="button"
-      class="btn-cancel"
-      (click)="cancel()">
-
-      Annuler
-
+    <button type="button" class="btn-back" (click)="cancel()">
+      <i class="fas fa-arrow-left"></i><span>Retour à la liste</span>
     </button>
-
-    <button
-      type="submit"
-      class="btn-submit"
-      [disabled]="isLoading">
-
-      <i
-        class="fas fa-save"
-        *ngIf="!isLoading"></i>
-
-      <span
-        class="spinner"
-        *ngIf="isLoading"></span>
-
-      {{ isLoading ? 'Création...' : 'Créer le Super Agent' }}
-
-    </button>
-
   </div>
 
-</form>
+  <form [formGroup]="agentForm" (ngSubmit)="onSubmit()" class="create-form">
+    <div class="form-layout">
+      <div class="main-column">
+        <section class="form-card">
+          <div class="card-title">
+            <div class="title-icon blue"><i class="fas fa-user"></i></div>
+            <div><h2>Informations personnelles</h2><p>Identité du super agent</p></div>
+          </div>
+
+          <div class="two-cols">
+            <div class="field"><label>Nom <b>*</b></label><input formControlName="lastName" placeholder="Nom"></div>
+            <div class="field"><label>Prénom <b>*</b></label><input formControlName="firstName" placeholder="Prénom"></div>
+            <div class="field phone-field"><label>Téléphone <b>*</b></label><div class="phone-input"><span>🇧🇮 +257</span><input formControlName="phone" placeholder="79 123 456"></div></div>
+            <div class="field"><label>Email <b>*</b></label><div class="input-icon"><i class="far fa-envelope"></i><input type="email" formControlName="email" placeholder="exemple@iblopay.bi"></div></div>
+            <div class="field"><label>Numéro CNI <b>*</b></label><input formControlName="cin" placeholder="Numéro de la carte d'identité"></div>
+            <div class="field"><label>Date de naissance <b>*</b></label><input type="date" formControlName="dateOfBirth"></div>
+            <div class="field"><label>NIF <b>*</b></label><input formControlName="nif" placeholder="Numéro NIF"></div>
+            <div class="field"><label>Registre du commerce <b>*</b></label><input formControlName="commerceRegister" placeholder="RC-..."></div>
+          </div>
+
+          <div class="field upload-field">
+            <label>Document / lettre d'agrément <span>(optionnel)</span></label>
+            <label class="upload-box" for="approvalLetter">
+              <input id="approvalLetter" type="file" accept=".pdf,.jpg,.jpeg,.png" (change)="onFileSelected($event)">
+              <i class="fas fa-cloud-arrow-up"></i>
+              <span *ngIf="!agentForm.get('approvalLetter')?.value">Cliquez pour ajouter un document</span>
+              <strong *ngIf="agentForm.get('approvalLetter')?.value">{{ agentForm.get('approvalLetter')?.value?.name }}</strong>
+              <small>PDF, JPG ou PNG</small>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-card">
+          <div class="card-title">
+            <div class="title-icon purple"><i class="fas fa-location-dot"></i></div>
+            <div><h2>Affiliation et localisation</h2><p>Zone d’intervention du super agent</p></div>
+          </div>
+          <div class="two-cols">
+            <div class="field"><label>Province <b>*</b></label><select formControlName="province"><option value="">Sélectionner la province</option><option *ngFor="let p of provinces" [value]="p">{{ p }}</option></select></div>
+            <div class="field"><label>Commune <b>*</b></label><input formControlName="commune" placeholder="Commune"></div>
+            <div class="field"><label>Zone <b>*</b></label><input formControlName="zone" placeholder="Zone"></div>
+            <div class="field"><label>Quartier / Colline</label><input formControlName="quartier" placeholder="Quartier ou colline"></div>
+          </div>
+          <div class="field full"><label>Adresse complète</label><div class="input-icon"><i class="fas fa-location-dot"></i><input [value]="(agentForm.get('quartier')?.value || '') + (agentForm.get('zone')?.value ? ', ' + agentForm.get('zone')?.value : '') + (agentForm.get('commune')?.value ? ', ' + agentForm.get('commune')?.value : '')" readonly placeholder="L'adresse sera générée automatiquement"></div></div>
+        </section>
+
+        <section class="form-card compact">
+          <div class="card-title">
+            <div class="title-icon orange"><i class="fas fa-coins"></i></div>
+            <div><h2>Paramètres financiers</h2><p>Commissions et limites</p></div>
+          </div>
+          <div class="three-cols">
+            <div class="field"><label>Taux de commission</label><div class="suffix-input"><input type="number" formControlName="commissionRate" min="0" max="100"><span>%</span></div></div>
+            <div class="field"><label>Limite journalière</label><div class="suffix-input"><input type="number" formControlName="dailyLimit" min="0" placeholder="0"><span>BIF</span></div></div>
+            <div class="field"><label>Solde initial</label><div class="suffix-input"><input type="number" formControlName="initialBalance" min="0" placeholder="0"><span>BIF</span></div></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-column">
+        <section class="form-card">
+          <div class="card-title">
+            <div class="title-icon blue"><i class="fas fa-lock"></i></div>
+            <div><h2>Informations compte</h2><p>Accès à la plateforme</p></div>
+          </div>
+          <div class="field"><label>Identifiant <b>*</b></label><div class="input-icon"><i class="far fa-user"></i><input formControlName="username" placeholder="Identifiant de connexion"></div></div>
+          <div class="field"><label>Mot de passe <b>*</b></label><div class="password-input"><i class="fas fa-lock"></i><input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Mot de passe sécurisé"><button type="button" (click)="showPassword = !showPassword"><i class="far" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i></button></div></div>
+          <div class="field"><label>Confirmer le mot de passe <b>*</b></label><div class="password-input"><i class="fas fa-lock"></i><input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" placeholder="Confirmer le mot de passe"><button type="button" (click)="showConfirmPassword = !showConfirmPassword"><i class="far" [class.fa-eye]="!showConfirmPassword" [class.fa-eye-slash]="showConfirmPassword"></i></button></div><small class="error" *ngIf="agentForm.hasError('mismatch') && agentForm.get('confirmPassword')?.touched">Les mots de passe ne correspondent pas.</small></div>
+          <div class="field"><label>Numéro de carte</label><input formControlName="cardNumber" placeholder="Généré automatiquement si vide"></div>
+        </section>
+
+        <section class="form-card permissions-card">
+          <div class="card-title">
+            <div class="title-icon green"><i class="fas fa-sliders"></i></div>
+            <div><h2>Paramètres supplémentaires</h2><p>Rôles et permissions</p></div>
+          </div>
+          <div class="field"><label>Statut du compte <b>*</b></label><select formControlName="status"><option value="ACTIVE">Actif</option><option value="PENDING">En attente</option><option value="SUSPENDED">Suspendu</option></select></div>
+          <label class="toggle-row"><input type="checkbox" formControlName="allowAgentCreation"><span class="switch"></span><span>Autoriser la création d'agents</span></label>
+          <label class="toggle-row"><input type="checkbox" formControlName="allowCardManagement"><span class="switch"></span><span>Autoriser la gestion des cartes</span></label>
+          <label class="toggle-row"><input type="checkbox" formControlName="allowTransactions"><span class="switch"></span><span>Autoriser les transactions</span></label>
+          <label class="toggle-row"><input type="checkbox" formControlName="receiveReports"><span class="switch"></span><span>Recevoir les rapports</span></label>
+        </section>
+
+        <section class="form-card notes-card">
+          <div class="card-title">
+            <div class="title-icon blue"><i class="far fa-file-lines"></i></div>
+            <div><h2>Notes</h2><p>Informations internes</p></div>
+          </div>
+          <div class="field"><textarea rows="5" formControlName="notes" placeholder="Notes sur ce super agent..."></textarea></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
+      <button type="submit" class="btn-submit" [disabled]="isLoading">
+        <i class="fas" [class.fa-spinner]="isLoading" [class.fa-spin]="isLoading" [class.fa-user-plus]="!isLoading"></i>
+        {{ isLoading ? 'Création...' : 'Créer le Super Agent' }}
+      </button>
+    </div>
+  </form>
+</div>

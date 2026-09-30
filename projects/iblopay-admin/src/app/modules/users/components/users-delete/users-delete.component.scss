@@ -1,8 +1,5 @@
-// src/app/modules/users/components/users-delete/users-delete.component.scss
 
-/* ================================================================
-   THEME VARIABLES
-   ================================================================ */
+
 :host {
   --delete-bg-overlay: rgba(0, 0, 0, 0.6);
   --delete-bg-card: #ffffff;
@@ -33,9 +30,7 @@
   --delete-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
-/* ================================================================
-   OVERLAY
-   ================================================================ */
+
 .delete-modal-overlay {
   position: fixed;
   inset: 0;
@@ -55,9 +50,7 @@
   to { opacity: 1; }
 }
 
-/* ================================================================
-   MODAL CARD
-   ================================================================ */
+
 .delete-modal-container {
   background: var(--delete-bg-card);
   border-radius: var(--delete-radius);
@@ -93,9 +86,7 @@
   }
 }
 
-/* ================================================================
-   HEADER
-   ================================================================ */
+
 .delete-modal-header {
   display: flex;
   justify-content: space-between;
@@ -151,9 +142,7 @@
   transform: rotate(90deg);
 }
 
-/* ================================================================
-   BODY
-   ================================================================ */
+
 .delete-modal-body {
   padding: 24px;
 }
@@ -178,9 +167,7 @@
   color: var(--delete-danger);
 }
 
-/* ================================================================
-   USER CARD
-   ================================================================ */
+
 .delete-user-card {
   display: flex;
   align-items: center;
@@ -286,9 +273,7 @@
 }
 .delete-user-status.status-closed .delete-status-dot { background: #dc2626; }
 
-/* ================================================================
-   OTP HEADER AVEC CHRONO
-   ================================================================ */
+
 .delete-otp-header {
   display: flex;
   align-items: center;
@@ -315,7 +300,7 @@
   margin-left: 8px;
 }
 
-/* Petit chrono circulaire */
+
 .delete-otp-timer {
   position: relative;
   width: 36px;
@@ -357,9 +342,7 @@
   color: var(--delete-danger);
 }
 
-/* ================================================================
-   OTP INPUT GROUP
-   ================================================================ */
+
 .delete-otp-input-group {
   display: flex;
   gap: 8px;
@@ -408,9 +391,7 @@
   cursor: not-allowed;
 }
 
-/* ================================================================
-   OTP FOOTER
-   ================================================================ */
+
 .delete-otp-footer {
   display: flex;
   align-items: center;
@@ -465,9 +446,7 @@
   }
 }
 
-/* ================================================================
-   DELETE DETAILS
-   ================================================================ */
+
 .delete-details {
   display: flex;
   flex-direction: column;
@@ -495,9 +474,7 @@
   text-align: center;
 }
 
-/* ================================================================
-   VERIFIED BADGE
-   ================================================================ */
+
 .delete-verified-badge {
   display: flex;
   align-items: center;
@@ -517,9 +494,7 @@
   font-size: 18px;
 }
 
-/* ================================================================
-   FORM GROUP
-   ================================================================ */
+
 .delete-form-group {
   margin-bottom: 14px;
 }
@@ -571,9 +546,7 @@
   cursor: not-allowed;
 }
 
-/* ================================================================
-   ALERTS
-   ================================================================ */
+
 .delete-alert {
   padding: 12px 16px;
   border-radius: 10px;
@@ -596,9 +569,7 @@
   color: var(--delete-danger);
 }
 
-/* ================================================================
-   BOUTONS
-   ================================================================ */
+
 .delete-btn-verify {
   width: 100%;
   padding: 12px;
@@ -628,9 +599,7 @@
   transform: none;
 }
 
-/* ================================================================
-   FOOTER
-   ================================================================ */
+
 .delete-modal-footer {
   display: flex;
   gap: 12px;
@@ -703,92 +672,90 @@
   to { transform: rotate(360deg); }
 }
 
-/* ================================================================
-   RESPONSIVE
-   ================================================================ */
+
 @media (max-width: 640px) {
   .delete-modal-container {
     max-width: 100%;
     margin: 10px;
     max-height: 95vh;
   }
-  
+
   .delete-modal-header {
     padding: 14px 18px;
   }
-  
+
   .delete-modal-icon {
     width: 40px;
     height: 40px;
   }
-  
+
   .delete-modal-icon i {
     font-size: 18px;
   }
-  
+
   .delete-modal-body {
     padding: 18px;
   }
-  
+
   .delete-modal-body h2 {
     font-size: 18px;
   }
-  
+
   .delete-modal-footer {
     flex-direction: column;
   }
-  
+
   .delete-modal-footer button {
     width: 100%;
     padding: 14px;
   }
-  
+
   .delete-user-card {
     flex-wrap: wrap;
     padding: 12px 14px;
   }
-  
+
   .delete-user-avatar {
     width: 40px;
     height: 40px;
   }
-  
+
   .delete-user-img,
   .delete-user-initials {
     width: 40px;
     height: 40px;
     font-size: 15px;
   }
-  
+
   .delete-otp-header {
     flex-wrap: wrap;
     gap: 6px;
   }
-  
+
   .delete-otp-timer {
     width: 30px;
     height: 30px;
   }
-  
+
   .delete-otp-timer-svg {
     width: 30px;
     height: 30px;
   }
-  
+
   .delete-otp-timer-text {
     font-size: 9px;
   }
-  
+
   .delete-otp-input {
     font-size: 16px;
     letter-spacing: 6px;
   }
-  
+
   .delete-otp-resend {
     min-width: 40px;
     height: 40px;
   }
-  
+
   .delete-otp-footer {
     flex-wrap: wrap;
     gap: 4px;
@@ -799,34 +766,34 @@
   .delete-modal-body {
     padding: 14px;
   }
-  
+
   .delete-modal-header {
     padding: 12px 14px;
   }
-  
+
   .delete-user-card {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .delete-user-status {
     align-self: center;
   }
-  
+
   .delete-otp-timer {
     width: 26px;
     height: 26px;
   }
-  
+
   .delete-otp-timer-svg {
     width: 26px;
     height: 26px;
   }
-  
+
   .delete-otp-timer-text {
     font-size: 8px;
   }
-  
+
   .delete-otp-input {
     font-size: 14px;
     letter-spacing: 4px;

@@ -1,6 +1,4 @@
-/* ================================================================
-   REGISTRE — Système de design institutionnel
-   ================================================================ */
+
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 $ink: #16293a;
@@ -120,7 +118,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ---------------------------------------------------------- CARTE PRINCIPALE */
+
     .detail-card {
         background: $surface;
         border-radius: $radius;
@@ -224,7 +222,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ---------------------------------------------------------- TABS */
+
     .tabs-nav {
         display: flex;
         gap: 4px;
@@ -321,7 +319,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ---------------------------------------------------------- TABLE */
+
     .table-scroll {
         overflow-x: auto;
         background: $surface;
@@ -397,7 +395,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ---------------------------------------------------------- BADGES */
+
     .badge {
         display: inline-flex;
         align-items: center;
@@ -452,7 +450,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ---------------------------------------------------------- PAGINATION */
+
     .table-footer {        display: flex;
         justify-content: space-between;
         align-items: center;
@@ -502,7 +500,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
     }
 
-    /* ---------------------------------------------------------- MODALES (formulaires) */
+
     .modal-overlay {
         position: fixed;
         inset: 0;
@@ -581,7 +579,7 @@ $transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         background: $surface;
     }
 
-    /* ---------------------------------------------------------- FORMULAIRE */
+
     .form-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);

@@ -221,7 +221,6 @@ export class ReportDetailComponent implements OnInit, AfterViewInit {
     this.applyFilters();
   }
 
-  // ─── CHARTS ──────────────────────────────────────────
 
   private drawCharts(): void {
     this.destroyCharts();
@@ -344,7 +343,6 @@ export class ReportDetailComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // ─── FILTERS ─────────────────────────────────────────
 
   applyFilters(): void {
     this.currentPage = 1;
@@ -387,7 +385,6 @@ export class ReportDetailComponent implements OnInit, AfterViewInit {
     this.applyFilters();
   }
 
-  // ─── SORT ────────────────────────────────────────────
 
   setSort(col: string): void {
     if (this.sortColumn === col) {
@@ -418,7 +415,6 @@ export class ReportDetailComponent implements OnInit, AfterViewInit {
     return this.sortDir === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
   }
 
-  // ─── PAGINATION ──────────────────────────────────────
 
   get pagedRows(): any[] {
     const start = (this.currentPage - 1) * this.pageSize;
@@ -437,7 +433,6 @@ export class ReportDetailComponent implements OnInit, AfterViewInit {
     return pages;
   }
 
-  // ─── EXPORT ──────────────────────────────────────────
 
   exportCSV(): void {
     this.exporting = true;
@@ -468,7 +463,6 @@ export class ReportDetailComponent implements OnInit, AfterViewInit {
     setTimeout(() => { window.print(); this.exporting = false; }, 300);
   }
 
-  // ─── FORMATTERS ──────────────────────────────────────
 
   formatCurrency(v: number): string {
     return v.toLocaleString('fr-FR') + ' BIF';

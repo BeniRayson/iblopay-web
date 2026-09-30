@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-// ========== INTERFACES ==========
 
 interface ServiceRevenue {
   id: string;
@@ -144,7 +143,6 @@ export class ServicesSettingsComponent implements OnInit {
     this.updateCounts();
   }
 
-  // ========== MÉTHODES POUR LA DATE ==========
 
   getCurrentDate(): string {
     return new Date().toLocaleDateString('fr-FR');
@@ -154,7 +152,6 @@ export class ServicesSettingsComponent implements OnInit {
     return 'DEM-' + String(100000 + Math.floor(Math.random() * 900000)).padStart(6, '0');
   }
 
-  // ========== MÉTHODES PIN ==========
 
   addPinDigit(digit: number): void {
     if (this.pinCode.length < 4) {
@@ -213,7 +210,6 @@ export class ServicesSettingsComponent implements OnInit {
     this.desactivatePinCode = '';
   }
 
-  // ========== INITIALISATION ==========
 
   private initializeData(): void {
     if (this.services.length > 0 && this.categories.length > 0) {
@@ -235,7 +231,6 @@ export class ServicesSettingsComponent implements OnInit {
       return;
     }
 
-    // Définir les catégories
     this.categories = [
       {
         id: 'ARCT',
@@ -496,7 +491,7 @@ export class ServicesSettingsComponent implements OnInit {
       cat.subCategories.forEach((sub: any) => {
         const fees = sub.fees || Math.round((0.5 + Math.random() * 5) * 100) / 100;
         const feesType = sub.type || (fees > 0 ? 'fixe' : 'pourcentage');
-        
+
         const service: Service = {
           id: `${cat.id}-${String(100 + Math.floor(Math.random() * 900)).padStart(3, '0')}`,
           key: `${cat.id}_${sub.name.replace(/\s/g, '_')}`,
@@ -534,7 +529,7 @@ export class ServicesSettingsComponent implements OnInit {
 
   private ensureClientsForAllServices(): void {
     const services = this.services.filter(s => s.status === 'actif');
-    
+
     services.forEach(service => {
       const existingClients = this.clients.filter(c => c.serviceId === service.id);
       if (existingClients.length < 10) {
@@ -638,7 +633,6 @@ export class ServicesSettingsComponent implements OnInit {
     }
   }
 
-  // ========== GETTERS ==========
 
   getServices(): Service[] {
     return this.services;
@@ -745,7 +739,6 @@ export class ServicesSettingsComponent implements OnInit {
     });
   }
 
-  // ========== MÉTHODES POUR LE TEMPLATE ==========
 
   getTotalRevenues(): number {
     return this.revenues.reduce((sum, r) => sum + r.amount, 0);
@@ -776,7 +769,6 @@ export class ServicesSettingsComponent implements OnInit {
     return total.toLocaleString('fr-FR');
   }
 
-  // ========== EXPORT EXCEL ==========
 
   exportToExcel(): void {
     const excelData = this.services.map(service => ({
@@ -808,11 +800,11 @@ export class ServicesSettingsComponent implements OnInit {
 
   private exportToCSV(data: any[], filename: string): void {
     if (data.length === 0) return;
-    
+
     const headers = Object.keys(data[0]);
     const csvRows = [];
     csvRows.push(headers.join(','));
-    
+
     for (const row of data) {
       const values = headers.map(header => {
         const val = row[header] !== undefined ? row[header] : '';
@@ -820,7 +812,7 @@ export class ServicesSettingsComponent implements OnInit {
       });
       csvRows.push(values.join(','));
     }
-    
+
     const csvString = csvRows.join('\n');
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -833,14 +825,12 @@ export class ServicesSettingsComponent implements OnInit {
     URL.revokeObjectURL(url);
   }
 
-  // ========== IMPRIMER ==========
 
   printServices(): void {
     window.print();
     this.toast('Impression lancée', 'info');
   }
 
-  // ========== ACTIONS CLIENTS ==========
 
   openClientDetail(client: Client): void {
     this.selectedClient = client;
@@ -864,7 +854,6 @@ export class ServicesSettingsComponent implements OnInit {
     this.toast(`Client ${client.name} rejeté`, 'warning');
   }
 
-  // ========== DÉSACTIVATION AVEC PIN ==========
 
   openDesactivatePinModal(service: Service): void {
     this.serviceToDesactivate = service;
@@ -872,7 +861,6 @@ export class ServicesSettingsComponent implements OnInit {
     this.showDesactivatePinModal = true;
   }
 
-  // ========== DETAIL MODAL ==========
 
   openDetailModal(service: Service): void {
     this.selectedService = service;
@@ -885,17 +873,16 @@ export class ServicesSettingsComponent implements OnInit {
     this.selectedService = null;
   }
 
-  // ========== KPI DATA ==========
 
   getKpiData(): any[] {
     const totalRevenues = this.getTotalRevenues();
     const today = new Date().toLocaleDateString('fr-FR');
     const daily = this.revenues.filter(r => r.date === today).reduce((sum, r) => sum + r.amount, 0);
-    
+
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const weekly = this.revenues.filter(r => new Date(r.date) >= weekAgo).reduce((sum, r) => sum + r.amount, 0);
-    
+
     const monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
     const monthly = this.revenues.filter(r => new Date(r.date) >= monthAgo).reduce((sum, r) => sum + r.amount, 0);
@@ -962,7 +949,6 @@ export class ServicesSettingsComponent implements OnInit {
     ];
   }
 
-  // ========== REVENUS PAR CATÉGORIE ==========
 
   getRevenuesByCategory(): any[] {
     const map: { [key: string]: number } = {};
@@ -988,12 +974,11 @@ export class ServicesSettingsComponent implements OnInit {
     })).sort((a, b) => b.total - a.total);
   }
 
-  // ========== ACTIONS SUR LES SERVICES ==========
 
   openServiceModal(service: Service, action: string): void {
     this.selectedService = service;
     this.modalType = action;
-    
+
     switch(action) {
       case 'activer':
         this.modalTitle = `Activer ${service.name}`;
@@ -1021,7 +1006,7 @@ export class ServicesSettingsComponent implements OnInit {
       default:
         this.modalTitle = `Action sur ${service.name}`;
     }
-    
+
     this.showModal = true;
   }
 
@@ -1066,14 +1051,12 @@ export class ServicesSettingsComponent implements OnInit {
     this.selectedService = null;
   }
 
-  // ========== PIN MODAL ==========
 
   openPinModal(): void {
     this.pinCode = '';
     this.showPinModal = true;
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;
@@ -1085,7 +1068,6 @@ export class ServicesSettingsComponent implements OnInit {
     this.toasts = this.toasts.filter(t => t.id !== id);
   }
 
-  // ========== UTILITAIRES ==========
 
   getStatutLabel(statut: string): string {
     const labels: Record<string, string> = {

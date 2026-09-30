@@ -39,12 +39,7 @@ export const TRANSACTIONS_ROUTE_PATHS = {
   export: 'export'
 };
 
-/**
- * Formats a minor-unit BIGINT amount (e.g. cents) into a display string.
- * ASSUMPTION: 2 decimal places / 100 minor units per major unit — adjust
- * if your currency uses a different minor-unit scale, and pass a real
- * currency code once one is available on the wallet/transaction.
- */
+
 export function formatMinorAmount(amountMinorUnits: number, currency = ''): string {
   const major = amountMinorUnits / 100;
   const formatted = major.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });

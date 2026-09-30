@@ -1,22 +1,37 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "module": "ES2020",
-    "moduleResolution": "bundler",
-    "lib": ["ES2020", "DOM"],
-    "types": ["node", "jasmine"],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": false,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true
+    "declaration": false,
+    "declarationMap": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "bundler",
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
+    "lib": [
+      "ES2022",
+      "DOM"
+    ]
   },
-  "exclude": ["node_modules", "dist"]
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": false
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

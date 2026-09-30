@@ -1,87 +1,99 @@
-<div class="settings-page">
-  <!-- HEADER -->
-  <header class="page-header">
-   
+<div class="settings-page partner-admin-page">
+
+  <header class="page-header redesigned-header">
     <div class="page-header__title">
-      <span class="icon">🌍</span>
+      <span class="icon icon-partners">◎</span>
       <div>
         <h1>Gestion des Partenaires</h1>
-        <p>Banques, opérateurs télécom, fournisseurs de services, marchands, institutions.</p>
+        <p>Gérez les banques, opérateurs télécom, fournisseurs de services, marchands et institutions.</p>
       </div>
-    </div> 
+    </div>
+    <button class="btn btn--primary add-partner-btn" type="button" (click)="addPartner()">
+      <span class="btn-symbol">＋</span> Ajouter un partenaire
+    </button>
   </header>
 
-  <!-- STATS BAR -->
-  <div class="stats-bar">
-    <div class="stats-bar__item">
-      <span class="stats-bar__value">{{ totalPartners }}</span>
-      <span class="stats-bar__label">Total</span>
-    </div>
-    <div class="stats-bar__item">
-      <span class="stats-bar__value">{{ activePartners }}</span>
-      <span class="stats-bar__label">Actifs</span>
-    </div>
-    <div class="stats-bar__item">
-      <span class="stats-bar__value">{{ inactivePartners }}</span>
-      <span class="stats-bar__label">Inactifs</span>
-    </div>
-    <div class="stats-bar__item">
-      <span class="stats-bar__value">{{ totalCategories }}</span>
-      <span class="stats-bar__label">Catégories</span>
-    </div>
-  </div>
+  <section class="stats-grid">
+    <article class="stat-card stat-blue">
+      <span class="stat-icon">●</span>
+      <div><strong>{{ totalPartners }}</strong><span>Partenaires</span><small>Tous les partenaires</small></div>
+    </article>
+    <article class="stat-card stat-green">
+      <span class="stat-icon">✓</span>
+      <div><strong>{{ activePartners }}</strong><span>Actifs</span><small>Partenaires opérationnels</small></div>
+    </article>
+    <article class="stat-card stat-red">
+      <span class="stat-icon">×</span>
+      <div><strong>{{ inactivePartners }}</strong><span>Inactifs</span><small>À vérifier</small></div>
+    </article>
+    <article class="stat-card stat-purple">
+      <span class="stat-icon">▦</span>
+      <div><strong>{{ totalCategories }}</strong><span>Catégories</span><small>Catégories enregistrées</small></div>
+    </article>
+  </section>
 
-  <!-- TABS -->
-  <nav class="tabs-nav">
+  <nav class="tabs-nav redesigned-tabs">
     <button class="tab-btn" *ngFor="let tab of tabs"
             [class.active]="activeTab === tab.key"
             (click)="setActiveTab(tab.key)">
-      <span class="tab-btn__icon">{{ tab.icon }}</span>
       {{ tab.label }}
-      <span class="tab-btn__count" *ngIf="tab.count !== undefined">{{ tab.count }}</span>
     </button>
   </nav>
 
-  <!-- ============ TOUS LES PARTENAIRES ============ -->
-  <div *ngIf="activeTab === 'tous'" class="panel">
-    <div class="panel__header">
-      <h3 class="panel__title">Tous les Partenaires</h3>
-      <div class="panel__actions">
-        <span class="panel__badge">{{ filteredPartners.length }} partenaires</span>
-        <button class="btn btn--primary" (click)="addPartner()">+ Ajouter</button>
+  <div *ngIf="activeTab === 'tous'" class="panel partners-main-panel">
+    <div class="filter-block">
+      <div class="filter-block__title">
+        <div>
+          <h3>Rechercher et filtrer</h3>
+          <p>Retrouvez rapidement un partenaire par nom, code, catégorie ou statut.</p>
+        </div>
+        <div class="filter-toolbar">
+          <button class="btn btn--secondary" type="button" (click)="resetFilters()">↻ Réinitialiser</button>
+          <button class="btn btn--primary" type="button" (click)="applyFilters()">⌕ Appliquer les filtres</button>
+        </div>
+      </div>
+
+      <div class="partner-filters redesigned-filters">
+        <label class="search-field">
+          <span>Recherche</span>
+          <div class="field-shell"><span>⌕</span><input type="text" placeholder="Rechercher un partenaire..." [(ngModel)]="searchTerm" (input)="applyFilters()" /></div>
+        </label>
+        <label>
+          <span>Catégorie</span>
+          <select [(ngModel)]="categoryFilter" (change)="applyFilters()">
+            <option value="">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </label>
+        <label>
+          <span>Statut</span>
+          <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option value="">Tous les statuts</option>
+            <option value="active">Actif</option>
+            <option value="inactive">Inactif</option>
+          </select>
+        </label>
       </div>
     </div>
 
-    <!-- Filtres -->
-    <div class="partner-filters">
-      <input type="text" class="filter-input" placeholder="Rechercher un partenaire..." [(ngModel)]="searchTerm" (input)="applyFilters()" />
-      <select class="filter-select" [(ngModel)]="categoryFilter" (change)="applyFilters()">
-        <option value="">Toutes les catégories</option>
-        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-      </select>
-      <select class="filter-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
-        <option value="">Tous les statuts</option>
-        <option value="active">Actif</option>
-        <option value="inactive">Inactif</option>
-      </select>
-      <button class="btn btn--primary" (click)="applyFilters()">Filtrer</button>
-      <button class="btn btn--secondary" (click)="resetFilters()">Réinitialiser</button>
-    </div>
-
-    <!-- Liste (table) des partenaires -->
-    <div class="table-card">
-      <div class="table-header">
-        <span class="table-count">{{ filteredPartners.length }} banque(s) partenaire(s)</span>
-        <span class="table-hint">Cliquez sur un en-tête pour trier</span>
+    <div class="partners-table-card">
+      <div class="table-card-header">
+        <div>
+          <h3>Liste des partenaires</h3>
+          <p>{{ filteredPartners.length }} partenaire(s) enregistré(s)</p>
+        </div>
+        <button class="btn btn--secondary export-btn" type="button" (click)="exportPartners()">⇩ Exporter la liste</button>
       </div>
+
       <div class="table-wrapper">
-        <table class="data-table">
+        <table class="data-table professional-table">
           <thead>
             <tr>
-              <th class="sortable" (click)="onSort('name')">Nom <i class="sort-icon">{{ getSortMarker('name') }}</i></th>
-              <th class="sortable" (click)="onSort('code')">Code <i class="sort-icon">{{ getSortMarker('code') }}</i></th>
-              <th class="sortable" (click)="onSort('swiftCode')">Code SWIFT <i class="sort-icon">{{ getSortMarker('swiftCode') }}</i></th>
-              <th class="sortable" (click)="onSort('accountNumber')">N° de compte <i class="sort-icon">{{ getSortMarker('accountNumber') }}</i></th>
+              <th class="sortable" (click)="onSort('name')">Nom du partenaire <i>{{ getSortMarker('name') }}</i></th>
+              <th class="sortable" (click)="onSort('code')">Code <i>{{ getSortMarker('code') }}</i></th>
+              <th class="sortable" (click)="onSort('swiftCode')">Code SWIFT <i>{{ getSortMarker('swiftCode') }}</i></th>
+              <th class="sortable" (click)="onSort('accountNumber')">N° de compte <i>{{ getSortMarker('accountNumber') }}</i></th>
+              <th>Catégorie</th>
               <th>Statut</th>
               <th class="th-actions">Actions</th>
             </tr>
@@ -89,56 +101,55 @@
           <tbody>
             <tr *ngFor="let partner of paginatedPartners">
               <td>
-                <div class="cell-partner">
-                  <span class="cell-partner__name">🏦 {{ partner.name }}</span>
-                  <span class="cell-partner__category" *ngIf="partner.category">{{ partner.category }}</span>
+                <div class="partner-identity">
+                  <span class="bank-avatar">B</span>
+                  <div>
+                    <strong>{{ partner.name }}</strong>
+                    <small>Partenaire {{ (partner.category || 'Banque').toLowerCase() }}</small>
+                  </div>
                 </div>
               </td>
               <td class="cell-code">{{ partner.code }}</td>
               <td class="cell-mono">{{ partner.swiftCode || '—' }}</td>
               <td class="cell-mono">{{ partner.accountNumber || '—' }}</td>
+              <td><span class="category-pill">{{ partner.category || 'Banque' }}</span></td>
               <td>
                 <span class="status-badge" [class]="getStatusBadgeClass(partner.isActive)">
-                  {{ getStatusLabel(partner.isActive) }}
+                  <span class="status-dot"></span>{{ getStatusLabel(partner.isActive) }}
                 </span>
               </td>
-              <td class="cell-actions">
-                <button class="btn btn--primary btn--sm" (click)="viewPartner(partner)">Voir</button>
-                <button class="btn btn--secondary btn--sm" (click)="editPartner(partner)">Modifier</button>
-                <button class="btn btn--sm" [class.btn--success]="!partner.isActive" [class.btn--danger]="partner.isActive" (click)="togglePartnerStatus(partner)">
-                  {{ partner.isActive ? 'Désactiver' : 'Activer' }}
-                </button>
-                <button class="btn btn--danger btn--sm" (click)="deletePartner(partner)">Supprimer</button>
+              <td class="cell-actions icon-actions">
+                <button class="icon-btn view" title="Voir le détail" aria-label="Voir le détail" (click)="viewPartner(partner)">◉</button>
+                <button class="icon-btn edit" title="Modifier" aria-label="Modifier" (click)="editPartner(partner)">✎</button>
+                <button class="icon-btn" [class.activate]="!partner.isActive" [class.deactivate]="partner.isActive"
+                        [title]="partner.isActive ? 'Suspendre / Désactiver' : 'Activer'"
+                        [attr.aria-label]="partner.isActive ? 'Suspendre / Désactiver' : 'Activer'"
+                        (click)="togglePartnerStatus(partner)">⏻</button>
               </td>
             </tr>
             <tr *ngIf="paginatedPartners.length === 0">
-              <td colspan="6" class="empty-state">Aucun partenaire trouvé</td>
+              <td colspan="7" class="empty-state">Aucun partenaire trouvé</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
 
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="filteredPartners.length > 0">
-      <div class="pagination__info">
-        {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredPartners.length) }} sur {{ filteredPartners.length }}
-      </div>
-      <div class="pagination__controls">
-        <button class="btn btn--sm" (click)="previousPage()" [disabled]="currentPage === 1">‹</button>
-        <span class="pagination__page">{{ currentPage }} / {{ totalPages }}</span>
-        <button class="btn btn--sm" (click)="nextPage()" [disabled]="currentPage === totalPages">›</button>
-        <select class="pagination__size" [(ngModel)]="pageSize" (change)="applyFilters()">
-          <option [value]="6">6</option>
-          <option [value]="12">12</option>
-          <option [value]="24">24</option>
-          <option [value]="48">48</option>
-        </select>
+      <div class="pagination redesigned-pagination" *ngIf="filteredPartners.length > 0">
+        <div class="pagination__info">
+          Affichage de {{ (currentPage - 1) * pageSize + 1 }} à {{ Math.min(currentPage * pageSize, filteredPartners.length) }} sur {{ filteredPartners.length }} partenaires
+        </div>
+        <div class="pagination__controls">
+          <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 1">‹</button>
+          <button class="page-btn active">{{ currentPage }}</button>
+          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">›</button>
+          <select class="pagination__size" [(ngModel)]="pageSize" (change)="applyFilters()">
+            <option [value]="6">6</option><option [value]="12">12</option><option [value]="24">24</option><option [value]="48">48</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ============ PAR CATÉGORIE ============ -->
   <div *ngIf="activeTab === 'categories'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">Partenaires par Catégorie</h3>
@@ -164,7 +175,7 @@
     </div>
   </div>
 
-  <!-- ============ INTÉGRATIONS ============ -->
+
   <div *ngIf="activeTab === 'integrations'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">Intégrations & API</h3>
@@ -214,7 +225,7 @@
     </div>
   </div>
 
-  <!-- ============ COMMISSIONS ============ -->
+
   <div *ngIf="activeTab === 'commissions'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">Commissions & Tarification</h3>
@@ -262,7 +273,7 @@
     </div>
   </div>
 
-  <!-- ============ MODALES ============ -->
+
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
   <div class="modal modal--animated modal--large" *ngIf="showModal">
     <div class="modal__header">
@@ -271,66 +282,104 @@
     </div>
     <div class="modal__body modal__body--large">
 
-      <!-- Détail Partenaire -->
-      <div *ngIf="modalType === 'partner_detail'">
-        <div class="detail-grid">
-          <div class="detail-item"><span class="detail-label">Nom</span><span class="detail-value"><strong>{{ formData.name }}</strong></span></div>
-          <div class="detail-item"><span class="detail-label">Code</span><span class="detail-value detail-value--mono">{{ formData.code }}</span></div>
-          <div class="detail-item"><span class="detail-label">Code SWIFT</span><span class="detail-value detail-value--mono">{{ formData.swiftCode }}</span></div>
-          <div class="detail-item"><span class="detail-label">N° de compte</span><span class="detail-value detail-value--mono">{{ formData.accountNumber }}</span></div>
-          <div class="detail-item"><span class="detail-label">Statut</span><span class="detail-value"><span class="status-badge" [class]="getStatusBadgeClass(formData.isActive)">{{ getStatusLabel(formData.isActive) }}</span></span></div>
-          <div class="detail-item"><span class="detail-label">Catégorie</span><span class="detail-value">{{ formData.category }}</span></div>
+
+      <div *ngIf="modalType === 'partner_detail'" class="partner-detail-view">
+        <div class="partner-detail-head">
+          <div class="detail-avatar">{{ (formData.name || 'B').charAt(0) }}</div>
+          <div class="detail-heading-copy">
+            <h3>{{ formData.name }}</h3>
+            <p>Partenaire {{ (formData.category || 'Banque').toLowerCase() }}</p>
+          </div>
+          <span class="status-badge" [class]="getStatusBadgeClass(formData.isActive)">{{ getStatusLabel(formData.isActive) }}</span>
         </div>
-        <div class="modal__footer">
+
+        <div class="detail-compact-grid">
+          <div class="detail-compact-item"><span>Code partenaire</span><strong>{{ formData.code || '—' }}</strong></div>
+          <div class="detail-compact-item"><span>Code SWIFT</span><strong>{{ formData.swiftCode || '—' }}</strong></div>
+          <div class="detail-compact-item"><span>Numéro de compte</span><strong>{{ formData.accountNumber || '—' }}</strong></div>
+          <div class="detail-compact-item"><span>Catégorie</span><strong>{{ formData.category || 'Banque' }}</strong></div>
+          <div class="detail-compact-item"><span>Email</span><strong>{{ formData.email || '—' }}</strong></div>
+          <div class="detail-compact-item"><span>Téléphone</span><strong>{{ formData.phone || '—' }}</strong></div>
+          <div class="detail-compact-item detail-wide"><span>Adresse</span><strong>{{ formData.address || '—' }}</strong></div>
+          <div class="detail-compact-item detail-wide"><span>Notes</span><strong>{{ formData.notes || 'Aucune note renseignée.' }}</strong></div>
+        </div>
+
+        <div class="modal__footer compact-footer">
           <button class="btn btn--secondary" (click)="closeModal()">Fermer</button>
           <button class="btn btn--primary" (click)="editPartner(formData)">Modifier</button>
         </div>
       </div>
 
-      <!-- Édition Partenaire -->
-      <div *ngIf="modalType === 'partner_edit' || modalType === 'partner_add'">
-        <h3 class="modal__subtitle">{{ modalType === 'partner_add' ? 'Ajouter une banque partenaire' : 'Modifier ' + formData.name }}</h3>
-        <div class="config-form">
-          <div class="form-group">
-            <label>Nom de la banque *</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.name" placeholder="Ex: Banque de la République du Burundi" />
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Code *</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.code" placeholder="Ex: BRB" />
-            </div>
-            <div class="form-group">
-              <label>Code SWIFT *</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.swiftCode" placeholder="Ex: BRBUBI01" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Numéro de compte *</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.accountNumber" placeholder="Ex: 20001160001" />
-            </div>
-            <div class="form-group">
-              <label>Catégorie</label>
-              <select class="form-control" [(ngModel)]="formData.category">
-                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-check-group">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="formData.isActive" />
-              <span>Banque partenaire active</span>
-            </label>
+      <div *ngIf="modalType === 'partner_edit' || modalType === 'partner_add'" class="partner-bank-form-view">
+        <div class="form-intro">
+          <span class="form-intro-icon">＋</span>
+          <div>
+            <h3>{{ modalType === 'partner_add' ? 'Ajouter une banque partenaire' : 'Modifier la banque partenaire' }}</h3>
+            <p>Renseignez les informations d’identification, de contact et de règlement du partenaire.</p>
           </div>
         </div>
-        <div class="modal__footer">
+
+        <div class="bank-form-grid">
+          <div class="form-group span-2">
+            <label>Nom de la banque <b>*</b></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.name" placeholder="Ex : Banque de la République du Burundi" />
+          </div>
+
+          <div class="form-group">
+            <label>Code partenaire <b>*</b></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.code" placeholder="Ex : BRB" />
+          </div>
+          <div class="form-group">
+            <label>Code SWIFT <b>*</b></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.swiftCode" placeholder="Ex : BRBUBI01" />
+          </div>
+
+          <div class="form-group">
+            <label>Numéro de compte <b>*</b></label>
+            <input type="text" class="form-control" [(ngModel)]="formData.accountNumber" placeholder="Ex : 20001160001" />
+          </div>
+          <div class="form-group">
+            <label>Catégorie <b>*</b></label>
+            <select class="form-control" [(ngModel)]="formData.category">
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" class="form-control" [(ngModel)]="formData.email" placeholder="Ex : contact@banque.bi" />
+          </div>
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="text" class="form-control" [(ngModel)]="formData.phone" placeholder="Ex : +257 22 25 12 34" />
+          </div>
+
+          <div class="form-group span-2">
+            <label>Adresse</label>
+            <textarea class="form-control form-textarea" [(ngModel)]="formData.address" placeholder="Adresse complète de la banque..."></textarea>
+          </div>
+
+          <div class="form-group span-2">
+            <label>Notes</label>
+            <textarea class="form-control form-textarea" [(ngModel)]="formData.notes" placeholder="Notes facultatives sur le partenaire..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Statut <b>*</b></label>
+            <select class="form-control" [(ngModel)]="formData.isActive">
+              <option [ngValue]="true">Actif</option>
+              <option [ngValue]="false">Inactif / Suspendu</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal__footer compact-footer">
           <button class="btn btn--secondary" (click)="closeModal()">Annuler</button>
-          <button class="btn btn--primary" (click)="savePartner()">Sauvegarder</button>
+          <button class="btn btn--primary" (click)="savePartner()">{{ modalType === 'partner_add' ? 'Enregistrer' : 'Sauvegarder' }}</button>
         </div>
       </div>
 
-      <!-- Configuration Intégration -->
+
       <div *ngIf="modalType === 'integration_config'">
         <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
         <div class="config-form">
@@ -363,7 +412,7 @@
         </div>
       </div>
 
-      <!-- Commission Edit -->
+
       <div *ngIf="modalType === 'commission_edit'">
         <h3 class="modal__subtitle">Commission - {{ formData.partner }}</h3>
         <div class="config-form">
@@ -405,7 +454,7 @@
     </div>
   </div>
 
-  <!-- ============ TOASTS ============ -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       <span class="toast__icon">{{ t.type === 'success' ? '✓' : t.type === 'danger' ? '✗' : t.type === 'warning' ? '⚠' : 'ℹ' }}</span>

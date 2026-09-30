@@ -1,234 +1,560 @@
-<!-- ===== WELCOME ROW ===== -->
-<div class="welcome-row">
-    <div>
-        <div class="welcome-title">Bienvenue, Super Admin</div>
-        <div class="welcome-sub">Vue d'ensemble de toute la plateforme IBLOPAY</div>
-    </div>
-    <div class="welcome-right">
-        <div class="datetime"><b>{{ currentDay }}</b><br><span>{{ currentTime }}</span></div>
-        <button class="refresh-btn" [disabled]="isRefreshing" (click)="refreshData()">
-            <i class="fa-solid fa-rotate" [class.spinning]="isRefreshing"></i>
-            Actualiser
-        </button>
-    </div>
-</div>
+<div class="dashboard-page">
 
-<!-- ===== STAT CARDS - 8 cartes ===== -->
-<div class="stats-row">
-    <div class="stat-card animate-in animate-in-delay-1">
-        <div class="stat-top">
-            <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
-            <div class="stat-label">Utilisateurs</div>
-        </div>
-        <div class="stat-value" id="statUsers">{{ formatNumber(statsData.users) }}</div>
-        <div class="stat-change positive">+12.5% <span class="stat-change-sub">vs mois</span></div>
-        <div class="stat-footer"><a class="voir-plus" routerLink="/users">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-    <div class="stat-card animate-in animate-in-delay-2">
-        <div class="stat-top">
-            <div class="stat-icon green"><i class="fa-solid fa-user-tie"></i></div>
-            <div class="stat-label">Agents</div>
-        </div>
-        <div class="stat-value">{{ formatNumber(statsData.agents) }}</div>
-        <div class="stat-change positive">+8.3% <span class="stat-change-sub">vs mois</span></div>
-        <div class="stat-footer"><a class="voir-plus" routerLink="/agents">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-    <div class="stat-card animate-in animate-in-delay-3">
-        <div class="stat-top">
-            <div class="stat-icon purple"><i class="fa-solid fa-star"></i></div>
-            <div class="stat-label">Super Agents</div>
-        </div>
-        <div class="stat-value">{{ formatNumber(statsData.superAgents) }}</div>
-        <div class="stat-change positive">+5.7% <span class="stat-change-sub">vs mois</span></div>
-        <div class="stat-footer"><a class="voir-plus" routerLink="/super-agents">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-    <div class="stat-card animate-in animate-in-delay-4">
-        <div class="stat-top">
-            <div class="stat-icon orange"><i class="fa-solid fa-store"></i></div>
-            <div class="stat-label">Marchands</div>
-        </div>
-        <div class="stat-value">{{ formatNumber(statsData.merchants) }}</div>
-        <div class="stat-change positive">+10.2% <span class="stat-change-sub">vs mois</span></div>
-        <div class="stat-footer"><a class="voir-plus" routerLink="/merchants">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-    <div class="stat-card animate-in animate-in-delay-5">
-        <div class="stat-top">
-            <div class="stat-icon teal"><i class="fa-solid fa-arrows-rotate"></i></div>
-            <div class="stat-label">Transactions</div>
-        </div>
-        <div class="stat-value">{{ formatAmount(statsData.transactionsToday) }}</div>
-        <div class="stat-change positive">+14.6% <span class="stat-change-sub">vs hier</span></div>
-        <div class="stat-footer"><a class="voir-plus" routerLink="/transactions">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-    <div class="stat-card highlight">
-        <div class="stat-top">
-            <div class="stat-icon gold"><i class="fa-solid fa-coins"></i></div>
-            <div class="stat-label">Commission des agents</div>
-        </div>
-        <div class="stat-value">{{ formatAmount(statsData.commissionEtat) }}</div>
-        <div class="stat-change positive">+18.9% <span class="stat-change-sub">vs mois</span></div>
-        <div class="stat-footer"><a class="voir-plus" routerLink="/commissions">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-    <div class="stat-card highlight">
-        <div class="stat-top">
-            <div class="stat-icon gold"><i class="fa-solid fa-building"></i></div>
-            <div class="stat-label">Commission IBLOPAY</div>
-        </div>
-        <div class="stat-value">{{ formatAmount(statsData.commissionIblopay) }}</div>
-        <div class="stat-change positive">+22.3% <span class="stat-change-sub">vs mois</span></div>
-        <div class="stat-footer"><a class="voir-plus" routerLink="/commissions">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-    <div class="stat-card services">
-        <div class="stat-top">
-            <div class="stat-icon pink"><i class="fa-solid fa-building-columns"></i></div>
-            <div class="stat-label">Services Publics</div>
-        </div>
-        <div class="stat-value">{{ formatNumber(statsData.servicesPublics) }}</div>
-        <div class="stat-change positive">+15.2% <span class="stat-change-sub">vs mois</span></div>
-        <div class="stat-footer"><a class="voir-plus pink" routerLink="/services-publics">Voir plus <i
-                    class="fa-solid fa-arrow-right"></i></a></div>
-    </div>
-</div>
+  <section class="dashboard-header">
 
-<!-- ===== GRID 1 - PANELS ===== -->
-<div class="panels-row">
-    <!-- GRAPHIQUE ÉVOLUTION DES TRANSACTIONS -->
-    <div class="panel chart-panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-chart-line"></i> Évolution des transactions</div>
-            <select class="period-select" id="periodSelect" (change)="updateChartPeriod($event)">
-                <option value="7">1 semaine</option>
-                <option value="14">2 semaines</option>
-                <option value="21">3 semaines</option>
-                <option value="30" selected>30 derniers jours</option>
-                <option value="45">45 jours</option>
-                <option value="60">60 jours</option>
-                <option value="90">90 jours</option>
-            </select>
-        </div>
-        <div class="chart-wrap"><canvas #chartCanvas></canvas></div>
-        <div style="margin-top:8px;text-align:center;">
-            <a routerLink="/reports" class="panel-link" style="font-size:11px;">Voir les détails complets <i
-                    class="fa-solid fa-arrow-right"></i></a>
-        </div>
-    </div>
-</div>
+    <div class="header-title">
+      <h1>Tableau de bord administrateur</h1>
 
-<!-- ===== SERVICES PUBLICS ===== -->
-<div class="public-services-panel">
-    <div class="ps-header">
-        <div class="ps-title"><i class="fa-solid fa-building-columns"></i> SERVICES PUBLICS - Aperçu (30 derniers jours)
-        </div>
-        <a class="panel-link" style="color:var(--sun);" routerLink="/services-publics">Voir tout <i
-                class="fa-solid fa-arrow-right"></i></a>
-    </div>
-    <div class="ps-stats">
-        <div class="ps-stat"><span class="ps-stat-value" style="color:#60a5fa;">{{ formatNumber(servicesStats.total)
-                }}</span><span class="ps-stat-label">Demandes totales</span></div>
-        <div class="ps-stat"><span class="ps-stat-value" style="color:#22c55e;">{{ formatNumber(servicesStats.traitees)
-                }}</span><span class="ps-stat-label">Traitées</span></div>
-        <div class="ps-stat"><span class="ps-stat-value" style="color:#fbbf24;">{{ formatNumber(servicesStats.enCours)
-                }}</span><span class="ps-stat-label">En cours</span></div>
-        <div class="ps-stat"><span class="ps-stat-value" style="color:#ff6b6b;">{{ formatNumber(servicesStats.rejetees)
-                }}</span><span class="ps-stat-label">Rejetées</span></div>
+      <p>
+        Vue d'ensemble des opérations IBLOPAY en temps réel
+      </p>
     </div>
 
-    <table class="ps-table">
+    <div class="header-actions">
+
+      <div class="date-block">
+
+        <div class="date-icon">
+          <i class="fa-regular fa-calendar"></i>
+        </div>
+
+        <div>
+          <strong>{{ currentDay }}</strong>
+          <span>{{ currentTime }}</span>
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="refresh-button"
+        [disabled]="isRefreshing"
+        (click)="refreshData()">
+
+        <i
+          class="fa-solid fa-rotate"
+          [class.spinning]="isRefreshing">
+        </i>
+
+        <span>
+          Actualiser
+        </span>
+
+      </button>
+
+      <div class="admin-profile">
+
+        <div class="admin-avatar">
+          <i class="fa-solid fa-user"></i>
+        </div>
+
+        <div class="admin-info">
+
+          <strong>
+            Admin IBLOPAY
+          </strong>
+
+          <span>
+            Administrateur
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <section class="stats-grid">
+
+    <article
+      class="stat-card"
+      *ngFor="let card of statCards">
+
+      <div
+        class="stat-icon"
+        [ngClass]="card.color">
+
+        <i [class]="card.icon"></i>
+
+      </div>
+
+      <div class="stat-content">
+
+        <div class="stat-label">
+          {{ card.label }}
+        </div>
+
+        <div class="stat-value">
+
+          <ng-container
+            *ngIf="
+              card.type === 'number';
+              else amountValue
+            ">
+
+            {{ formatNumber(card.value) }}
+
+          </ng-container>
+
+          <ng-template #amountValue>
+
+            {{ formatAmount(card.value) }}
+
+          </ng-template>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <section class="dashboard-panel transactions-panel">
+
+    <div class="panel-header">
+
+      <div class="panel-heading">
+
+        <div class="panel-icon">
+          <i class="fa-solid fa-list"></i>
+        </div>
+
+        <div>
+
+          <h2>
+            Transactions en direct
+          </h2>
+
+          <p>
+            Suivi en temps réel des opérations effectuées sur IBLOPAY
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="live-badge">
+
+        <span></span>
+
+        Temps réel
+
+      </div>
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+      <table class="data-table transaction-table">
+
         <thead>
-            <tr>
-                <th>Top 5 services publics</th>
-                <th>Demandes</th>
-                <th>Traitées</th>
-                <th>En cours</th>
-                <th>Rejetées</th>
-            </tr>
+
+          <tr>
+
+            <th>
+              Référence
+            </th>
+
+            <th>
+              Expéditeur
+            </th>
+
+            <th>
+              Wallet / Carte expéditeur
+            </th>
+
+            <th class="amount-column">
+              Montant
+            </th>
+
+            <th>
+              Bénéficiaire
+            </th>
+
+            <th>
+              Wallet / Carte bénéficiaire
+            </th>
+
+            <th>
+              Type
+            </th>
+
+            <th>
+              Statut
+            </th>
+
+          </tr>
+
         </thead>
+
         <tbody>
-            <tr *ngFor="let s of services">
-                <td class="name">{{ s.name }}</td>
-                <td class="num">{{ formatNumber(s.total) }}</td>
-                <td class="num">{{ formatNumber(s.traitees) }}</td>
-                <td class="num">{{ formatNumber(s.enCours) }}</td>
-                <td class="num rejected">{{ formatNumber(s.rejetees) }}</td>
-            </tr>
+
+          <tr
+            *ngFor="
+              let transaction of liveTransactions;
+              trackBy: trackTransaction
+            ">
+
+            <td class="reference-cell">
+
+              {{ transaction.reference }}
+
+            </td>
+
+            <td>
+
+              <div class="person-cell">
+
+                <strong>
+                  {{ transaction.senderName }}
+                </strong>
+
+              </div>
+
+            </td>
+
+            <td>
+
+              <div class="account-cell">
+
+                <span
+                  class="channel-tag"
+                  [class.wallet]="
+                    transaction.senderChannel === 'Wallet'
+                  "
+                  [class.card]="
+                    transaction.senderChannel === 'Carte'
+                  ">
+
+                  {{ transaction.senderChannel }}
+
+                </span>
+
+                <strong>
+                  {{ transaction.senderAccount }}
+                </strong>
+
+              </div>
+
+            </td>
+
+            <td class="transaction-amount">
+
+              {{ formatAmount(transaction.amount) }}
+
+            </td>
+
+            <td>
+
+              <div class="person-cell">
+
+                <strong>
+                  {{ transaction.receiverName }}
+                </strong>
+
+              </div>
+
+            </td>
+
+            <td>
+
+              <div class="account-cell">
+
+                <span
+                  class="channel-tag"
+                  [class.wallet]="
+                    transaction.receiverChannel === 'Wallet'
+                  "
+                  [class.card]="
+                    transaction.receiverChannel === 'Carte'
+                  ">
+
+                  {{ transaction.receiverChannel }}
+
+                </span>
+
+                <strong>
+                  {{ transaction.receiverAccount }}
+                </strong>
+
+              </div>
+
+            </td>
+
+            <td>
+
+              <span
+                class="transaction-type"
+                [ngClass]="getTransactionTypeClass(transaction.type)">
+
+                {{ transaction.type }}
+
+              </span>
+
+            </td>
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.success]="
+                  transaction.status === 'Réussi'
+                "
+                [class.failed]="
+                  transaction.status === 'Échec'
+                ">
+
+                <span class="status-dot"></span>
+
+                {{ transaction.status }}
+
+              </span>
+
+            </td>
+
+          </tr>
+
         </tbody>
-    </table>
 
-    <a class="ps-footer-link" routerLink="/services-publics">Accéder au portail des services publics <i
-            class="fa-solid fa-arrow-right"></i></a>
-</div>
+      </table>
 
-<!-- ===== MID ROW ===== -->
-<div class="mid-row">
-    <!-- Inscriptions récentes -->
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-user-plus"></i> Inscriptions récentes</div>
-            <a class="panel-link" routerLink="/users">Voir tout <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+  </section>
+
+
+  <section class="bottom-grid">
+
+    <article class="dashboard-panel commission-panel">
+
+      <div class="panel-header">
+
+        <div class="panel-heading">
+
+          <div class="panel-icon">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+
+          <div>
+
+            <h2>
+              Commissions par transaction
+            </h2>
+
+            <p>
+              Répartition instantanée des commissions
+            </p>
+
+          </div>
+
         </div>
-        <div class="list-container">
-            <div class="list-item" *ngFor="let r of recentRegistrations">
-                <div class="list-avatar"><i class="fa-solid fa-user"></i></div>
-                <div class="list-info">
-                    <div class="list-name">{{ r.name }}</div>
-                    <div class="list-sub">{{ r.type }}</div>
+
+        <div class="live-badge">
+
+          <span></span>
+
+          Temps réel
+
+        </div>
+
+      </div>
+
+
+      <div class="table-wrapper">
+
+        <table class="data-table commission-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Référence
+              </th>
+
+              <th class="commission-blue">
+                Commission agent
+              </th>
+
+              <th class="commission-green">
+                Commission super agent
+              </th>
+
+              <th class="commission-blue">
+                Commission actionnaires
+              </th>
+
+              <th class="commission-green">
+                Commission société IBLOPAY
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let commission of commissions;
+                trackBy: trackCommission
+              ">
+
+              <td class="reference-cell">
+
+                {{ commission.reference }}
+
+              </td>
+
+              <td class="commission-blue">
+
+                {{ formatAmount(commission.agent) }}
+
+              </td>
+
+              <td class="commission-green">
+
+                {{ formatAmount(commission.superAgent) }}
+
+              </td>
+
+              <td class="commission-blue">
+
+                {{ formatAmount(commission.shareholders) }}
+
+              </td>
+
+              <td class="commission-green commission-company">
+
+                {{ formatAmount(commission.iblopay) }}
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+
+    <article class="dashboard-panel actions-panel">
+
+      <div class="panel-header">
+
+        <div class="panel-heading">
+
+          <div class="panel-icon">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+
+          <div>
+
+            <h2>
+              Actions récentes
+            </h2>
+
+            <p>
+              Dernières opérations administratives
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="table-wrapper">
+
+        <table class="data-table actions-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Action
+              </th>
+
+              <th>
+                Par
+              </th>
+
+              <th>
+                Cible
+              </th>
+
+              <th>
+                Date et heure
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let action of recentActions;
+                trackBy: trackAction
+              ">
+
+              <td>
+
+                <div class="action-name">
+
+                  <div
+                    class="action-icon"
+                    [ngClass]="action.color">
+
+                    <i [class]="action.icon"></i>
+
+                  </div>
+
+                  <strong
+                    [ngClass]="action.color">
+
+                    {{ action.action }}
+
+                  </strong>
+
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Demandes en attente -->
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-clock"></i> Demandes en attente</div>
-            <a class="panel-link" routerLink="/requests">Voir tout <i class="fa-solid fa-arrow-right"></i></a>
-        </div>
-        <div class="list-container">
-            <div class="activity-row" *ngFor="let req of pendingRequests">
-                <span class="activity-label">{{ req.label }}</span>
-                <span class="activity-value num">{{ formatNumber(req.value) }}</span>
-            </div>
-        </div>
-    </div>
+              </td>
 
-    <!-- Activités des agents -->
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-user-tie"></i> Activités des agents <span
-                    class="panel-subtitle">(30j)</span></div>
-        </div>
-        <div class="list-container">
-            <div class="activity-row" *ngFor="let a of agentActivities">
-                <span class="activity-label">{{ a.label }}</span>
-                <span class="activity-value num">{{ a.value }}</span>
-            </div>
-        </div>
-    </div>
+              <td>
+                {{ action.author }}
+              </td>
 
-    <!-- Accès rapides -->
-    <div class="panel">
-        <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-bolt"></i> Accès rapides</div>
-        </div>
-        <div class="quick-grid">
-            <a class="quick-btn b1" routerLink="/users/create"><span class="qicon">👤</span>Créer un utilisateur</a>
-            <a class="quick-btn b9" routerLink="/agents/create"><span class="qicon">👥</span>Créer un agent</a>
-            <a class="quick-btn b3" routerLink="/merchants/create"><span class="qicon">🛒</span>Créer un marchand</a>
-            <a class="quick-btn b4" routerLink="/super-agents/create"><span class="qicon">⭐</span>Créer un super
-                agent</a>
-            <a class="quick-btn b5" routerLink="/services-publics"><span class="qicon">🏛️</span>Créer un service
-                public</a>
-            <a class="quick-btn b2" routerLink="/intra-agricole"><span class="qicon">🌾</span>Intra Agricole</a>
-            <a class="quick-btn b7" routerLink="/reports"><span class="qicon">📊</span>Rapport global</a>
-            <a class="quick-btn b8" routerLink="/settings"><span class="qicon">⚙️</span>Paramètres système</a>
-            <a class="quick-btn b6" routerLink="/transactions"><span class="qicon">🔄</span>Transactions</a>
-        </div>
-    </div>
+              <td>
+                {{ action.target }}
+              </td>
+
+              <td class="action-date">
+                {{ action.date }}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </article>
+
+  </section>
+
 </div>

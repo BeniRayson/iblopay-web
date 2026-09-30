@@ -1,4 +1,3 @@
-// src/app/modules/dashboard/widgets/activity-feed/activity-feed.component.ts
 import { Component, Input } from '@angular/core';
 import { Activity } from '../../models/dashboard.model';
 

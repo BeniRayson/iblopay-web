@@ -41,7 +41,6 @@ export class CardsSettingsComponent {
     stocks: 1
   };
 
-  // Filtres
   searchTerm: string = '';
   filterStatut: string = 'tous';
   filterType: string = 'tous';
@@ -53,7 +52,6 @@ export class CardsSettingsComponent {
   modalOpen = false;
   selectedCard: CardData | null = null;
 
-  // Gestion du PIN
   pinModalOpen = false;
   pinActionType = '';
   pinData: any = {};
@@ -98,7 +96,7 @@ export class CardsSettingsComponent {
       const dateEmission = new Date(Date.now() - i * 86400000 * 15);
       const dateExpiration = new Date(dateEmission);
       dateExpiration.setFullYear(dateExpiration.getFullYear() + 3);
-      
+
       const statuts: CardData['statut'][] = ['active', 'active', 'active', 'bloquee', 'desactivee', 'inactive'];
       const statutIndex = i % statuts.length;
       const statut = statuts[statutIndex] || 'active';
@@ -117,7 +115,6 @@ export class CardsSettingsComponent {
       });
     }
 
-    // Générer l'historique complet avec 5 lignes par carte
     const actions = [
       'Paiement Bus', 'Paiement Taxi', 'Achat Marché', 'Achat Engrais Chimique',
       'Paiement Électricité', 'Achat Nourriture', 'Transfert Mobile', 'Paiement Eau',
@@ -126,8 +123,7 @@ export class CardsSettingsComponent {
       'Achat Entretien', 'Paiement Assurance', 'Achat Semences', 'Paiement Santé'
     ];
     const montants = [5000, 10000, 15000, 20000, 25000, 30000, 50000, 75000, 100000, 200000];
-    
-    // Générer 5 transactions par carte
+
     for (let i = 0; i < this.cartes.length; i++) {
       const card = this.cartes[i];
       if (card) {
@@ -137,7 +133,7 @@ export class CardsSettingsComponent {
           const isCredit = Math.random() > 0.5;
           const actionIndex = Math.floor(Math.random() * actions.length);
           const action = actions[actionIndex] || 'Transaction';
-          
+
           this.historique.push({
             date: new Date(Date.now() - (i * 5 + j) * 86400000 * (1 + Math.floor(Math.random() * 3))).toLocaleString('fr-FR'),
             action: action,
@@ -152,14 +148,13 @@ export class CardsSettingsComponent {
     }
   }
 
-  // ========== FILTRES ==========
 
   getFilteredCartes(): CardData[] {
     let result = this.cartes;
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      result = result.filter(c => 
+      result = result.filter(c =>
         c.numero.toLowerCase().includes(term) ||
         c.uid.toLowerCase().includes(term) ||
         c.id.toLowerCase().includes(term) ||
@@ -167,30 +162,30 @@ export class CardsSettingsComponent {
         c.userId.toLowerCase().includes(term)
       );
     }
-    
+
     if (this.filterStatut !== 'tous') {
       result = result.filter(c => c.statut === this.filterStatut);
     }
-    
+
     if (this.filterType !== 'tous') {
       result = result.filter(c => c.typeCarte === this.filterType);
     }
-    
+
     return result;
   }
 
   getFilteredStock(): CardData[] {
     let result = this.getCartesInactives();
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      result = result.filter(c => 
+      result = result.filter(c =>
         c.numero.toLowerCase().includes(term) ||
         c.uid.toLowerCase().includes(term) ||
         c.id.toLowerCase().includes(term)
       );
     }
-    
+
     return result;
   }
 
@@ -204,7 +199,6 @@ export class CardsSettingsComponent {
     this.currentPages['stocks'] = 1;
   }
 
-  // ========== STATISTIQUES ==========
 
   getTotalCartes(): number {
     return this.cartes.length;
@@ -249,7 +243,6 @@ export class CardsSettingsComponent {
     return labels[statut] || statut;
   }
 
-  // ========== PAGINATION ==========
 
   getPaginatedFilteredCartes(): CardData[] {
     const page = this.currentPages['cartes'] || 1;
@@ -292,14 +285,13 @@ export class CardsSettingsComponent {
     this.currentPages[tab] = 1;
   }
 
-  // ========== GESTION PIN ==========
 
   private pendingAction: { type: string, card?: CardData, data?: any } | null = null;
 
   openCardAction(card: CardData, action: string): void {
     this.selectedCard = card;
     this.pendingAction = { type: action, card: card };
-    this.formData = { 
+    this.formData = {
       cardId: card.id,
       pin: '',
       nouveauPin: '',
@@ -339,7 +331,7 @@ export class CardsSettingsComponent {
       this.actionModalTitle = this.getActionTitle(this.pendingAction.type);
       this.actionModalOpen = true;
       this.formData.pin = '';
-      
+
       if (this.pendingAction.card) {
         this.selectedCard = this.pendingAction.card;
       }
@@ -362,7 +354,6 @@ export class CardsSettingsComponent {
     return icons[this.actionModalType] || '📋';
   }
 
-  // ========== ACTIONS ==========
 
   openAction(actionId: string): void {
     this.actionModalType = actionId;
@@ -386,14 +377,12 @@ export class CardsSettingsComponent {
     this.actionModalTitle = `Historique - ${card.numero}`;
     this.actionModalOpen = true;
     this.formData = { pin: '' };
-    // Filtrer l'historique pour la carte sélectionnée
     this.historiqueCartes = this.historique
       .filter(h => h.detail.includes(card.numero))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 10);
-    
+
     if (this.historiqueCartes.length === 0) {
-      // Si pas d'historique, générer un historique factice
       this.historiqueCartes = this.generateFakeHistory(card);
     }
   }
@@ -402,7 +391,7 @@ export class CardsSettingsComponent {
     const actions = ['Paiement Bus', 'Paiement Taxi', 'Achat Marché', 'Achat Engrais Chimique'];
     const montants = [5000, 10000, 15000, 25000, 30000, 50000];
     const history = [];
-    
+
     for (let i = 0; i < 5; i++) {
       const montant = montants[Math.floor(Math.random() * montants.length)] || 10000;
       const isCredit = Math.random() > 0.5;
@@ -422,7 +411,7 @@ export class CardsSettingsComponent {
   getActionClass(action: string): string {
     const creditActions = ['Dépôt', 'Crédit', 'Réception', 'Transfert reçu'];
     const debitActions = ['Retrait', 'Débit', 'Paiement', 'Transfert envoyé', 'Achat'];
-    
+
     for (const ca of creditActions) {
       if (action.includes(ca)) return 'credit';
     }
@@ -495,7 +484,6 @@ export class CardsSettingsComponent {
     this.closeActionModal();
   }
 
-  // ========== ACTIONS MÉTIER ==========
 
   private emettreCarte(): void {
     const typeCarte = this.formData.typeCarte || 'parent';
@@ -507,7 +495,7 @@ export class CardsSettingsComponent {
       { id: 'CL-002', nom: 'Marie NSABIMANA' },
       { id: 'CL-003', nom: 'Pierre NIZIGIYIMANA' }
     ];
-    
+
     for (let i = 0; i < quantite; i++) {
       const num = count + i + 1;
       const user = utilisateurs[i % utilisateurs.length] || utilisateurs[0];
@@ -630,7 +618,6 @@ export class CardsSettingsComponent {
     }
   }
 
-  // ========== EXPORT ET IMPRESSION ==========
 
   exportExcel(): void {
     this.toast('Export Excel des cartes en cours...', 'info');
@@ -673,7 +660,6 @@ export class CardsSettingsComponent {
     window.print();
   }
 
-  // ========== MODALES ==========
 
   closeModal(): void {
     this.modalOpen = false;
@@ -688,7 +674,6 @@ export class CardsSettingsComponent {
     this.pendingAction = null;
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;

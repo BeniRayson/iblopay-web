@@ -1,4 +1,3 @@
-// src/app/modules/auth/interceptors/loading.interceptor.ts
 import { Injectable } from '@angular/core';
 import {
   HttpInterceptor,
@@ -17,7 +16,6 @@ export class LoadingInterceptor implements HttpInterceptor {
   readonly loading$ = this.isLoading$.asObservable();
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Skip loading indicator for background/silent requests
     if (req.headers.has('X-Silent')) {
       return next.handle(req);
     }

@@ -11,9 +11,6 @@ import {
     Statistiques
 } from '../models/service-public.model';
 
-// ============================================================
-// FONCTIONS HELPER
-// ============================================================
 const getRandomItem = <T>(array: readonly T[], fallback: T): T => {
     if (!array || array.length === 0) return fallback;
     return array[Math.floor(Math.random() * array.length)] || fallback;
@@ -31,9 +28,6 @@ const getRandomBoolean = (probability: number = 0.5): boolean => {
     return Math.random() < probability;
 };
 
-// ============================================================
-// GÉNÉRATION DE CATÉGORIES
-// ============================================================
 const generateCategories = (serviceId: number, count: number): Categorie[] => {
     const categories: Categorie[] = [];
     const noms = ['RNF', 'FISCALE', 'ADMINISTRATIVE', 'TECHNIQUE', 'ENVIRONNEMENTALE'];
@@ -135,13 +129,9 @@ const generateCategories = (serviceId: number, count: number): Categorie[] => {
     return categories;
 };
 
-// ============================================================
-// GÉNÉRATION DES TYPES RNF
-// ============================================================
 const generateTypesRNF = (serviceId: number): TypeRNF[] => {
     const typesRNF: TypeRNF[] = [];
 
-    // Type A - Redevances ARCT
     const typeA: TypeRNF = {
         id: 1,
         numero: 1,
@@ -160,7 +150,6 @@ const generateTypesRNF = (serviceId: number): TypeRNF[] => {
     };
     typesRNF.push(typeA);
 
-    // Type B - ABREMA
     const typeB: TypeRNF = {
         id: 2,
         numero: 1,
@@ -181,9 +170,6 @@ const generateTypesRNF = (serviceId: number): TypeRNF[] => {
     return typesRNF;
 };
 
-// ============================================================
-// GÉNÉRATION DE PAIEMENTS RNF
-// ============================================================
 const generatePaiementsRNF = (serviceId: number, count: number, typesRNF: TypeRNF[]): PaiementRNF[] => {
     const paiements: PaiementRNF[] = [];
     const statuts = ['PAYE', 'EN_ATTENTE', 'ANNULE', 'PARTIEL'] as const;
@@ -244,9 +230,6 @@ const generatePaiementsRNF = (serviceId: number, count: number, typesRNF: TypeRN
     return paiements;
 };
 
-// ============================================================
-// GÉNÉRATION D'UTILISATEURS
-// ============================================================
 const generateUtilisateurs = (serviceId: number, count: number): Utilisateur[] => {
     const utilisateurs: Utilisateur[] = [];
     const noms = ['Ndayishimiye', 'Uwimana', 'Niyonzima', 'Mukiza', 'Nishimwe', 'Hakizimana', 'Nkurunziza'];
@@ -273,9 +256,6 @@ const generateUtilisateurs = (serviceId: number, count: number): Utilisateur[] =
     return utilisateurs;
 };
 
-// ============================================================
-// GÉNÉRATION DE STATISTIQUES
-// ============================================================
 const generateStatistiques = (serviceId: number, typesRNF: TypeRNF[], paiements: PaiementRNF[]): Statistiques => {
     const totalUtilisateurs = getRandomInt(10, 100);
     const totalTypesRNF = typesRNF.length;
@@ -302,9 +282,6 @@ const generateStatistiques = (serviceId: number, typesRNF: TypeRNF[], paiements:
     };
 };
 
-// ============================================================
-// SERVICES PUBLICS MOCK - COMPLET
-// ============================================================
 export const SERVICES_PUBLICS_MOCK: ServicePublic[] = [
     {
         id: 1,
@@ -327,7 +304,6 @@ export const SERVICES_PUBLICS_MOCK: ServicePublic[] = [
     }
 ];
 
-// Générer les 24 autres services
 const generateAllServices = (): ServicePublic[] => {
     const services: ServicePublic[] = [];
     const noms = [

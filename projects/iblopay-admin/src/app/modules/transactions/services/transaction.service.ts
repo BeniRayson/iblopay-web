@@ -19,19 +19,14 @@ export interface PagedResult<T> {
   total: number;
 }
 
-/**
- * Transaction service backed by in-memory dummy data so the UI displays
- * real-looking content during development. Supports filtering, pagination,
- * summaries, sweep details, and commission details.
- * Replace the method bodies with real HTTP calls once the API is available.
- */
+
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
   private transactions: Transaction[] = [...DUMMY_TRANSACTIONS];
   private sweeps: SweepTransaction[] = [...DUMMY_SWEEPS];
   private commissions: CommissionTransaction[] = [...DUMMY_COMMISSIONS];
 
-  private readonly simDelay = 400; // ms — simulate network latency
+  private readonly simDelay = 400;
 
   getTransactions(filter: TransactionFilter = {}): Observable<PagedResult<Transaction>> {
     let filtered = [...this.transactions];

@@ -1,109 +1,365 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LA CARTE DE TRANSACTION
-   ========================================================== */
-:root {
-  /* Mode Lumière (Light) */
-  --tx-card-surface: rgba(255, 255, 255, 0.75);
-  --tx-card-border: var(--border-light, rgba(0, 0, 0, 0.08));
-  --tx-card-shadow: rgba(0, 0, 0, 0.05);
-  --tx-card-icon-bg: #f5f6f8;
-  --tx-card-icon-color: #1c1e26;
-  --tx-card-title: #1c1e26;
-  --tx-card-muted: #8a8f98;
-  --tx-card-amount-inbound: #1fae5b;
-  --tx-card-amount-outbound: #1c1e26;
-}
-
-[data-theme='dark'],
-body.dark-theme {
-  /* Mode Sombre (Dark) */
-  --tx-card-surface: rgba(18, 26, 47, 0.65);
-  --tx-card-border: var(--border-light, rgba(255, 255, 255, 0.12));
-  --tx-card-shadow: rgba(0, 0, 0, 0.3);
-  --tx-card-icon-bg: rgba(255, 255, 255, 0.06);
-  --tx-card-icon-color: var(--text, #ffffff);
-  --tx-card-title: var(--text, #ffffff);
-  --tx-card-muted: var(--text-dim, rgba(255, 255, 255, 0.5));
-  --tx-card-amount-inbound: #22c55e;
-  --tx-card-amount-outbound: var(--text, #ffffff);
+:host {
+  display: block;
 }
 
 
-/* ==========================================================
-   CARTE DE TRANSACTION (.transaction-card)
-   ========================================================== */
 .transaction-card {
+
+  width: 100%;
+
+  min-height: 52px;
+
+  padding: 7px 10px;
+
   display: flex;
+
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: var(--tx-card-surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--tx-card-border);
-  box-shadow: 0 4px 16px var(--tx-card-shadow);
-  transition: all 0.2s ease;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  background: #ffffff;
+
+  border-radius: 10px;
+
+  transition:
+    background-color .18s ease,
+    transform .18s ease;
+
 
   &:hover {
-    transform: translateY(-1px);
-    border-color: var(--border-light, rgba(255, 255, 255, 0.2));
-    box-shadow: 0 6px 20px var(--tx-card-shadow);
+
+    background: #f8fafc;
+
   }
 
-  &__icon {
-    font-size: 18px;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--tx-card-icon-bg);
-    color: var(--tx-card-icon-color);
-    border-radius: 10px;
-    flex-shrink: 0;
-  }
+
+  /* ============================
+     MAIN
+  ============================ */
 
   &__main {
-    flex: 1;
+
     min-width: 0;
-  }
 
-  &__title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--tx-card-title);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__ref {
-    font-weight: 400;
-    color: var(--tx-card-muted);
-  }
-
-  &__date {
-    font-size: 12px;
-    color: var(--tx-card-muted);
-    margin-top: 2px;
-  }
-
-  &__right {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    flex-shrink: 0;
+
+    align-items: center;
+
+    gap: 9px;
+
+    flex: 1;
+
   }
+
+
+  /* ============================
+     ICON
+  ============================ */
+
+  &__icon {
+
+    width: 30px;
+
+    height: 30px;
+
+    flex: 0 0 auto;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 8px;
+
+    font-size: 11px;
+
+  }
+
+
+  /* ============================
+     CONTENT
+  ============================ */
+
+  &__content {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+    flex: 1;
+
+  }
+
+
+  &__top-line {
+
+    min-width: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+  }
+
+
+  &__reference {
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: #16234c;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+  }
+
+
+  &__details {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    color: #7a89a8;
+
+    font-size: 8.5px;
+
+  }
+
+
+  .separator {
+
+    opacity: .55;
+
+  }
+
+
+  /* ============================
+     AMOUNT
+  ============================ */
 
   &__amount {
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--tx-card-amount-inbound);
 
-    &.outbound {
-      color: var(--tx-card-amount-outbound);
-    }
+    flex: 0 0 auto;
+
+    color: #16234c;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
   }
+
+
+  /* ============================
+     STATUS
+  ============================ */
+
+  &__status {
+
+    min-height: 20px;
+
+    padding: 3px 7px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 999px;
+
+    font-size: 7.7px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+  }
+
+}
+
+
+/* ==================================================
+   TYPES
+================================================== */
+
+.type-blue {
+
+  color: #477fca;
+
+  background: #edf4ff;
+
+}
+
+
+.type-green {
+
+  color: #159263;
+
+  background: #e9f7ef;
+
+}
+
+
+.type-orange {
+
+  color: #c97a2d;
+
+  background: #fff2e4;
+
+}
+
+
+.type-purple {
+
+  color: #7255cf;
+
+  background: #f1edff;
+
+}
+
+
+.type-violet {
+
+  color: #7656d4;
+
+  background: #f2edff;
+
+}
+
+
+/* ==================================================
+   STATUS
+================================================== */
+
+.status-success {
+
+  color: #0c8d5c;
+
+  background: #e8f7ef;
+
+}
+
+
+.status-pending {
+
+  color: #bd741d;
+
+  background: #fff3e4;
+
+}
+
+
+.status-processing {
+
+  color: #356eae;
+
+  background: #eaf3ff;
+
+}
+
+
+.status-failed {
+
+  color: #c94752;
+
+  background: #ffedef;
+
+}
+
+
+.status-cancelled {
+
+  color: #687386;
+
+  background: #eef1f5;
+
+}
+
+
+/* ==================================================
+   RESPONSIVE
+================================================== */
+
+@media (max-width: 600px) {
+
+  .transaction-card {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+
+    &__main {
+
+      width: 100%;
+
+    }
+
+
+    &__amount {
+
+      margin-left: 39px;
+
+    }
+
+  }
+
+}
+
+
+@media (max-width: 420px) {
+
+  .transaction-card {
+
+    padding: 7px;
+
+
+    &__icon {
+
+      width: 28px;
+
+      height: 28px;
+
+    }
+
+
+    &__top-line {
+
+      align-items: flex-start;
+
+      flex-direction: column;
+
+      gap: 3px;
+
+    }
+
+
+    &__amount {
+
+      margin-left: 37px;
+
+    }
+
+  }
+
 }

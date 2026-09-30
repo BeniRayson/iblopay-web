@@ -369,7 +369,6 @@ export class UsersSettingsComponent {
     return this.agents.filter(a => a.superAgentId === superAgentId);
   }
 
-  // MÉTHODE CORRIGÉE AVEC DES VALEURS PAR DÉFAUT
   getHistoriqueDetail(id: string): HistoriqueDetail[] {
     const types: Array<{type: HistoriqueDetail['type'], typeLabel: string, prefix: string}> = [
       { type: 'depot', typeLabel: 'Dépôt', prefix: '+' },
@@ -377,22 +376,21 @@ export class UsersSettingsComponent {
       { type: 'transfert', typeLabel: 'Transfert', prefix: '-' },
       { type: 'paiement', typeLabel: 'Paiement', prefix: '-' }
     ];
-    
+
     const destinataires: string[] = [
-      'Jean NDAYISHIMIYE', 'Marie NSABIMANA', 'Pierre NIZIGIYIMANA', 
+      'Jean NDAYISHIMIYE', 'Marie NSABIMANA', 'Pierre NIZIGIYIMANA',
       'Claire NDIKUMANA', 'IBLOPAY SA', 'Mobile Money', 'Banque de la République',
       'John DOE', 'Jane SMITH', 'IBLOPAY Agent 001'
     ];
-    
+
     const montants: number[] = [15000, 25000, 50000, 75000, 100000, 200000, 35000, 45000, 120000, 80000];
     const statuts: ('actif' | 'suspendu' | 'archive')[] = ['actif', 'actif', 'actif', 'actif', 'actif'];
-    
+
     const result: HistoriqueDetail[] = [];
     const count = 5 + Math.floor(Math.random() * 5);
-    
+
     for (let i = 0; i < count; i++) {
       const typeIndex = i % types.length;
-      // Utilisation de l'opérateur ! pour affirmer que la valeur n'est pas undefined
       const type = types[typeIndex]!;
       const montantIndex = i % montants.length;
       const montant = montants[montantIndex]! * (1 + Math.floor(Math.random() * 3));
@@ -400,9 +398,9 @@ export class UsersSettingsComponent {
       const dest = destinataires[destIndex]!;
       const statutIndex = i % statuts.length;
       const statut = statuts[statutIndex]!;
-      
+
       const date = new Date(Date.now() - i * 86400000 * (1 + Math.floor(Math.random() * 3)));
-      
+
       result.push({
         date: date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
         type: type.type,
@@ -412,22 +410,21 @@ export class UsersSettingsComponent {
         statut: statut
       });
     }
-    
+
     return result;
   }
 
-  // MÉTHODE CORRIGÉE AVEC DES VALEURS PAR DÉFAUT
   getConnexions(id: string): { date: string; ip: string; appareil: string; localisation: string }[] {
     const localisations: string[] = ['Bujumbura', 'Gitega', 'Ngozi', 'Muyinga', 'Bururi', 'Rumonge', 'Kayanza', 'Cibitoke'];
     const appareils: string[] = ['Android - App IBLOPAY', 'iOS - App IBLOPAY', 'Web - Chrome', 'Web - Firefox', 'Android - Mobile Web'];
-    
+
     const result: { date: string; ip: string; appareil: string; localisation: string }[] = [];
     const count = 3 + Math.floor(Math.random() * 5);
-    
+
     for (let i = 0; i < count; i++) {
       const appareilIndex = i % appareils.length;
       const localisationIndex = i % localisations.length;
-      
+
       result.push({
         date: new Date(Date.now() - i * 3600000 * (1 + Math.floor(Math.random() * 4))).toLocaleString('fr-FR'),
         ip: `41.207.${(id.length * (i + 3) + i * 7) % 255}.${(i * 17 + id.length * 3) % 255}`,
@@ -435,7 +432,7 @@ export class UsersSettingsComponent {
         localisation: localisations[localisationIndex]! + ', Burundi'
       });
     }
-    
+
     return result;
   }
 
@@ -465,7 +462,6 @@ export class UsersSettingsComponent {
     window.print();
   }
 
-  // ---------- Wizard ----------
   get needsProfessionalStep(): boolean {
     return this.activeTab === 'agents' || this.activeTab === 'super-agents';
   }
@@ -735,7 +731,6 @@ export class UsersSettingsComponent {
     this.toast(`« ${this.wizardData.nom} » mis à jour.`, 'success');
   }
 
-  // ---------- Réaffectation ----------
   assignModalOpen = false;
   assignTargetUser: AgentUser | null = null;
   assignTargetSuperAgentId = '';
@@ -796,10 +791,10 @@ export class UsersSettingsComponent {
   }
 
   formatDate(date: Date): string {
-    return date.toLocaleDateString('fr-FR', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric' 
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
     });
   }
 

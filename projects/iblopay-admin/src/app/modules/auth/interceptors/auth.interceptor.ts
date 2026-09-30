@@ -1,4 +1,3 @@
-// src/app/modules/auth/interceptors/auth.interceptor.ts
 import { Injectable } from '@angular/core';
 import {
   HttpInterceptor,
@@ -22,7 +21,6 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Skip auth endpoints
     if (this.isAuthEndpoint(req.url)) {
       return next.handle(req);
     }
@@ -32,7 +30,6 @@ export class AuthInterceptor implements HttpInterceptor {
     if (token) {
       req = this.addToken(req, token);
 
-      // Proactively refresh if token is close to expiry
       if (this.tokenService.shouldRefreshToken() && !this.isRefreshing) {
         return this.handleTokenRefresh(req, next);
       }
@@ -80,7 +77,6 @@ export class AuthInterceptor implements HttpInterceptor {
       );
     }
 
-    // Queue other requests while refreshing
     return this.refreshTokenSubject.pipe(
       filter(token => token !== null),
       take(1),

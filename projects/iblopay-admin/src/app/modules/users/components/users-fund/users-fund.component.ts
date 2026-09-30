@@ -1,4 +1,3 @@
-// src/app/modules/users/components/users-fund/users-fund.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
@@ -74,28 +73,23 @@ export class UsersFundComponent implements OnInit {
   user: User | null = null;
   isLoading = true;
   isDarkMode = false;
-  
-  // Formulaire d'approvisionnement
+
   fundForm!: FormGroup;
   fundLoading = false;
   fundError = '';
   fundSuccess = '';
-  
-  // Données
+
   transactions: Transaction[] = [];
   commissions: Commission[] = [];
   fundHistory: FundHistoryItem[] = [];
-  
-  // Filtres
+
   transactionFilter = '';
   commissionFilter = '';
 
-  // Statistiques
   totalTransactions = 0;
   totalCommissions = 0;
   totalFunds = 0;
 
-  // Données simulées pour les transactions
   private clientNames: string[] = ['Alain Niyonzima', 'Claire Mukiza', 'Pierre Nkurunziza', 'Marie Uwimana', 'David Niyongabo'];
   private agentNames: string[] = ['Jean Ndayishimiye', 'Marie Uwimana', 'Pierre Niyonzima', 'Claire Mukiza'];
   private superAgentNames: string[] = ['Jean Ndayishimiye', 'Marie Uwimana', 'Pierre Niyonzima'];
@@ -180,7 +174,6 @@ export class UsersFundComponent implements OnInit {
   }
 
   loadMockData(): void {
-    // Générer des transactions selon le rôle
     if (this.user?.role === 'CLIENT') {
       this.transactions = this.generateClientTransactions();
     } else if (this.user?.role === 'AGENT') {
@@ -191,7 +184,6 @@ export class UsersFundComponent implements OnInit {
       this.commissions = this.generateSuperAgentCommissions();
     }
 
-    // Historique d'approvisionnement commun à tous
     this.fundHistory = this.generateFundHistory();
 
     this.calculateStats();
@@ -278,7 +270,7 @@ export class UsersFundComponent implements OnInit {
       const amountIndex = i % amounts.length;
       const descIndex = i % descriptions.length;
       const clientIndex = i % this.clientNames.length;
-      
+
       const type = types[typeIndex] || 'TRANSFER';
       const status = statuses[statusIndex] || 'COMPLETED';
       const amount = amounts[amountIndex] || 25000;
@@ -310,10 +302,10 @@ export class UsersFundComponent implements OnInit {
     for (let i = 1; i <= 8; i++) {
       const amountIndex = i % commissionAmounts.length;
       const clientIndex = i % this.clientNames.length;
-      
+
       const amount = commissionAmounts[amountIndex] || 500;
       const from = this.clientNames[clientIndex] || 'Client';
-      
+
       commissions.push({
         id: `com-${String(i).padStart(3, '0')}`,
         amount: amount,
@@ -339,7 +331,7 @@ export class UsersFundComponent implements OnInit {
       const statusIndex = i % statuses.length;
       const amountIndex = i % amounts.length;
       const agentIndex = i % this.agentNames.length;
-      
+
       const type = types[typeIndex] || 'TRANSFER';
       const status = statuses[statusIndex] || 'COMPLETED';
       const amount = amounts[amountIndex] || 150000;
@@ -371,10 +363,10 @@ export class UsersFundComponent implements OnInit {
     for (let i = 1; i <= 7; i++) {
       const amountIndex = i % commissionAmounts.length;
       const agentIndex = i % this.agentNames.length;
-      
+
       const amount = commissionAmounts[amountIndex] || 2000;
       const from = this.agentNames[agentIndex] || 'Agent';
-      
+
       commissions.push({
         id: `com-SA-${String(i).padStart(3, '0')}`,
         amount: amount,
@@ -405,7 +397,7 @@ export class UsersFundComponent implements OnInit {
       const reasonIndex = i % reasons.length;
       const descIndex = i % descriptions.length;
       const amountIndex = i % amounts.length;
-      
+
       history.push({
         id: `fund-${String(i).padStart(3, '0')}`,
         amount: amounts[amountIndex] || 50000,
@@ -430,7 +422,6 @@ export class UsersFundComponent implements OnInit {
     this.location.back();
   }
 
-  // ─── APPROVISIONNEMENT ────────────────────────────────────
 
   onSubmitFund(): void {
     if (this.fundForm.invalid) {
@@ -447,7 +438,7 @@ export class UsersFundComponent implements OnInit {
     const formData = this.fundForm.value;
     const amount = Number(formData.amount);
     const reason = formData.reason;
-    
+
     setTimeout(() => {
       const fundEntry: FundHistoryItem = {
         id: `fund-${Date.now()}`,
@@ -476,25 +467,24 @@ export class UsersFundComponent implements OnInit {
 
       this.fundLoading = false;
       this.fundSuccess = `✅ ${amount.toLocaleString()} Fbu crédités avec succès !`;
-      
+
       this.fundForm.reset({
         amount: '',
         reason: '',
         description: ''
       });
-      
+
       setTimeout(() => {
         this.fundSuccess = '';
       }, 3000);
     }, 1500);
   }
 
-  // ─── FILTRES ──────────────────────────────────────────────
 
   get filteredTransactions(): Transaction[] {
     if (!this.transactionFilter) return this.transactions;
     const term = this.transactionFilter.toLowerCase();
-    return this.transactions.filter(t => 
+    return this.transactions.filter(t =>
       t.description.toLowerCase().includes(term) ||
       t.reference?.toLowerCase().includes(term) ||
       t.from?.toLowerCase().includes(term) ||
@@ -505,13 +495,12 @@ export class UsersFundComponent implements OnInit {
   get filteredCommissions(): Commission[] {
     if (!this.commissionFilter) return this.commissions;
     const term = this.commissionFilter.toLowerCase();
-    return this.commissions.filter(c => 
+    return this.commissions.filter(c =>
       c.from.toLowerCase().includes(term) ||
       c.forTransaction.toLowerCase().includes(term)
     );
   }
 
-  // ─── MÉTHODES POUR L'HISTORIQUE COMPLET ──────────────────
 
   get allTransactions(): Transaction[] {
     return this.transactions;
@@ -541,7 +530,6 @@ export class UsersFundComponent implements OnInit {
     return this.getTransfers().reduce((sum, t) => sum + t.amount, 0);
   }
 
-  // ─── MÉTHODES UTILITAIRES ─────────────────────────────────
 
   getFieldError(fieldName: string): string {
     const control = this.fundForm.get(fieldName);
@@ -549,7 +537,7 @@ export class UsersFundComponent implements OnInit {
 
     if (control.errors['required']) return 'Ce champ est requis';
     if (control.errors['min']) return 'Le montant minimum est de 100 Fbu';
-    
+
     return 'Valeur invalide';
   }
 
@@ -683,9 +671,7 @@ export class UsersFundComponent implements OnInit {
     return amount.toLocaleString('fr-FR') + ' Fbu';
   }
 
-  // ─── ACTIONS ──────────────────────────────────────────────
 
   onFund(): void {
-    // Déjà dans l'onglet approprié
   }
 }

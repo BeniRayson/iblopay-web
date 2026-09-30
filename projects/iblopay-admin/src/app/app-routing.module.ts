@@ -1,4 +1,3 @@
-// src/app/app-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
@@ -16,7 +15,6 @@ const routes: Routes = [
         canActivate: [NoAuthGuard],
         loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
     },
-    // Toutes les routes protégées sous le layout commun (header + sidebar)
     {
         path: '',
         component: LayoutComponent,

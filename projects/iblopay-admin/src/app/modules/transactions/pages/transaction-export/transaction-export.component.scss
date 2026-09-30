@@ -1,8 +1,6 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LA PAGE EXPORT
-   ========================================================== */
+
 :root {
-  /* Mode Lumière (Light) */
+
   --export-bg: var(--bg-light, #f8fafc);
   --export-surface: rgba(255, 255, 255, 0.75);
   --export-surface-hover: rgba(255, 255, 255, 0.95);
@@ -21,7 +19,7 @@
 
 [data-theme='dark'],
 body.dark-theme {
-  /* Mode Sombre (Dark) */
+
   --export-bg: var(--ink, #0b0f19);
   --export-surface: rgba(18, 26, 47, 0.65);
   --export-surface-hover: rgba(26, 37, 66, 0.85);
@@ -39,9 +37,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   PAGE EXPORT (.export-page)
-   ========================================================== */
+
 .export-page {
   padding: 24px 32px;
   max-width: 480px;
@@ -72,9 +68,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   FORMULAIRE D'EXPORT (.export-form)
-   ========================================================== */
+
 .export-form {
   display: flex;
   gap: 14px;
@@ -127,9 +121,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   BOUTONS (.btn)
-   ========================================================== */
+
 .btn {
   border: 1px solid transparent;
   padding: 10px 18px;
@@ -168,9 +160,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   MESSAGES D'ÉTAT (.state-message)
-   ========================================================== */
+
 .state-message {
   margin-top: 16px;
   font-size: 13px;

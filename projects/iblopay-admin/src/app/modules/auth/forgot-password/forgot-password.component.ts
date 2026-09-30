@@ -1,4 +1,3 @@
-// src/app/modules/auth/forgot-password/forgot-password.component.ts
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -60,7 +59,6 @@ export class ForgotPasswordComponent implements OnDestroy {
         if (response.success) {
           this.otpSent = true;
           this.successMessage = AUTH_CONSTANTS.MESSAGES.OTP_SENT;
-          // Navigate to reset password with phone
           setTimeout(() => {
             this.router.navigate([AUTH_CONSTANTS.RESET_PASSWORD_ROUTE], {
               queryParams: { phone: phoneNumber }

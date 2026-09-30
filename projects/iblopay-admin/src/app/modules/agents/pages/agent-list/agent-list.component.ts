@@ -1,4 +1,3 @@
-// src/app/modules/agents/pages/agent-list/agent-list.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Agent } from '../../models/agent.model';
@@ -26,8 +25,7 @@ export class AgentListComponent implements OnInit {
   selectedStatus = '';
   isDarkMode = false;
   showNotifications = false;
-  
-  // ─── Modal OTP ──────────────────────────────
+
   showOtpModal = false;
   otpCode = '';
   otpError = '';
@@ -105,7 +103,6 @@ export class AgentListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAgents();
-    this.loadTheme();
   }
 
   ngOnDestroy(): void {
@@ -162,7 +159,7 @@ export class AgentListComponent implements OnInit {
             totalElectronicsAmount += e.amountInCirculation || 0;
           });
         });
-        
+
         this.stats = {
           ...stats,
           totalElectronicsAmount: totalElectronicsAmount
@@ -174,16 +171,16 @@ export class AgentListComponent implements OnInit {
   applyFilters(): void {
     this.filteredAgents = this.agents.filter(agent => {
       const searchLower = this.searchTerm.toLowerCase().trim();
-      const matchesSearch = this.searchTerm === '' || 
+      const matchesSearch = this.searchTerm === '' ||
         agent.firstName.toLowerCase().includes(searchLower) ||
         agent.lastName.toLowerCase().includes(searchLower) ||
         agent.phone.includes(searchLower) ||
         agent.cardNumber.toLowerCase().includes(searchLower) ||
         agent.code.toLowerCase().includes(searchLower) ||
         agent.address.completeAddress.toLowerCase().includes(searchLower);
-      
+
       const matchesStatus = this.selectedStatus === '' || agent.status === this.selectedStatus;
-      
+
       return matchesSearch && matchesStatus;
     });
     this.currentPage = 1;
@@ -213,17 +210,12 @@ export class AgentListComponent implements OnInit {
     this.router.navigate(['/agents/create']);
   }
 
-  // ─── Approvisionnement - Redirection vers page dédiée ───────
 
-  /**
-   * Ouvre la page d'approvisionnement pour un agent spécifique
-   * @param agent L'agent à approvisionner
-   */
+
   openFunding(agent: Agent): void {
     this.router.navigate(['/agents', agent.id, 'approvisionnement']);
   }
 
-  // ─── OTP Modal pour blocage/déblocage ───────
 
   openBlockOtpModal(agent: Agent): void {
     this.agentToBlock = agent;

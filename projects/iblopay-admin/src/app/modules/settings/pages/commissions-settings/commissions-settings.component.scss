@@ -34,7 +34,6 @@
   color: var(--ib-text);
 }
 
-// ========== RESPONSIVE ==========
 @media (max-width: 1200px) {
   :host { padding: 24px; }
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
@@ -89,7 +88,6 @@
   .pagination__info { font-size: 10px; }
 }
 
-// ========== HEADER ==========
 .page-header {
   margin-bottom: 24px;
   .back-btn {
@@ -131,7 +129,6 @@
   }
 }
 
-// ========== KPI CARDS ==========
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -202,7 +199,6 @@
   }
 }
 
-// ========== TABS ==========
 .tabs-nav {
   display: flex;
   gap: 4px;
@@ -243,7 +239,6 @@
   }
 }
 
-// ========== PANEL ==========
 .panel {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -280,7 +275,6 @@
   &__actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
-// ========== DASHBOARD ==========
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -322,7 +316,6 @@
   }
 }
 
-// ========== BUTTONS ==========
 .btn {
   padding: 6px 14px;
   border: none;
@@ -346,7 +339,6 @@
   &--secondary { background: var(--ib-surface); color: var(--ib-text); border: 1px solid var(--ib-border); &:hover { background: var(--ib-bg); } }
 }
 
-// ========== TABLE ==========
 .table-wrap { overflow-x: auto; padding: 0 16px 16px; }
 .section-title { padding: 16px 16px 8px; margin: 0; font-size: 14px; font-weight: 700; color: var(--ib-primary-dark); }
 .table {
@@ -376,7 +368,6 @@
 .text-muted { color: var(--ib-text-muted); }
 .pagination-info { text-align: center; padding: 12px; font-size: 12px; color: var(--ib-text-muted); }
 
-// ========== BADGES ==========
 .badge {
   display: inline-block;
   font-size: 10px;
@@ -410,7 +401,6 @@
   &--gold { color: var(--ib-gold); }
 }
 
-// ========== ACTION BUTTONS ==========
 .action-group { display: flex; gap: 4px; justify-content: center; }
 .action-btn {
   width: 28px;
@@ -428,7 +418,6 @@
   &:hover { background: var(--ib-primary); color: #fff; transform: scale(1.05); }
 }
 
-// ========== PAGINATION ==========
 .pagination {
   display: flex;
   justify-content: center;
@@ -451,7 +440,6 @@
   &__info { font-size: 12px; font-weight: 600; color: var(--ib-text-muted); }
 }
 
-// ========== ÉTAT SUMMARY ==========
 .etat-summary { padding: 16px; &__grid { display: grid; grid-template-columns: 1fr; gap: 16px; } }
 .etat-stat-card {
   background: var(--ib-surface);
@@ -483,7 +471,6 @@
   &__value { font-weight: 700; font-size: 16px; color: var(--ib-text); &--blue { color: var(--ib-etat); } }
 }
 
-// ========== DETAIL CARD ==========
 .detail-card {
   background: var(--ib-bg);
   border: 1px solid var(--ib-border);
@@ -503,7 +490,6 @@
 .detail-label { font-size: 12px; color: var(--ib-text-muted); font-weight: 600; }
 .detail-value { font-size: 13px; font-weight: 600; color: var(--ib-text); text-align: right; }
 
-// ========== FORM ==========
 .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; label { font-size: 12px; font-weight: 600; color: var(--ib-text-muted); } }
 .form-control {
   border: 1px solid var(--ib-border);
@@ -517,7 +503,6 @@
   &:focus { outline: none; border-color: var(--ib-primary); box-shadow: 0 0 0 3px rgba(17, 28, 68, 0.1); }
 }
 
-// ========== ALERTS ==========
 .alert {
   padding: 12px 16px;
   border-radius: var(--ib-radius-sm);
@@ -530,7 +515,6 @@
   &--success { background: var(--ib-success-light); color: var(--ib-success); }
 }
 
-// ========== MODAL ==========
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -564,7 +548,6 @@
   &__footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--ib-border); background: var(--ib-bg); flex-shrink: 0; }
 }
 
-// ========== PIN MODAL ==========
 .pin-input-group { display: flex; justify-content: center; margin-bottom: 20px; }
 .pin-input {
   width: 120px;
@@ -616,7 +599,6 @@
   font-weight: 600;
 }
 
-// ========== TRANSFERT SUMMARY ==========
 .transfert-summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -646,7 +628,6 @@
   &:last-child { border-bottom: none; }
 }
 
-// ========== TOASTS ==========
 .toast-stack {
   position: fixed;
   bottom: 20px;
@@ -686,7 +667,6 @@
   &--info { background: var(--ib-primary-dark); }
 }
 
-// ========== ANIMATIONS ==========
 @keyframes modalIn {
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.98); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }

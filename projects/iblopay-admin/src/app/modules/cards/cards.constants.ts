@@ -3,10 +3,9 @@ import { CardType } from './enums/card-type.enum';
 
 export interface StatusMeta {
   label: string;
-  color: string; // used as a CSS custom property value
+  color: string;
 }
 
-// Display metadata for each CardStatus. Keep in sync with card-status.enum.ts.
 export const CARD_STATUS_META: Record<CardStatus, StatusMeta> = {
   [CardStatus.NEUTRAL]: { label: 'Not activated', color: '#8a8f98' },
   [CardStatus.ACTIVE]: { label: 'Active', color: '#1fae5b' },

@@ -1,4 +1,3 @@
-// src/app/modules/users/users.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -8,7 +7,7 @@ import { UsersListComponent } from './components/users-list/users-list.component
 import { UsersDetailComponent } from './components/users-detail/users-detail.component';
 import { UsersFundComponent } from './components/users-fund/users-fund.component';
 import { UsersStatusComponent } from './components/users-status/users-status.component';
-import { UsersDeleteComponent } from './components/users-delete/users-delete.component'; // ✅ Ajouté
+import { UsersDeleteComponent } from './components/users-delete/users-delete.component';
 import { UsersRoutingModule } from './users-routing.module';
 
 @NgModule({
@@ -17,7 +16,7 @@ import { UsersRoutingModule } from './users-routing.module';
     UsersDetailComponent,
     UsersFundComponent,
     UsersStatusComponent,
-    UsersDeleteComponent // ✅ Ajouté
+    UsersDeleteComponent
   ],
   imports: [
     CommonModule,

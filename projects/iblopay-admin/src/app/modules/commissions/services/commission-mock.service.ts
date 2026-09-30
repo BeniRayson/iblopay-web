@@ -45,7 +45,6 @@ export class CommissionMockService {
   ): Observable<PaginatedResult<Commission>> {
     let filtered = [...MOCK_COMMISSIONS];
 
-    // Apply filters
     if (filter.dateFrom) {
       const from = new Date(filter.dateFrom);
       filtered = filtered.filter(c => new Date(c.createdAt) >= from);
@@ -78,7 +77,6 @@ export class CommissionMockService {
       );
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let cmp = 0;
       switch (sort.column) {
@@ -128,7 +126,6 @@ export class CommissionMockService {
     const creditedFormatted = this.formatBif(kpis.totalCredited);
 
     if (viewRole === 'agent') {
-      // Agent sees only their own data (simulate with first agent)
       const agentId = 'AGT-001';
       const agentComms = MOCK_COMMISSIONS.filter(c => c.agentId === agentId);
       const agentKpis = computeDashboardKpis(agentComms);
@@ -139,7 +136,6 @@ export class CommissionMockService {
         { label: 'Taux Moyen', value: `${agentKpis.averageRate.toFixed(2)}%`, delta: '+0.15%', deltaType: 'increase', icon: 'bi-percent', color: '#a855f7' },
       ];
     } else if (viewRole === 'super_agent') {
-      // Super agent sees rolled-up data for their team
       const saId = 'SA-001';
       const teamComms = MOCK_COMMISSIONS.filter(c => c.superAgentId === saId);
       const teamKpis = computeDashboardKpis(teamComms);
@@ -150,7 +146,6 @@ export class CommissionMockService {
         { label: 'Taux Moyen Équipe', value: `${teamKpis.averageRate.toFixed(2)}%`, delta: '+0.22%', deltaType: 'increase', icon: 'bi-percent', color: '#a855f7' },
       ];
     } else {
-      // Admin sees everything
       const txCount = MOCK_COMMISSIONS.length;
       const creditedCount = MOCK_COMMISSIONS.filter(c => c.status === 'CREDITED').length;
       cards = [

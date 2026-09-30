@@ -1,19 +1,19 @@
-<!-- src/app/modules/users/components/users-fund/users-fund.component.html -->
+
 <div class="fund-container" [class.dark-mode]="isDarkMode">
-  
-  <!-- LOADING -->
+
+
   <div class="loading-screen" *ngIf="isLoading">
     <div class="spinner"></div>
     <p>Chargement des informations...</p>
   </div>
 
-  <!-- CONTENU -->
+
   <div class="fund-content" *ngIf="!isLoading && user">
-    
-    <!-- HEADER -->
+
+
     <div class="fund-header">
       <div class="header-left">
-        
+
         <div class="avatar-wrapper">
           <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="avatar-img" />
           <div *ngIf="!user.photoUrl" class="avatar-initials" [style.background]="getAvatarColor(user.id)">
@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <!-- STATS RAPIDES -->
+
     <div class="stats-row">
       <div class="stat-item">
         <i class="fas fa-wallet"></i>
@@ -80,13 +80,13 @@
       </div>
     </div>
 
-    <!-- CONTENU PRINCIPAL: COLONNES -->
+
     <div class="fund-columns">
-      
-      <!-- COLONNE GAUCHE -->
+
+
       <div class="fund-left-column">
-        
-        <!-- CARTE APPROVISIONNEMENT -->
+
+
         <div class="fund-card card-fund">
           <div class="fund-card-header">
             <div class="header-icon">
@@ -103,7 +103,7 @@
             </div>
           </div>
 
-          <!-- Messages -->
+
           <div class="alert alert-success" *ngIf="fundSuccess">
             <i class="fas fa-check-circle"></i> {{ fundSuccess }}
           </div>
@@ -111,7 +111,7 @@
             <i class="fas fa-exclamation-circle"></i> {{ fundError }}
           </div>
 
-          <!-- Aperçu du solde -->
+
           <div class="balance-preview">
             <div class="balance-item">
               <span class="label">Solde actuel</span>
@@ -127,15 +127,15 @@
           </div>
 
           <form [formGroup]="fundForm" (ngSubmit)="onSubmitFund()" class="fund-form">
-            
+
             <div class="form-group" [class.has-error]="getFieldError('amount')">
               <label for="fund-amount">
                 <i class="fas fa-money-bill-wave"></i> Montant (Fbu) *
               </label>
-              <input 
-                type="number" 
-                id="fund-amount" 
-                formControlName="amount" 
+              <input
+                type="number"
+                id="fund-amount"
+                formControlName="amount"
                 placeholder="Ex: 100000"
                 class="form-input fund-input-lg"
               />
@@ -161,9 +161,9 @@
               <label for="fund-description">
                 <i class="fas fa-sticky-note"></i> Description
               </label>
-              <textarea 
-                id="fund-description" 
-                formControlName="description" 
+              <textarea
+                id="fund-description"
+                formControlName="description"
                 placeholder="Informations complémentaires..."
                 class="form-input fund-textarea"
                 rows="2"
@@ -181,7 +181,7 @@
           </form>
         </div>
 
-        <!-- CARTE TRANSACTIONS -->
+
         <div class="fund-card card-transactions">
           <div class="fund-card-header">
             <div class="header-icon">
@@ -199,9 +199,9 @@
           <div class="filter-bar">
             <div class="search-box">
               <i class="fas fa-search"></i>
-              <input 
-                type="text" 
-                [(ngModel)]="transactionFilter" 
+              <input
+                type="text"
+                [(ngModel)]="transactionFilter"
                 placeholder="Rechercher une transaction..."
               />
             </div>
@@ -241,7 +241,7 @@
           </div>
         </div>
 
-        <!-- CARTE COMMISSIONS (pour AGENT et SUPER_AGENT) -->
+
         <div class="fund-card card-commissions" *ngIf="user.role === 'AGENT' || user.role === 'SUPER_AGENT'">
           <div class="fund-card-header">
             <div class="header-icon">
@@ -259,9 +259,9 @@
           <div class="filter-bar">
             <div class="search-box">
               <i class="fas fa-search"></i>
-              <input 
-                type="text" 
-                [(ngModel)]="commissionFilter" 
+              <input
+                type="text"
+                [(ngModel)]="commissionFilter"
                 placeholder="Rechercher une commission..."
               />
             </div>
@@ -294,7 +294,7 @@
         </div>
       </div>
 
-      <!-- COLONNE DROITE: HISTORIQUE COMPLET -->
+
       <div class="fund-right-column">
         <div class="fund-card card-history">
           <div class="fund-card-header">
@@ -308,7 +308,7 @@
           </div>
 
           <div class="history-list">
-            <!-- Dépôts -->
+
             <div class="history-section">
               <div class="history-section-title">
                 <i class="fas fa-arrow-down"></i> Dépôts
@@ -332,7 +332,7 @@
               </div>
             </div>
 
-            <!-- Retraits -->
+
             <div class="history-section">
               <div class="history-section-title">
                 <i class="fas fa-arrow-up"></i> Retraits
@@ -356,7 +356,7 @@
               </div>
             </div>
 
-            <!-- Transferts (pour AGENT et SUPER_AGENT) -->
+
             <div class="history-section" *ngIf="user.role === 'AGENT' || user.role === 'SUPER_AGENT'">
               <div class="history-section-title">
                 <i class="fas fa-exchange-alt"></i> Transferts
@@ -382,7 +382,7 @@
               </div>
             </div>
 
-            <!-- Approvisionnements -->
+
             <div class="history-section">
               <div class="history-section-title">
                 <i class="fas fa-coins"></i> Approvisionnements
@@ -418,7 +418,7 @@
             </div>
           </div>
 
-          <!-- Résumé des opérations -->
+
           <div class="history-summary">
             <div class="summary-item">
               <span class="label">Total dépôts</span>
@@ -441,7 +441,7 @@
       </div>
     </div>
 
-    <!-- BOUTONS D'ACTION -->
+
     <div class="actions-bar">
       <button class="action-btn-back" (click)="goBack()">
         <i class="fas fa-arrow-left"></i> Retour
@@ -452,7 +452,7 @@
     </div>
   </div>
 
-  <!-- ERREUR -->
+
   <div class="error-state" *ngIf="!isLoading && !user">
     <i class="fas fa-user-slash"></i>
     <h3>Utilisateur non trouvé</h3>

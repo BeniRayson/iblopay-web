@@ -1,351 +1,1217 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { Chart, registerables } from 'chart.js';
+import {
+  Component,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
 
-Chart.register(...registerables);
+interface StatCard {
+  label: string;
+  value: number;
+  icon: string;
+  color: 'blue' | 'green' | 'orange';
+  type: 'number' | 'amount';
+}
+
+type TransactionChannel =
+  | 'Wallet'
+  | 'Carte';
+
+type TransactionType =
+  | 'Transfert'
+  | 'Retrait'
+  | 'Dépôt'
+  | 'Paiement';
+
+type TransactionStatus =
+  | 'Réussi'
+  | 'Échec';
+
+interface LiveTransaction {
+  id: string;
+  reference: string;
+  senderName: string;
+  senderChannel: TransactionChannel;
+  senderAccount: string;
+  amount: number;
+  receiverName: string;
+  receiverChannel: TransactionChannel;
+  receiverAccount: string;
+  type: TransactionType;
+  status: TransactionStatus;
+}
+
+interface CommissionTransaction {
+  id: string;
+  reference: string;
+  agent: number;
+  superAgent: number;
+  shareholders: number;
+  iblopay: number;
+}
+
+interface RecentAction {
+  id: string;
+  action: string;
+  author: string;
+  target: string;
+  date: string;
+  icon: string;
+  color:
+    | 'blue'
+    | 'green'
+    | 'orange';
+}
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DashboardComponent
+  implements OnInit, OnDestroy {
 
-  currentDate: Date = new Date(2026, 6, 15);
-  currentTime: string = '';
-  currentDay: string = '';
-  isRefreshing: boolean = false;
-  isDarkMode: boolean = true;
+  currentDay = '';
+  currentTime = '';
 
-  @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
-  private chartInstance: Chart | null = null;
-  private clockSubscription?: Subscription;
+  isRefreshing = false;
+
+  private clockTimer?: number;
+  private realtimeTimer?: number;
+  private actionTimer?: number;
+
+  private transactionSequence = 1245;
 
   statsData = {
-    users: 1248532,
-    agents: 18532,
-    superAgents: 1245,
-    merchants: 45892,
-    transactionsToday: 523690000,
-    commissionEtat: 1245800000,
-    commissionIblopay: 2229100000,
-    servicesPublics: 128456
+    users: 28456,
+    agents: 1248,
+    superAgents: 86,
+    merchants: 3275,
+    shareholders: 54,
+    instantTransactions: 152730,
+    agentCommission: 24580300,
+    shareholderCommission: 12420850,
+    superAgentCommission: 8965400,
+    circulatingAmount: 1842560000,
+    trustAccount: 720350000
   };
 
-  provinceData = {
-    depots: [
-      { name: 'Butanyerera', amount: 42300000 },
-      { name: 'Burunga', amount: 28700000 },
-      { name: 'Buhumuza', amount: 22100000 },
-      { name: 'Gitega', amount: 19800000 },
-      { name: 'Bujumbura', amount: 122780000 }
-    ],
-    transactions: [
-      { name: 'Butanyerera', amount: 98400000 },
-      { name: 'Burunga', amount: 67200000 },
-      { name: 'Buhumuza', amount: 52800000 },
-      { name: 'Gitega', amount: 45600000 },
-      { name: 'Bujumbura', amount: 259690000 }
-    ],
-    commissions: [
-      { name: 'Butanyerera', amount: 945000 },
-      { name: 'Burunga', amount: 820000 },
-      { name: 'Buhumuza', amount: 680000 },
-      { name: 'Gitega', amount: 590000 },
-      { name: 'Bujumbura', amount: 439900 }
-    ]
-  };
+  liveTransactions: LiveTransaction[] = [];
 
-  provinceTotals = {
-    depots: 235680000,
-    transactions: 523690000,
-    commissions: 3474900
-  };
+  commissions: CommissionTransaction[] = [];
 
-  servicesStats = {
-    total: 128456,
-    traitees: 112345,
-    enCours: 12453,
-    rejetees: 3658
-  };
+  recentActions: RecentAction[] = [];
 
-  services = [
-    { name: 'Permis de construire', total: 28456, traitees: 24987, enCours: 2675, rejetees: 794 },
-    { name: 'Certificat de résidence', total: 24125, traitees: 21652, enCours: 1842, rejetees: 631 },
-    { name: 'Extrait de naissance', total: 18984, traitees: 16852, enCours: 1556, rejetees: 576 },
-    { name: 'Certificat de célibat', total: 15236, traitees: 13497, enCours: 1210, rejetees: 529 },
-    { name: "Autorisation d'exploiter", total: 11655, traitees: 9357, enCours: 1170, rejetees: 1128 }
+  private readonly firstNames = [
+    'Jean Claude',
+    'Emmanuel',
+    'Aline',
+    'Jean Pierre',
+    'Clarisse',
+    'Thierry',
+    'Olivier',
+    'Marie',
+    'Samuel',
+    'Patrick',
+    'Sandrine',
+    'Didier',
+    'Claude',
+    'Brigitte',
+    'Eric'
   ];
 
-  recentRegistrations = [
-    { name: 'Marie Nduwimana', type: 'Nouveau client' },
-    { name: 'Samuel Niyonkuru', type: 'Nouvel agent' },
-    { name: 'Smart Shop', type: 'Nouveau marchand' },
-    { name: 'Innocent Manirakiza', type: 'Nouveau super agent' },
-    { name: 'Permis de construire', type: 'Nouveau service public' }
+  private readonly lastNames = [
+    'Niyonkuru',
+    'Hakizimana',
+    'Nshimirimana',
+    'Ndayishimiye',
+    'Mukeshimana',
+    'Nkurunziza',
+    'Ndayizeye',
+    'Iradukunda',
+    'Manirakiza',
+    'Nduwimana',
+    'Niyonzima',
+    'Irakoze',
+    'Niyokwizera',
+    'Nsabimana'
   ];
 
-  pendingRequests = [
-    { label: 'Ouverture de compte marchand', value: 12 },
-    { label: "Demande d'augmentation de plafond", value: 8 },
-    { label: 'Validation de documents KYC', value: 23 },
-    { label: "Demande d'habilitation agent", value: 5 },
-    { label: 'Création de service public', value: 7 }
+  private readonly businessNames = [
+    'Société BELTRONIC',
+    'Fournisseur Global SARL',
+    'Marché Central',
+    'Hôtel Source du Nil',
+    'Boutique ISANGO',
+    'Agence KAYO',
+    'Smart Shop',
+    'Royal Business',
+    'City Market',
+    'Bora Market'
   ];
 
-  agentActivities = [
-    { label: 'Transactions effectuées', value: '412 589' },
-    { label: 'Volume total', value: '98 600 000 Fbu' },
-    { label: 'Nouveaux clients enregistrés', value: '32 458' },
-    { label: 'Dépôts effectués', value: '45 200 000 Fbu' },
-    { label: 'Retraits effectués', value: '32 100 000 Fbu' }
+  private readonly actionTargets = [
+    'Agence KAYO',
+    'Boutique ISANGO',
+    'Jean Paul Ndayimana',
+    'Emmanuel Hakizimana',
+    'Société Horizon SA',
+    'Aline Nshimirimana',
+    'Réseau BLESSING',
+    'Smart Shop',
+    'Royal Business'
   ];
-
-  constructor(private router: Router) { }
 
   ngOnInit(): void {
-    this.initClock();
-    this.loadTheme();
-  }
+    this.updateClock();
 
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initChart();
-    }, 300);
+    this.generateInitialTransactions();
+
+    this.generateInitialActions();
+
+    this.clockTimer =
+      window.setInterval(
+        () => {
+          this.updateClock();
+        },
+        1000
+      );
+
+    this.realtimeTimer =
+      window.setInterval(
+        () => {
+          this.addRealtimeTransaction();
+        },
+        3200
+      );
+
+    this.actionTimer =
+      window.setInterval(
+        () => {
+          this.addRecentAction();
+        },
+        8500
+      );
   }
 
   ngOnDestroy(): void {
-    if (this.clockSubscription) {
-      this.clockSubscription.unsubscribe();
+    if (this.clockTimer) {
+      window.clearInterval(
+        this.clockTimer
+      );
     }
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
-      this.chartInstance = null;
+
+    if (this.realtimeTimer) {
+      window.clearInterval(
+        this.realtimeTimer
+      );
+    }
+
+    if (this.actionTimer) {
+      window.clearInterval(
+        this.actionTimer
+      );
     }
   }
 
-  private initClock(): void {
-    this.updateClock();
-    this.clockSubscription = new Subscription();
-  }
+  get statCards(): StatCard[] {
+    return [
+      {
+        label:
+          'Utilisateurs',
 
-  private updateClock(): void {
-    const now = new Date();
-    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        value:
+          this.statsData.users,
 
-    this.currentDay = `${days[this.currentDate.getDay()]} ${this.currentDate.getDate()} ${months[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
-    this.currentTime = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  }
+        icon:
+          'fa-solid fa-users',
 
-  private generateSinusoidalData(points: number) {
-    const dataDepots: number[] = [];
-    const dataRetraits: number[] = [];
-    const dataServices: number[] = [];
+        color:
+          'blue',
 
-    for (let i = 0; i < points; i++) {
-      const depots = 40 + 20 * Math.sin((i / points) * 2 * Math.PI * 1.5) + (Math.random() - 0.5) * 3;
-      const retraits = 25 + 15 * Math.sin((i / points) * 2 * Math.PI * 1.5 + 0.8) + (Math.random() - 0.5) * 2.5;
-      const services = 18 + 12 * Math.sin((i / points) * 2 * Math.PI * 1.5 + 1.6) + (Math.random() - 0.5) * 2;
-      dataDepots.push(Math.round(depots * 10) / 10);
-      dataRetraits.push(Math.round(retraits * 10) / 10);
-      dataServices.push(Math.round(services * 10) / 10);
-    }
-    return { depots: dataDepots, retraits: dataRetraits, services: dataServices };
-  }
-
-  private generateLabels(points: number): string[] {
-    const labels: string[] = [];
-    const startDate = new Date(2025, 5, 29);
-
-    for (let i = points - 1; i >= 0; i--) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() - i);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      if (i % Math.max(1, Math.floor(points / 12)) === 0 || i === points - 1) {
-        labels.push(`${day}/${month}`);
-      } else {
-        labels.push('');
-      }
-    }
-    return labels;
-  }
-
-  private initChart(): void {
-    if (!this.chartCanvas) return;
-    const ctx = this.chartCanvas.nativeElement.getContext('2d');
-    if (!ctx) return;
-
-    this.createChart(ctx, 30);
-  }
-
-  /**
-   * Construit le graphique "Évolution des transactions" (Dépôts / Retraits / Services publics).
-   * Utilisée à la fois pour l'affichage initial et pour le changement de période.
-   */
-  private createChart(ctx: CanvasRenderingContext2D, period: number): void {
-    const evolutionData = this.generateSinusoidalData(period);
-    const labels = this.generateLabels(period);
-
-    // Extraction des variables CSS dynamiques selon le mode (Clair/Sombre)
-    const computedStyles = getComputedStyle(document.body);
-    const textDimColor = computedStyles.getPropertyValue('--text-dim').trim() || '#a3b1cc';
-    const textFaintColor = computedStyles.getPropertyValue('--text-faint').trim() || '#64748b';
-    const surfaceColor = computedStyles.getPropertyValue('--surface').trim() || '#111c44';
-
-    const gradientDepots = ctx.createLinearGradient(0, 0, 0, 200);
-    gradientDepots.addColorStop(0, 'rgba(59,130,246,.35)');
-    gradientDepots.addColorStop(1, 'rgba(59,130,246,0)');
-
-    const gradientRetraits = ctx.createLinearGradient(0, 0, 0, 200);
-    gradientRetraits.addColorStop(0, 'rgba(239,68,68,.3)');
-    gradientRetraits.addColorStop(1, 'rgba(239,68,68,0)');
-
-    const gradientServices = ctx.createLinearGradient(0, 0, 0, 200);
-    gradientServices.addColorStop(0, 'rgba(236,72,153,.3)');
-    gradientServices.addColorStop(1, 'rgba(236,72,153,0)');
-
-    this.chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Dépôts (M Fbu)',
-            data: evolutionData.depots,
-            borderColor: '#3b82f6',
-            backgroundColor: gradientDepots,
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 2,
-            pointHoverRadius: 6
-          },
-          {
-            label: 'Retraits (M Fbu)',
-            data: evolutionData.retraits,
-            borderColor: '#ef4444',
-            backgroundColor: gradientRetraits,
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 2,
-            pointHoverRadius: 6
-          },
-          {
-            label: 'Services Publics (M Fbu)',
-            data: evolutionData.services,
-            borderColor: '#ec4899',
-            backgroundColor: gradientServices,
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 2,
-            pointHoverRadius: 6,
-            borderDash: [5, 5]
-          }
-        ]
+        type:
+          'number'
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-          duration: 600,
-          easing: 'easeOutQuart'
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: textDimColor,
-              font: { size: 11, weight: 500 },
-              usePointStyle: true,
-              pointStyle: 'circle'
-            }
-          },
-          tooltip: {
-            backgroundColor: surfaceColor,
-            borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1,
-            titleColor: textDimColor,
-            bodyColor: textDimColor,
-            padding: 10,
-            cornerRadius: 8,
-            callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${(ctx.parsed.y ?? 0).toFixed(1)} M Fbu`
-            }
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: {
-              color: textFaintColor,
-              font: { size: 10 }
-            }
-          },
-          y: {
-            grid: { color: 'rgba(255,255,255,.05)' },
-            ticks: {
-              color: textFaintColor,
-              font: { size: 10 },
-              callback: (v) => v + 'M'
-            },
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  }
 
-  updateChartPeriod(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const period = parseInt(select.value, 10);
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
-      this.chartInstance = null;
-    }
-    const canvas = this.chartCanvas?.nativeElement;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        this.createChart(ctx, period);
-      }
-    }
-  }
+      {
+        label:
+          'Agents',
 
-  private loadTheme(): void {
-    const savedTheme = localStorage.getItem('iblopay_theme');
-    this.isDarkMode = savedTheme !== 'light';
+        value:
+          this.statsData.agents,
+
+        icon:
+          'fa-solid fa-user-tie',
+
+        color:
+          'green',
+
+        type:
+          'number'
+      },
+
+      {
+        label:
+          'Super Agents',
+
+        value:
+          this.statsData.superAgents,
+
+        icon:
+          'fa-solid fa-user',
+
+        color:
+          'blue',
+
+        type:
+          'number'
+      },
+
+      {
+        label:
+          'Marchands',
+
+        value:
+          this.statsData.merchants,
+
+        icon:
+          'fa-solid fa-store',
+
+        color:
+          'orange',
+
+        type:
+          'number'
+      },
+
+      {
+        label:
+          'Actionnaires',
+
+        value:
+          this.statsData.shareholders,
+
+        icon:
+          'fa-solid fa-users',
+
+        color:
+          'green',
+
+        type:
+          'number'
+      },
+
+      {
+        label:
+          'Transactions instantanées',
+
+        value:
+          this.statsData.instantTransactions,
+
+        icon:
+          'fa-solid fa-arrow-right-arrow-left',
+
+        color:
+          'blue',
+
+        type:
+          'number'
+      },
+
+      {
+        label:
+          'Commission des agents',
+
+        value:
+          this.statsData.agentCommission,
+
+        icon:
+          'fa-solid fa-coins',
+
+        color:
+          'blue',
+
+        type:
+          'amount'
+      },
+
+      {
+        label:
+          'Commission des actionnaires',
+
+        value:
+          this.statsData.shareholderCommission,
+
+        icon:
+          'fa-solid fa-chart-pie',
+
+        color:
+          'green',
+
+        type:
+          'amount'
+      },
+
+      {
+        label:
+          'Commission des super agents',
+
+        value:
+          this.statsData.superAgentCommission,
+
+        icon:
+          'fa-solid fa-money-bill-wave',
+
+        color:
+          'orange',
+
+        type:
+          'amount'
+      },
+
+      {
+        label:
+          'Montant en circulation',
+
+        value:
+          this.statsData.circulatingAmount,
+
+        icon:
+          'fa-solid fa-wallet',
+
+        color:
+          'blue',
+
+        type:
+          'amount'
+      },
+
+      {
+        label:
+          'Trust Account',
+
+        value:
+          this.statsData.trustAccount,
+
+        icon:
+          'fa-solid fa-building-columns',
+
+        color:
+          'orange',
+
+        type:
+          'amount'
+      }
+    ];
   }
 
   refreshData(): void {
+    if (this.isRefreshing) {
+      return;
+    }
+
     this.isRefreshing = true;
-    setTimeout(() => {
-      this.isRefreshing = false;
-      if (this.chartInstance) {
-        this.chartInstance.destroy();
-        this.chartInstance = null;
+
+    this.generateInitialTransactions();
+
+    this.generateInitialActions();
+
+    this.statsData.instantTransactions +=
+      this.randomNumber(
+        20,
+        100
+      );
+
+    window.setTimeout(
+      () => {
+        this.isRefreshing = false;
+      },
+      700
+    );
+  }
+
+  formatNumber(
+    value: number
+  ): string {
+    return value.toLocaleString(
+      'fr-FR'
+    );
+  }
+
+  formatAmount(
+    value: number
+  ): string {
+    return (
+      value.toLocaleString(
+        'fr-FR'
+      ) +
+      ' FBu'
+    );
+  }
+
+  getTransactionTypeClass(
+    type: TransactionType
+  ): string {
+    switch (type) {
+      case 'Dépôt':
+        return 'deposit';
+
+      case 'Retrait':
+        return 'withdrawal';
+
+      case 'Paiement':
+        return 'payment';
+
+      default:
+        return 'transfer';
+    }
+  }
+
+  trackTransaction(
+    index: number,
+    transaction: LiveTransaction
+  ): string {
+    return transaction.id;
+  }
+
+  trackCommission(
+    index: number,
+    commission: CommissionTransaction
+  ): string {
+    return commission.id;
+  }
+
+  trackAction(
+    index: number,
+    action: RecentAction
+  ): string {
+    return action.id;
+  }
+
+  private updateClock(): void {
+    const now =
+      new Date();
+
+    const formattedDay =
+      now.toLocaleDateString(
+        'fr-FR',
+        {
+          weekday: 'long',
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        }
+      );
+
+    this.currentDay =
+      formattedDay
+        .charAt(0)
+        .toUpperCase() +
+      formattedDay.slice(1);
+
+    this.currentTime =
+      now.toLocaleTimeString(
+        'fr-FR',
+        {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }
+      );
+  }
+
+  private generateInitialTransactions(): void {
+    const transactions:
+      LiveTransaction[] = [];
+
+    const commissions:
+      CommissionTransaction[] = [];
+
+    for (
+      let index = 0;
+      index < 8;
+      index++
+    ) {
+      const transaction =
+        this.createTransaction();
+
+      transactions.push(
+        transaction
+      );
+
+      commissions.push(
+        this.createCommission(
+          transaction
+        )
+      );
+    }
+
+    this.liveTransactions =
+      transactions;
+
+    this.commissions =
+      commissions;
+  }
+
+  private addRealtimeTransaction(): void {
+    const transaction =
+      this.createTransaction();
+
+    const commission =
+      this.createCommission(
+        transaction
+      );
+
+    this.liveTransactions.unshift(
+      transaction
+    );
+
+    this.commissions.unshift(
+      commission
+    );
+
+    this.liveTransactions =
+      this.liveTransactions.slice(
+        0,
+        8
+      );
+
+    this.commissions =
+      this.commissions.slice(
+        0,
+        8
+      );
+
+    this.statsData
+      .instantTransactions += 1;
+
+    if (
+      transaction.status ===
+      'Réussi'
+    ) {
+      this.statsData
+        .circulatingAmount +=
+        Math.round(
+          transaction.amount *
+          0.15
+        );
+
+      this.statsData
+        .agentCommission +=
+        commission.agent;
+
+      this.statsData
+        .superAgentCommission +=
+        commission.superAgent;
+
+      this.statsData
+        .shareholderCommission +=
+        commission.shareholders;
+
+      this.statsData
+        .trustAccount +=
+        Math.round(
+          transaction.amount *
+          0.04
+        );
+    }
+  }
+
+  private createTransaction():
+    LiveTransaction {
+
+    this.transactionSequence += 1;
+
+    const senderChannel:
+      TransactionChannel =
+      Math.random() > 0.45
+        ? 'Wallet'
+        : 'Carte';
+
+    const receiverChannel:
+      TransactionChannel =
+      Math.random() > 0.45
+        ? 'Wallet'
+        : 'Carte';
+
+    const types:
+      TransactionType[] = [
+        'Transfert',
+        'Retrait',
+        'Dépôt',
+        'Paiement'
+      ];
+
+    const type =
+      types[
+        this.randomNumber(
+          0,
+          types.length - 1
+        )
+      ]!;
+
+    const senderName =
+      Math.random() > 0.18
+        ? this.randomPerson()
+        : this.randomBusiness();
+
+    const receiverName =
+      Math.random() > 0.40
+        ? this.randomPerson()
+        : this.randomBusiness();
+
+    return {
+      id:
+        this.generateId(),
+
+      reference:
+        this.generateReference(),
+
+      senderName,
+
+      senderChannel,
+
+      senderAccount:
+        senderChannel === 'Wallet'
+          ? this.generatePhoneNumber()
+          : this.generateCardNumber(),
+
+      amount:
+        this.randomTransactionAmount(),
+
+      receiverName,
+
+      receiverChannel,
+
+      receiverAccount:
+        receiverChannel === 'Wallet'
+          ? this.generatePhoneNumber()
+          : this.generateCardNumber(),
+
+      type,
+
+      status:
+        Math.random() > 0.13
+          ? 'Réussi'
+          : 'Échec'
+    };
+  }
+
+  private createCommission(
+    transaction: LiveTransaction
+  ): CommissionTransaction {
+
+    if (
+      transaction.status ===
+      'Échec'
+    ) {
+      return {
+        id:
+          transaction.id,
+
+        reference:
+          transaction.reference,
+
+        agent: 0,
+
+        superAgent: 0,
+
+        shareholders: 0,
+
+        iblopay: 0
+      };
+    }
+
+    const totalCommission =
+      Math.max(
+        500,
+        Math.round(
+          transaction.amount *
+          0.04
+        )
+      );
+
+    const agent =
+      Math.round(
+        totalCommission *
+        0.25
+      );
+
+    const superAgent =
+      Math.round(
+        totalCommission *
+        0.125
+      );
+
+    const shareholders =
+      Math.round(
+        totalCommission *
+        0.175
+      );
+
+    const iblopay =
+      totalCommission -
+      agent -
+      superAgent -
+      shareholders;
+
+    return {
+      id:
+        transaction.id,
+
+      reference:
+        transaction.reference,
+
+      agent,
+
+      superAgent,
+
+      shareholders,
+
+      iblopay
+    };
+  }
+
+  private generateInitialActions(): void {
+    this.recentActions = [
+      {
+        id:
+          this.generateId(),
+
+        action:
+          'Nouvel agent créé',
+
+        author:
+          'Admin IBLOPAY',
+
+        target:
+          'Agence KAYO',
+
+        date:
+          this.currentActionTime(),
+
+        icon:
+          'fa-solid fa-plus',
+
+        color:
+          'green'
+      },
+
+      {
+        id:
+          this.generateId(),
+
+        action:
+          'Marchand approuvé',
+
+        author:
+          'Admin IBLOPAY',
+
+        target:
+          'Boutique ISANGO',
+
+        date:
+          this.currentActionTime(),
+
+        icon:
+          'fa-solid fa-store',
+
+        color:
+          'blue'
+      },
+
+      {
+        id:
+          this.generateId(),
+
+        action:
+          'Retrait rejeté',
+
+        author:
+          'Système',
+
+        target:
+          'Jean Paul Ndayimana',
+
+        date:
+          this.currentActionTime(),
+
+        icon:
+          'fa-solid fa-xmark',
+
+        color:
+          'orange'
+      },
+
+      {
+        id:
+          this.generateId(),
+
+        action:
+          'Wallet crédité',
+
+        author:
+          'Admin IBLOPAY',
+
+        target:
+          'Emmanuel Hakizimana',
+
+        date:
+          this.currentActionTime(),
+
+        icon:
+          'fa-solid fa-wallet',
+
+        color:
+          'blue'
+      },
+
+      {
+        id:
+          this.generateId(),
+
+        action:
+          'Actionnaire ajouté',
+
+        author:
+          'Admin IBLOPAY',
+
+        target:
+          'Société Horizon SA',
+
+        date:
+          this.currentActionTime(),
+
+        icon:
+          'fa-solid fa-users',
+
+        color:
+          'orange'
+      },
+
+      {
+        id:
+          this.generateId(),
+
+        action:
+          'Utilisateur mis à jour',
+
+        author:
+          'Admin IBLOPAY',
+
+        target:
+          'Aline Nshimirimana',
+
+        date:
+          this.currentActionTime(),
+
+        icon:
+          'fa-solid fa-pen',
+
+        color:
+          'blue'
+      },
+
+      {
+        id:
+          this.generateId(),
+
+        action:
+          'Super agent validé',
+
+        author:
+          'Admin IBLOPAY',
+
+        target:
+          'Réseau BLESSING',
+
+        date:
+          this.currentActionTime(),
+
+        icon:
+          'fa-solid fa-user',
+
+        color:
+          'green'
       }
-      this.initChart();
-    }, 1000);
+    ];
   }
 
-  formatNumber(value: any): string {
-    if (typeof value === 'string') return value;
-    return value.toLocaleString('fr-FR');
+  private addRecentAction(): void {
+    const actions = [
+      {
+        action:
+          'Nouvel agent créé',
+
+        icon:
+          'fa-solid fa-plus',
+
+        color:
+          'green' as const
+      },
+
+      {
+        action:
+          'Marchand approuvé',
+
+        icon:
+          'fa-solid fa-store',
+
+        color:
+          'blue' as const
+      },
+
+      {
+        action:
+          'Wallet crédité',
+
+        icon:
+          'fa-solid fa-wallet',
+
+        color:
+          'blue' as const
+      },
+
+      {
+        action:
+          'Actionnaire ajouté',
+
+        icon:
+          'fa-solid fa-users',
+
+        color:
+          'orange' as const
+      },
+
+      {
+        action:
+          'Utilisateur mis à jour',
+
+        icon:
+          'fa-solid fa-pen',
+
+        color:
+          'blue' as const
+      },
+
+      {
+        action:
+          'Super agent validé',
+
+        icon:
+          'fa-solid fa-user',
+
+        color:
+          'green' as const
+      }
+    ];
+
+    const selected =
+      actions[
+        this.randomNumber(
+          0,
+          actions.length - 1
+        )
+      ]!;
+
+    const newAction:
+      RecentAction = {
+
+      id:
+        this.generateId(),
+
+      action:
+        selected.action,
+
+      author:
+        'Admin IBLOPAY',
+
+      target:
+        this.actionTargets[
+          this.randomNumber(
+            0,
+            this.actionTargets.length - 1
+          )
+        ]!,
+
+      date:
+        this.currentActionTime(),
+
+      icon:
+        selected.icon,
+
+      color:
+        selected.color
+    };
+
+    this.recentActions.unshift(
+      newAction
+    );
+
+    this.recentActions =
+      this.recentActions.slice(
+        0,
+        7
+      );
   }
 
-  formatAmount(amount: number): string {
-    return amount.toLocaleString('fr-FR') + ' Fbu';
+  private randomPerson(): string {
+    return (
+      this.firstNames[
+        this.randomNumber(
+          0,
+          this.firstNames.length - 1
+        )
+      ] +
+      ' ' +
+      this.lastNames[
+        this.randomNumber(
+          0,
+          this.lastNames.length - 1
+        )
+      ]
+    );
   }
 
-  getChangeClass(change: number): string {
-    return change >= 0 ? 'positive' : 'negative';
+  private randomBusiness(): string {
+    return this.businessNames[
+      this.randomNumber(
+        0,
+        this.businessNames.length - 1
+      )
+    ]!;
   }
 
-  getChangeSymbol(change: number): string {
-    return change >= 0 ? '+' : '';
+  private generatePhoneNumber(): string {
+    const prefixes = [
+      '079',
+      '076',
+      '077',
+      '078'
+    ];
+
+    const prefix =
+      prefixes[
+        this.randomNumber(
+          0,
+          prefixes.length - 1
+        )
+      ];
+
+    return (
+      prefix +
+      this.randomNumber(
+        100000,
+        999999
+      )
+    );
+  }
+
+  private generateCardNumber(): string {
+    const part1 =
+      this.randomNumber(
+        2500,
+        2599
+      );
+
+    const part2 =
+      this.randomNumber(
+        1000,
+        9999
+      );
+
+    const part3 =
+      this.randomNumber(
+        1000,
+        9999
+      );
+
+    const part4 =
+      this.randomNumber(
+        1000,
+        9999
+      );
+
+    return (
+      `${part1} ` +
+      `${part2} ` +
+      `${part3} ` +
+      `${part4}`
+    );
+  }
+
+  private randomTransactionAmount(): number {
+    const amount =
+      this.randomNumber(
+        5,
+        150
+      ) *
+      5000;
+
+    return amount;
+  }
+
+  private generateReference(): string {
+    return (
+      'TRX-' +
+      new Date().getFullYear() +
+      '-' +
+      String(
+        this.transactionSequence
+      ).padStart(
+        6,
+        '0'
+      )
+    );
+  }
+
+  private currentActionTime(): string {
+    const now =
+      new Date();
+
+    const date =
+      now.toLocaleDateString(
+        'fr-FR',
+        {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        }
+      );
+
+    const time =
+      now.toLocaleTimeString(
+        'fr-FR',
+        {
+          hour: '2-digit',
+          minute: '2-digit'
+        }
+      );
+
+    return (
+      `${date} ${time}`
+    );
+  }
+
+  private randomNumber(
+    min: number,
+    max: number
+  ): number {
+    return Math.floor(
+      Math.random() *
+      (max - min + 1)
+    ) + min;
+  }
+
+  private generateId(): string {
+    return (
+      Date.now()
+        .toString(36) +
+      Math.random()
+        .toString(36)
+        .substring(
+          2,
+          8
+        )
+    );
   }
 }

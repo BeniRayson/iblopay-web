@@ -1,5 +1,5 @@
 <div class="settings-page">
-  <!-- HEADER -->
+
   <header class="page-header">
     <div class="page-header__title">
       <span class="icon">⚙️</span>
@@ -10,7 +10,7 @@
     </div>
   </header>
 
-  <!-- TABS -->
+
   <nav class="tabs-nav">
     <button class="tab-btn" *ngFor="let tab of tabs" [class.active]="activeTab === tab.key"
       (click)="setActiveTab(tab.key)">
@@ -20,9 +20,9 @@
     </button>
   </nav>
 
-  <!-- ============ FRAIS ============ -->
+
   <div *ngIf="activeTab === 'frais'" class="panel">
-    <!-- ... (contenu inchangé) ... -->
+
     <div class="panel__header">
       <h3 class="panel__title">💲 Frais et Commissions</h3>
       <span class="panel__badge">{{ getActiveFeesCount() }} frais actifs</span>
@@ -70,9 +70,9 @@
     </div>
   </div>
 
-  <!-- ============ LIMITES ============ -->
+
   <div *ngIf="activeTab === 'limites'" class="panel">
-    <!-- ... (contenu inchangé) ... -->
+
     <div class="panel__header">
       <h3 class="panel__title">📏 Limites et Seuils</h3>
       <span class="panel__badge">{{ getActiveLimitsCount() }} limites configurées</span>
@@ -138,9 +138,9 @@
     </div>
   </div>
 
-  <!-- ============ NOTIFICATIONS ============ -->
+
   <div *ngIf="activeTab === 'notifications'" class="panel">
-    <!-- ... (contenu inchangé) ... -->
+
     <div class="panel__header">
       <h3 class="panel__title">🔔 Notifications</h3>
       <span class="panel__badge">{{ getActiveNotificationsCount() }} canaux actifs</span>
@@ -183,7 +183,7 @@
     </div>
   </div>
 
-  <!-- ============ PARAMÈTRES SYSTÈME ============ -->
+
   <div *ngIf="activeTab === 'parametres'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">🧩 Paramètres Système</h3>
@@ -238,12 +238,12 @@
     </div>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- ============ BARÈMES DE COMMISSION ============ -->
-  <!-- ========================================================== -->
+
+
+
   <div *ngIf="activeTab === 'baremes'" class="panel panel--baremes">
-  
-    <!-- En-tête des barèmes -->
+
+
     <div class="panel__header panel__header--baremes">
       <div>
         <h3 class="panel__title">📊 Baremes de Commission</h3>
@@ -264,11 +264,11 @@
         </ng-template>
       </div>
     </div>
-  
-    <!-- Grille des 4 barèmes -->
+
+
     <div class="baremes-grid">
-  
-      <!-- Carte 1 : Retrait Client -->
+
+
       <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-client'">
         <div class="bareme-card__header" (click)="basculerSectionBareme('retrait-client')">
           <span class="bareme-card__icon">🏦</span>
@@ -277,7 +277,7 @@
           <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'retrait-client' ? '▲' : '▼' }}</span>
         </div>
         <p class="bareme-card__subtitle">Commission agent/SA quand le client retire (FBU)</p>
-  
+
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'retrait-client'">
           <div class="bareme-card__toolbar">
             <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
@@ -323,8 +323,8 @@
           </div>
         </div>
       </div>
-  
-      <!-- Carte 2 : Retrait Marchand -->
+
+
       <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'retrait-marchand'">
         <div class="bareme-card__header" (click)="basculerSectionBareme('retrait-marchand')">
           <span class="bareme-card__icon">🛒</span>
@@ -333,7 +333,7 @@
           <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'retrait-marchand' ? '▲' : '▼' }}</span>
         </div>
         <p class="bareme-card__subtitle">Commission agent/SA quand le marchand retire (FBU)</p>
-  
+
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'retrait-marchand'">
           <div class="bareme-card__toolbar">
             <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
@@ -370,8 +370,8 @@
           </div>
         </div>
       </div>
-  
-      <!-- Carte 3 : Recharge Client -->
+
+
       <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'recharge-client'">
         <div class="bareme-card__header" (click)="basculerSectionBareme('recharge-client')">
           <span class="bareme-card__icon">📱</span>
@@ -380,7 +380,7 @@
           <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'recharge-client' ? '▲' : '▼' }}</span>
         </div>
         <p class="bareme-card__subtitle">Commission agent/SA quand le client recharge (FBU)</p>
-  
+
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'recharge-client'">
           <div class="bareme-card__toolbar">
             <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
@@ -426,8 +426,8 @@
           </div>
         </div>
       </div>
-  
-      <!-- Carte 4 : Carte Agent (Ibiciro) -->
+
+
       <div class="bareme-card" [class.ouvert]="sectionBaremeOuverte === 'carte-agent'">
         <div class="bareme-card__header" (click)="basculerSectionBareme('carte-agent')">
           <span class="bareme-card__icon">💳</span>
@@ -436,7 +436,7 @@
           <span class="bareme-card__toggle">{{ sectionBaremeOuverte === 'carte-agent' ? '▲' : '▼' }}</span>
         </div>
         <p class="bareme-card__subtitle">Frais de depot et de retrait (carte agent)</p>
-  
+
         <div class="bareme-card__content" *ngIf="sectionBaremeOuverte === 'carte-agent'">
           <div class="bareme-card__toolbar">
             <button class="btn btn--primary btn--sm" (click)="activerEditionBaremes()" *ngIf="!modeEditionBareme">✏️
@@ -477,15 +477,15 @@
           </div>
         </div>
       </div>
-  
+
     </div>
-  
+
     <div class="panel__footer panel__footer--baremes">
       <p class="baremes-note">📌 Les baremes sont appliques automatiquement lors des transactions</p>
     </div>
   </div>
 
-  <!-- ============ MODALES ============ -->
+
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
   <div class="modal modal--animated" *ngIf="showModal">
     <div class="modal__header">
@@ -493,7 +493,7 @@
       <button class="modal__close" (click)="closeModal()">✕</button>
     </div>
     <div class="modal__body">
-      <!-- Configuration Frais -->
+
       <div *ngIf="modalType === 'fee_config'">
         <div class="modal__icon">💲</div>
         <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
@@ -532,7 +532,7 @@
         </div>
       </div>
 
-      <!-- Configuration Limite -->
+
       <div *ngIf="modalType === 'limit_config'">
         <div class="modal__icon">📏</div>
         <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
@@ -563,7 +563,7 @@
         </div>
       </div>
 
-      <!-- Configuration Notification -->
+
       <div *ngIf="modalType === 'notification_config'">
         <div class="modal__icon">🔔</div>
         <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
@@ -607,7 +607,7 @@
         </div>
       </div>
 
-      <!-- Configuration Paramètre -->
+
       <div *ngIf="modalType === 'param_config'">
         <div class="modal__icon">🧩</div>
         <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
@@ -636,7 +636,7 @@
     </div>
   </div>
 
-  <!-- ============ TOASTS ============ -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️'

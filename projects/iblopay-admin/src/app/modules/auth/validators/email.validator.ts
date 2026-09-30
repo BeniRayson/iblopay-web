@@ -1,16 +1,12 @@
-// src/app/modules/auth/validators/email.validator.ts
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { AUTH_CONSTANTS } from '../auth.constants';
 
-/**
- * Validates phone number format
- */
+
 export function phoneValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
     if (!value) return null;
 
-    // Remove spaces and dashes
     const cleaned = value.replace(/[\s-]/g, '');
 
     if (!AUTH_CONSTANTS.PHONE_PATTERN.test(cleaned)) {
@@ -21,13 +17,11 @@ export function phoneValidator(): ValidatorFn {
   };
 }
 
-/**
- * Validates email format (optional field)
- */
+
 export function emailValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
-    if (!value) return null; // Email is optional
+    if (!value) return null;
 
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -39,9 +33,7 @@ export function emailValidator(): ValidatorFn {
   };
 }
 
-/**
- * Validates OTP code format
- */
+
 export function otpValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
@@ -60,13 +52,11 @@ export function otpValidator(): ValidatorFn {
   };
 }
 
-/**
- * Validates CNI number format
- */
+
 export function cniValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
-    if (!value) return null; // CNI is optional
+    if (!value) return null;
 
     if (value.length < 5 || value.length > 30) {
       return { cniFormat: 'Le numéro CNI doit contenir entre 5 et 30 caractères' };

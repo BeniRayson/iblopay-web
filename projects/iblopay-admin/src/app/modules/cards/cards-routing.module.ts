@@ -7,9 +7,6 @@ import { CardActivationComponent } from './pages/card-activation/card-activation
 import { CardDistributionComponent } from './pages/card-distribution/card-distribution.component';
 import { CardStockComponent } from './pages/card-stock/card-stock.component';
 
-// IMPORTANT: 'stock' / 'distribution' / 'activation' must stay ABOVE ':id',
-// otherwise the ':id' route swallows them (e.g. a request for /cards/stock
-// would resolve as card detail for id="stock").
 const routes: Routes = [
   { path: '', component: CardListComponent },
   { path: 'stock', component: CardStockComponent },

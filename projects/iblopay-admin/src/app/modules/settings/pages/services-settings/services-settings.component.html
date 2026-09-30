@@ -1,6 +1,6 @@
 <div class="settings-page">
   <header class="page-header">
-    
+
     <div class="page-header__title">
       <span class="icon">🏛</span>
       <div>
@@ -36,7 +36,7 @@
     </button>
   </nav>
 
-  <!-- DASHBOARD -->
+
   <div *ngIf="activeTab === 'dashboard'" class="panel">
     <div class="dashboard-grid">
       <div class="dashboard-card dashboard-card--blue">
@@ -98,7 +98,7 @@
     </div>
   </div>
 
-  <!-- SERVICES -->
+
   <div *ngIf="activeTab === 'services'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">📋 Liste des Services RNF ({{ services.length }})</h3>
@@ -108,7 +108,7 @@
         <button class="btn btn--primary" (click)="openPinModal()">🔐 PIN</button>
       </div>
     </div>
-    
+
     <div class="table-wrap" *ngIf="services.length > 0">
       <table class="table">
         <thead>
@@ -161,7 +161,7 @@
     </div>
   </div>
 
-  <!-- REVENUS -->
+
   <div *ngIf="activeTab === 'revenues'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">💰 Revenus ({{ revenues.length }})</h3>
@@ -206,7 +206,7 @@
     </div>
   </div>
 
-  <!-- CATÉGORIES -->
+
   <div *ngIf="activeTab === 'categories'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">📂 Catégories RNF - Loi Budgétaire 2025-2026</h3>
@@ -243,7 +243,7 @@
     </div>
   </div>
 
-  <!-- MODAL DÉTAILS SERVICE -->
+
   <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()"></div>
   <div class="modal modal--animated modal--large" *ngIf="showDetailModal && selectedService">
     <div class="modal__header">
@@ -254,8 +254,8 @@
       <button class="modal__close" (click)="closeDetailModal()">✕</button>
     </div>
     <div class="modal__body modal__body--large">
-      
-      <!-- Informations générales -->
+
+
       <div class="detail-section">
         <h3 class="section-title">📋 Informations générales</h3>
         <div class="info-grid">
@@ -298,7 +298,7 @@
         </div>
       </div>
 
-      <!-- Texte légal -->
+
       <div class="detail-section">
         <h3 class="section-title">📜 Référence Légale</h3>
         <div class="legal-box">
@@ -307,13 +307,13 @@
         </div>
       </div>
 
-      <!-- Description et procédure -->
+
       <div class="detail-section">
         <h3 class="section-title">📄 Description et procédure</h3>
         <div class="description-box">
           <p>{{ selectedService.description || 'Aucune description disponible' }}</p>
         </div>
-        
+
         <div class="documents-grid">
           <div class="documents-card">
             <h4>📎 Documents requis</h4>
@@ -336,7 +336,7 @@
         </div>
       </div>
 
-      <!-- Clients -->
+
       <div class="detail-section">
         <h3 class="section-title">👥 Clients ({{ getServiceClientCount(selectedService.id) }})</h3>
         <div class="table-wrap">
@@ -382,7 +382,7 @@
         </div>
       </div>
 
-      <!-- Formulaire de demande -->
+
       <div class="detail-section">
         <h3 class="section-title">📝 Copie de la Demande Administrative</h3>
         <div class="form-card form-card--admin">
@@ -456,7 +456,7 @@
     </div>
   </div>
 
-  <!-- MODAL DÉTAILS CLIENT -->
+
   <div class="modal-overlay" *ngIf="showClientModal" (click)="closeClientModal()"></div>
   <div class="modal modal--animated" *ngIf="showClientModal && selectedClient">
     <div class="modal__header">
@@ -487,7 +487,7 @@
     </div>
   </div>
 
-  <!-- MODAL DÉSACTIVATION PIN -->
+
   <div class="modal-overlay" *ngIf="showDesactivatePinModal" (click)="closeDesactivatePinModal()"></div>
   <div class="modal modal--animated modal--pin" *ngIf="showDesactivatePinModal">
     <div class="modal__header">
@@ -512,7 +512,7 @@
     </div>
   </div>
 
-  <!-- MODAL PIN -->
+
   <div class="modal-overlay" *ngIf="showPinModal" (click)="closePinModal()"></div>
   <div class="modal modal--animated modal--pin" *ngIf="showPinModal">
     <div class="modal__header">
@@ -537,7 +537,7 @@
     </div>
   </div>
 
-  <!-- MODAL SERVICE -->
+
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
   <div class="modal modal--animated" *ngIf="showModal">
     <div class="modal__header">
@@ -546,7 +546,7 @@
     </div>
     <div class="modal__body">
       <div class="modal__icon">{{ selectedService?.icon || '🏛️' }}</div>
-      
+
       <div class="form-group" *ngIf="modalType === 'modifier_frais'">
         <label>Montant des frais</label>
         <input type="number" [(ngModel)]="formData.fees" class="form-control" step="0.01" />
@@ -587,7 +587,7 @@
     </div>
   </div>
 
-  <!-- TOASTS -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>

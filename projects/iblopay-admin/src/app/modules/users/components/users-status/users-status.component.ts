@@ -1,4 +1,3 @@
-// src/app/modules/users/components/users-status/users-status.component.ts
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 
 export interface UserStatusOption {
@@ -26,7 +25,6 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
   @Output() statusSelected = new EventEmitter<string>();
   @Output() confirm = new EventEmitter<void>();
 
-  // ─── OTP ──────────────────────────────────────────────────
   showOtpStep: boolean = true;
   otpCode: string = '';
   otpError: string = '';
@@ -39,7 +37,6 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
   private lockTimerInterval: any;
   otpVerified: boolean = false;
 
-  // Étape 2: Changement de statut
   showStatusStep: boolean = false;
 
   statusOptions: UserStatusOption[] = [
@@ -62,7 +59,6 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
     this.clearAllTimers();
   }
 
-  // ─── OTP ──────────────────────────────────────────────────
 
   generateAndSendOtp(): void {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -138,7 +134,7 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
     }
 
     const validOtp = '123456';
-    
+
     if (this.otpCode === validOtp) {
       this.otpError = '';
       this.otpVerified = true;
@@ -148,7 +144,7 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
     } else {
       this.otpAttempts++;
       const remainingAttempts = this.maxOtpAttempts - this.otpAttempts;
-      
+
       if (this.otpAttempts >= this.maxOtpAttempts) {
         this.isOtpLocked = true;
         this.otpError = `❌ Code OTP incorrect. Compte verrouillé pour 3 minutes après ${this.maxOtpAttempts} tentatives.`;
@@ -180,7 +176,6 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
     }, 3000);
   }
 
-  // ─── NAVIGATION ───────────────────────────────────────────
 
   goBackToOtp(): void {
     this.showStatusStep = false;
@@ -203,7 +198,6 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
     this.clearAllTimers();
   }
 
-  // ─── ACTIONS ──────────────────────────────────────────────
 
   onClose(): void {
     this.resetForm();
@@ -218,7 +212,6 @@ export class UsersStatusComponent implements OnChanges, OnDestroy {
     this.confirm.emit();
   }
 
-  // ─── UTILITAIRES ──────────────────────────────────────────
 
   getStatusLabel(status: string): string {
     const option = this.statusOptions.find(s => s.value === status);

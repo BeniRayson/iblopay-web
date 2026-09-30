@@ -1,4 +1,3 @@
-// src/app/modules/auth/models/user.model.ts
 import { Role } from '../enums/role.enum';
 import { Permission } from '../enums/permission.enum';
 

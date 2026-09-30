@@ -1,4 +1,3 @@
-// src/app/modules/agents/pages/agent-detail/agent-detail.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Agent, SubAgent, Deposit } from '../../models/agent.model';
@@ -12,12 +11,10 @@ import { AgentService } from '../../services/agent.service';
 export class AgentDetailComponent implements OnInit {
   agent: Agent | null = null;
   isLoading = true;
-  isDarkMode = false;
   activeTab: 'profile' | 'mouvements' | 'depots' | 'commissions' = 'profile';
   selectedSubAgent: SubAgent | null = null;
   showTransactionsModal = false;
 
-  // Variables pour les filtres
   movementSearchTerm: string = '';
   depositSearchTerm: string = '';
   commissionSearchTerm: string = '';
@@ -33,7 +30,6 @@ export class AgentDetailComponent implements OnInit {
     ['#14b8a6', '#0d9488']
   ];
 
-  // Cartes pour les agents
   private agentCards: Record<string, string> = {
     '2': 'CARTE-AG-2024-001',
     '3': 'CARTE-AG-2024-002',
@@ -76,21 +72,6 @@ export class AgentDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.loadAgent(id);
-    this.loadTheme();
-  }
-
-  loadTheme(): void {
-    const saved = localStorage.getItem('iblopay-theme');
-    if (saved === 'light') {
-      this.isDarkMode = false;
-      document.body.classList.add('light-mode');
-    }
-  }
-
-  toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    document.body.classList.toggle('light-mode');
-    localStorage.setItem('iblopay-theme', this.isDarkMode ? 'dark' : 'light');
   }
 
   loadAgent(id: string): void {
@@ -108,14 +89,11 @@ export class AgentDetailComponent implements OnInit {
     });
   }
 
-  // ================================================================
-  // FILTRE POUR LES MOUVEMENTS
-  // ================================================================
   get filteredAgentsForMovement(): SubAgent[] {
     if (!this.agent?.agents) return [];
     if (!this.movementSearchTerm.trim()) return this.agent.agents;
     const term = this.movementSearchTerm.toLowerCase().trim();
-    return this.agent.agents.filter(sub => 
+    return this.agent.agents.filter(sub =>
       sub.firstName.toLowerCase().includes(term) ||
       sub.lastName.toLowerCase().includes(term) ||
       sub.code.toLowerCase().includes(term) ||
@@ -136,14 +114,11 @@ export class AgentDetailComponent implements OnInit {
     }
   }
 
-  // ================================================================
-  // FILTRE POUR LES DÉPÔTS
-  // ================================================================
   get filteredDeposits(): Deposit[] {
     if (!this.agent?.deposits) return [];
     if (!this.depositSearchTerm.trim()) return this.agent.deposits;
     const term = this.depositSearchTerm.toLowerCase().trim();
-    return this.agent.deposits.filter(d => 
+    return this.agent.deposits.filter(d =>
       d.agentName.toLowerCase().includes(term) ||
       d.reference.toLowerCase().includes(term) ||
       this.getDepositCardNumber(d.agentId).toLowerCase().includes(term)
@@ -163,14 +138,11 @@ export class AgentDetailComponent implements OnInit {
     }
   }
 
-  // ================================================================
-  // FILTRE POUR LES COMMISSIONS
-  // ================================================================
   get filteredAgentsForCommission(): SubAgent[] {
     if (!this.agent?.agents) return [];
     if (!this.commissionSearchTerm.trim()) return this.agent.agents;
     const term = this.commissionSearchTerm.toLowerCase().trim();
-    return this.agent.agents.filter(sub => 
+    return this.agent.agents.filter(sub =>
       sub.firstName.toLowerCase().includes(term) ||
       sub.lastName.toLowerCase().includes(term) ||
       sub.code.toLowerCase().includes(term) ||
@@ -191,9 +163,6 @@ export class AgentDetailComponent implements OnInit {
     }
   }
 
-  // ================================================================
-  // MÉTHODES UTILITAIRES
-  // ================================================================
   getColor(id: string, index: number): string {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {

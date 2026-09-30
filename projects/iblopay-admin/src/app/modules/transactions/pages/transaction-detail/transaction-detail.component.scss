@@ -1,8 +1,6 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LES DÉTAILS DE TRANSACTION
-   ========================================================== */
+
 :root {
-  /* Mode Lumière (Light) */
+
   --detail-bg: var(--bg-light, #f8fafc);
   --detail-surface: rgba(255, 255, 255, 0.75);
   --detail-border: var(--border-light, rgba(0, 0, 0, 0.08));
@@ -15,7 +13,7 @@
 
 [data-theme='dark'],
 body.dark-theme {
-  /* Mode Sombre (Dark) */
+
   --detail-bg: var(--ink, #0b0f19);
   --detail-surface: rgba(18, 26, 47, 0.65);
   --detail-border: var(--border-light, rgba(255, 255, 255, 0.12));
@@ -27,9 +25,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   PAGE DÉTAILS DE TRANSACTION (.transaction-detail-page)
-   ========================================================== */
+
 .transaction-detail-page {
   padding: 24px 32px;
   max-width: 720px;
@@ -62,9 +58,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   SECTIONS D'INFORMATION (.info-section)
-   ========================================================== */
+
 .info-section {
   margin-bottom: 28px;
   padding: 20px;
@@ -86,9 +80,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   GRILLE D'INFORMATIONS (.info-grid)
-   ========================================================== */
+
 .info-grid {
   display: grid;
   grid-template-columns: 160px 1fr;
@@ -127,9 +119,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   BLOC DE MÉTADONNÉES (.metadata)
-   ========================================================== */
+
 .metadata {
   margin-top: 16px;
 
@@ -161,9 +151,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   MESSAGES D'ÉTAT (.state-message)
-   ========================================================== */
+
 .state-message {
   color: var(--detail-label);
   padding: 24px 0;

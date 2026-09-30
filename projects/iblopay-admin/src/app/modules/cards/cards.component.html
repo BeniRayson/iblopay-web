@@ -1,0 +1,705 @@
+<div class="cards-page">
+
+  <!-- ========================= HEADER ========================= -->
+  <header class="page-header">
+
+    <div>
+      <h1>Gestion des cartes</h1>
+
+      <p>
+        Consultez les cartes, leurs propriétaires, les soldes disponibles
+        et l'historique détaillé des opérations.
+      </p>
+    </div>
+
+  </header>
+
+
+  <!-- ========================= STATISTIQUES ========================= -->
+  <section class="stats-grid">
+
+    <article class="stat-card stat-card--total">
+      <span class="stat-card__icon">
+        <i class="fas fa-credit-card"></i>
+      </span>
+
+      <div>
+        <small>Cartes totales</small>
+        <strong>{{ totalCards | number:'1.0-0':'fr-FR' }}</strong>
+        <span>Toutes les cartes émises</span>
+      </div>
+    </article>
+
+
+    <article class="stat-card stat-card--active">
+      <span class="stat-card__icon">
+        <i class="fas fa-circle-check"></i>
+      </span>
+
+      <div>
+        <small>Cartes actives</small>
+        <strong>{{ activeCards | number:'1.0-0':'fr-FR' }}</strong>
+        <span>Cartes en cours d'utilisation</span>
+      </div>
+    </article>
+
+
+    <article class="stat-card stat-card--blocked">
+      <span class="stat-card__icon">
+        <i class="fas fa-lock"></i>
+      </span>
+
+      <div>
+        <small>Cartes bloquées</small>
+        <strong>{{ blockedCards | number:'1.0-0':'fr-FR' }}</strong>
+        <span>Cartes temporairement bloquées</span>
+      </div>
+    </article>
+
+
+    <article class="stat-card stat-card--balance">
+      <span class="stat-card__icon">
+        <i class="fas fa-coins"></i>
+      </span>
+
+      <div>
+        <small>Solde total</small>
+        <strong>{{ formatBif(totalBalance) }}</strong>
+        <span>Montant disponible sur toutes les cartes</span>
+      </div>
+    </article>
+
+  </section>
+
+
+  <!-- ========================= MAIN ========================= -->
+  <section class="cards-main">
+
+    <!-- ========================= LIST ========================= -->
+    <div class="list-card">
+
+      <div class="list-card__header">
+
+        <div>
+          <div class="list-title-line">
+            <span class="list-title-icon">
+              <i class="fas fa-id-card"></i>
+            </span>
+
+            <div>
+              <h2>Liste des cartes</h2>
+              <p>Affichage de toutes les cartes et leurs propriétaires</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ========================= FILTERS ========================= -->
+      <div class="filters-row">
+
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            placeholder="Rechercher par numéro de carte ou nom du propriétaire...">
+
+          <button
+            type="button"
+            *ngIf="searchTerm"
+            (click)="searchTerm=''; applyFilters()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+
+        <select
+          [(ngModel)]="selectedStatus"
+          (change)="applyFilters()">
+
+          <option value="">Tous les statuts</option>
+
+          <option value="ACTIVE">
+            Active
+          </option>
+
+          <option value="BLOCKED">
+            Bloquée
+          </option>
+
+        </select>
+
+
+        <button
+          type="button"
+          class="reset-btn"
+          (click)="resetFilters()">
+
+          <i class="fas fa-rotate-left"></i>
+
+          Réinitialiser
+
+        </button>
+
+      </div>
+
+
+      <!-- ========================= TABLE ========================= -->
+      <div class="table-scroll">
+
+        <table class="cards-table">
+
+          <thead>
+
+            <tr>
+              <th>Numéro de la carte</th>
+              <th>Nom complet du propriétaire</th>
+              <th>Statut</th>
+              <th class="detail-column">Détail</th>
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="let card of paginatedCards; trackBy: trackByCard"
+              [class.selected-row]="selectedCard?.cardId === card.cardId">
+
+              <td>
+
+                <div class="card-number-cell">
+
+                  <strong>
+                    {{ card.cardNumber }}
+                  </strong>
+
+                  <small>
+                    {{ card.cardId }}
+                  </small>
+
+                </div>
+
+              </td>
+
+
+              <td>
+
+                <div class="owner-cell">
+
+                  <span
+                    class="owner-avatar"
+                    [style.background]="getAvatarColor(card.holderName)">
+
+                    {{ getInitials(card.holderName) }}
+
+                  </span>
+
+                  <div>
+
+                    <strong>
+                      {{ card.holderName }}
+                    </strong>
+
+                    <small>
+                      {{ card.userId }}
+                    </small>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="status-badge"
+                  [ngClass]="getStatusClass(card.status)">
+
+                  <i></i>
+
+                  {{ getStatusLabel(card.status) }}
+
+                </span>
+
+              </td>
+
+
+              <td class="detail-column">
+
+                <button
+                  type="button"
+                  class="detail-btn"
+                  title="Voir le détail"
+                  (click)="openDetail(card)">
+
+                  <i class="far fa-eye"></i>
+
+                </button>
+
+              </td>
+
+            </tr>
+
+
+            <tr *ngIf="paginatedCards.length === 0">
+
+              <td colspan="4" class="empty-cell">
+
+                <div class="empty-state">
+
+                  <i class="far fa-folder-open"></i>
+
+                  <strong>
+                    Aucune carte trouvée
+                  </strong>
+
+                  <span>
+                    Modifiez votre recherche ou le filtre sélectionné.
+                  </span>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <!-- ========================= PAGINATION ========================= -->
+      <footer class="table-footer">
+
+        <span>
+
+          Affichage de
+          {{ startItem }}
+          à
+          {{ endItem }}
+          sur
+          {{ filteredCards.length }}
+          cartes
+
+        </span>
+
+
+        <div class="pagination">
+
+          <button
+            type="button"
+            [disabled]="currentPage === 1"
+            (click)="goToPage(currentPage - 1)">
+
+            <i class="fas fa-chevron-left"></i>
+
+          </button>
+
+
+          <button
+            type="button"
+            *ngFor="let page of visiblePages"
+            [class.active]="currentPage === page"
+            (click)="goToPage(page)">
+
+            {{ page }}
+
+          </button>
+
+
+          <button
+            type="button"
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(currentPage + 1)">
+
+            <i class="fas fa-chevron-right"></i>
+
+          </button>
+
+        </div>
+
+      </footer>
+
+    </div>
+
+
+    <!-- ========================= DETAIL PANEL ========================= -->
+    <aside
+      class="detail-panel"
+      *ngIf="selectedCard">
+
+      <header class="detail-panel__header">
+
+        <div class="detail-header-title">
+
+          <span class="detail-header-icon">
+            <i class="fas fa-id-card-clip"></i>
+          </span>
+
+          <div>
+            <h2>Détails de la carte</h2>
+
+            <p>
+              Informations complètes et historique des opérations
+            </p>
+          </div>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="close-detail"
+          (click)="closeDetail()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </header>
+
+
+      <!-- ========================= CARD NUMBER ========================= -->
+      <section class="selected-card-number">
+
+        <div>
+
+          <span>
+            Numéro de la carte sélectionnée
+          </span>
+
+          <strong>
+            {{ selectedCard.cardNumber }}
+          </strong>
+
+        </div>
+
+
+        <span
+          class="status-badge"
+          [ngClass]="getStatusClass(selectedCard.status)">
+
+          <i></i>
+
+          {{ getStatusLabel(selectedCard.status) }}
+
+        </span>
+
+      </section>
+
+
+      <!-- ========================= OWNER IDENTITY ========================= -->
+      <section class="identity-section">
+
+        <div class="section-heading">
+
+          <i class="fas fa-user"></i>
+
+          <strong>
+            Identité complète du propriétaire
+          </strong>
+
+        </div>
+
+
+        <div class="identity-grid">
+
+          <div class="identity-item">
+
+            <span>
+              Nom complet
+            </span>
+
+            <strong>
+              {{ selectedCard.holderName }}
+            </strong>
+
+          </div>
+
+
+          <div class="identity-item">
+
+            <span>
+              ID client
+            </span>
+
+            <strong>
+              {{ selectedCard.userId }}
+            </strong>
+
+          </div>
+
+
+          <div class="identity-item">
+
+            <span>
+              Téléphone
+            </span>
+
+            <strong>
+              {{ selectedCard.phone }}
+            </strong>
+
+          </div>
+
+
+          <div class="identity-item">
+
+            <span>
+              Pièce d'identité
+            </span>
+
+            <strong>
+              {{ selectedCard.identityNumber }}
+            </strong>
+
+          </div>
+
+
+          <div class="identity-item">
+
+            <span>
+              Email
+            </span>
+
+            <strong>
+              {{ selectedCard.email }}
+            </strong>
+
+          </div>
+
+
+          <div class="identity-item">
+
+            <span>
+              Adresse
+            </span>
+
+            <strong>
+              {{ selectedCard.address }}
+            </strong>
+
+          </div>
+
+
+          <div class="identity-item">
+
+            <span>
+              Wallet
+            </span>
+
+            <strong>
+              {{ selectedCard.walletId }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ========================= BALANCE ========================= -->
+      <section class="balance-card">
+
+        <span class="balance-card__icon">
+          <i class="fas fa-wallet"></i>
+        </span>
+
+        <div>
+
+          <span>
+            Montant disponible sur la carte
+          </span>
+
+          <strong>
+            {{ formatBif(selectedCard.balance) }}
+          </strong>
+
+        </div>
+
+      </section>
+
+
+      <!-- ========================= HISTORY ========================= -->
+      <section class="history-section">
+
+        <div class="history-header">
+
+          <div>
+
+            <span class="history-title-icon">
+              <i class="fas fa-clock-rotate-left"></i>
+            </span>
+
+            <strong>
+              Historique de la carte
+            </strong>
+
+          </div>
+
+
+          <button
+            type="button"
+            (click)="printHistory()">
+
+            <i class="fas fa-print"></i>
+
+            Imprimer
+
+          </button>
+
+        </div>
+
+
+        <div class="history-table-scroll">
+
+          <table class="history-table">
+
+            <thead>
+
+              <tr>
+                <th>Référence</th>
+                <th>Description</th>
+                <th>Montant</th>
+                <th>Date & Heure</th>
+                <th>Statut</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              <tr
+                *ngFor="let item of selectedCard.history">
+
+                <td>
+
+                  <strong>
+                    {{ item.reference }}
+                  </strong>
+
+                </td>
+
+
+                <td>
+
+                  {{ item.description }}
+
+                </td>
+
+
+                <td>
+
+                  <strong
+                    [ngClass]="getAmountClass(item.type)">
+
+                    {{ getSignedAmount(item) }}
+
+                  </strong>
+
+                </td>
+
+
+                <td>
+
+                  {{ formatDateTime(item.date) }}
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="history-status"
+                    [ngClass]="getHistoryStatusClass(item.status)">
+
+                    {{ item.status }}
+
+                  </span>
+
+                </td>
+
+              </tr>
+
+
+              <tr
+                *ngIf="selectedCard.history.length === 0">
+
+                <td
+                  colspan="5"
+                  class="history-empty">
+
+                  Aucun mouvement disponible.
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- ========================= ACTIONS ========================= -->
+      <footer class="detail-actions">
+
+        <button
+          type="button"
+          class="detail-action detail-action--block"
+          *ngIf="selectedCard.status !== 'BLOCKED'"
+          (click)="blockSelectedCard()">
+
+          <i class="fas fa-lock"></i>
+
+          Bloquer la carte
+
+        </button>
+
+
+        <button
+          type="button"
+          class="detail-action detail-action--activate"
+          *ngIf="selectedCard.status === 'BLOCKED'"
+          (click)="activateSelectedCard()">
+
+          <i class="fas fa-circle-check"></i>
+
+          Activer la carte
+
+        </button>
+
+
+        <button
+          type="button"
+          class="detail-action detail-action--print"
+          (click)="printDetail()">
+
+          <i class="fas fa-print"></i>
+
+          Imprimer le détail
+
+        </button>
+
+      </footer>
+
+    </aside>
+
+  </section>
+
+</div>

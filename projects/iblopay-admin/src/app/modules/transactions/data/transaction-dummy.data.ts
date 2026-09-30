@@ -8,7 +8,7 @@ import { CommissionTransaction } from '../models/commission-transaction.model';
 import { SweepTransaction } from '../models/sweep-transaction.model';
 import { Transaction } from '../models/transaction.model';
 
-/** Development data used until the transactions API is available. Amounts are in BIF minor units. */
+
 export const DUMMY_TRANSACTIONS: Transaction[] = [
   {
     transactionId: 'tx-001', reference: 'DEP-20260715-001',

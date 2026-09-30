@@ -1,0 +1,22 @@
+IMPORTANT - NE PAS FUSIONNER AVEC L'ANCIEN DOSSIER
+
+Les erreurs TS7016 montrent que votre ancien dossier contient encore :
+transaction-list.component.js
+
+Procédure recommandée :
+1. Arrêter ng serve.
+2. Aller dans :
+   projects/iblopay-admin/src/app/modules/
+3. RENOMMER l'ancien dossier transactions en transactions_backup
+   ou le supprimer après sauvegarde.
+4. Copier le dossier "transactions" fourni dans ce package.
+5. Vérifier que :
+   pages/transaction-list/
+   contient uniquement les fichiers source .ts / .html / .scss
+   et AUCUN transaction-list.component.js.
+6. Depuis la racine du projet, relancer :
+   ng serve
+
+Le module fourni importe CommonModule et FormsModule.
+Cela corrige ngModel / ngValue une fois que l'ancien fichier .js ne bloque plus
+l'analyse du TransactionsModule.

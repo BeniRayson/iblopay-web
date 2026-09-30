@@ -1,10 +1,7 @@
-// src/app/modules/auth/validators/password.validator.ts
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { AUTH_CONSTANTS } from '../auth.constants';
 
-/**
- * Validates PIN length (digits only)
- */
+
 export function pinValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
@@ -27,9 +24,7 @@ export function pinValidator(): ValidatorFn {
   };
 }
 
-/**
- * Validates that PIN and confirm PIN match
- */
+
 export function pinMatchValidator(pinField: string, confirmField: string): ValidatorFn {
   return (group: AbstractControl): ValidationErrors | null => {
     const pin = group.get(pinField)?.value;
@@ -42,20 +37,16 @@ export function pinMatchValidator(pinField: string, confirmField: string): Valid
   };
 }
 
-/**
- * Validates PIN is not a repeated or sequential number
- */
+
 export function strongPinValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
     if (!value) return null;
 
-    // Check for repeated digits (e.g., 1111, 0000)
     if (/^(\d)\1+$/.test(value)) {
       return { weakPin: 'Le PIN ne doit pas contenir des chiffres répétés' };
     }
 
-    // Check for sequential digits (e.g., 1234, 4321)
     const digits = value.split('').map(Number);
     let isSequential = true;
     let isReverseSequential = true;

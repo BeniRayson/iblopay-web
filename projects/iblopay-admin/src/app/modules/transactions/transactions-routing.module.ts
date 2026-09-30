@@ -6,8 +6,6 @@ import { TransactionListComponent } from './pages/transaction-list/transaction-l
 import { TransactionDetailComponent } from './pages/transaction-detail/transaction-detail.component';
 import { TransactionExportComponent } from './pages/transaction-export/transaction-export.component';
 
-// IMPORTANT: 'export' must stay ABOVE ':id', otherwise a request for
-// /transactions/export resolves as transaction detail for id="export".
 const routes: Routes = [
   { path: '', redirectTo: 'hub', pathMatch: 'full' },
   { path: 'hub', component: TransactionHubComponent },

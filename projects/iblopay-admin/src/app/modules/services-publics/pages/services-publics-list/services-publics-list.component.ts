@@ -1,14 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+
 import { ServicePublic } from '../../models/service-public.model';
 import { ServicesPublicsService } from '../../services/services-publics.service';
+import { ICON_PATHS, IconName } from '../../utils/service-icons';
+import { getServiceColor, getServiceInitials } from '../../utils/service-display.util';
 
-interface ServiceStats {
-  total: number;
-  interne: number;
-  externe: number;
-  actifs: number;
+type ViewMode = 'grid' | 'list';
+type NotificationType = 'success' | 'error' | 'info';
+type StatTone = 'blue' | 'green' | 'red' | 'purple';
+
+interface StatCard {
+  label: string;
+  value: string;
+  hint: string;
+  tone: StatTone;
+  icon: IconName;
 }
+
+/** Nombre de cartes par page (3 colonnes × 4 lignes). */
+const PAGE_SIZE = 12;
+
+/** Durée d'affichage de la notification (ms). */
+const NOTIFICATION_DURATION = 3000;
 
 @Component({
   selector: 'app-services-publics-list',
@@ -16,94 +30,107 @@ interface ServiceStats {
   templateUrl: './services-publics-list.component.html',
   styleUrls: ['./services-publics-list.component.scss']
 })
-export class ServicesPublicsListComponent implements OnInit {
+export class ServicesPublicsListComponent implements OnInit, OnDestroy {
 
+  // ─── Données ──────────────────────────────────────────────
   services: ServicePublic[] = [];
   filteredServices: ServicePublic[] = [];
   paginatedServices: ServicePublic[] = [];
+  statCards: StatCard[] = [];
 
-  searchTerm: string = '';
-  selectedType: string = '';
-  selectedStatus: string = '';
+  // ─── Filtres ──────────────────────────────────────────────
+  searchTerm = '';
+  selectedType = '';
+  selectedStatus = '';
 
-  currentPage: number = 1;
-  itemsPerPage: number = 50;
-  totalPages: number = 0;
+  // ─── Affichage ────────────────────────────────────────────
+  viewMode: ViewMode = 'grid';
+  isLoading = false;
+  openMenuId: number | null = null;
 
-  isLoading: boolean = false;
+  // ─── Pagination ───────────────────────────────────────────
+  readonly pageSize = PAGE_SIZE;
+  currentPage = 1;
+  totalPages = 1;
 
-  selectedServices: Set<number> = new Set();
-  selectAll: boolean = false;
+  // ─── Notification ─────────────────────────────────────────
+  showNotification = false;
+  notificationMessage = '';
+  notificationType: NotificationType = 'success';
+  private notificationTimer?: ReturnType<typeof setTimeout>;
 
-  stats: ServiceStats = {
-    total: 0,
-    interne: 0,
-    externe: 0,
-    actifs: 0
-  };
-
-  notificationMessage: string = '';
-  notificationType: 'success' | 'error' | 'info' = 'success';
-  showNotification: boolean = false;
-
-  readonly Math = Math;
+  // ─── Helpers exposés au template ──────────────────────────
+  readonly iconPaths = ICON_PATHS;
+  readonly getColor = getServiceColor;
+  readonly getInitials = getServiceInitials;
 
   constructor(
     private router: Router,
     private servicesPublicsService: ServicesPublicsService
   ) { }
 
+  // ═════════════════════════════════════════════════════════
+  // CYCLE DE VIE
+  // ═════════════════════════════════════════════════════════
+
   ngOnInit(): void {
     this.loadServices();
   }
 
+  ngOnDestroy(): void {
+    clearTimeout(this.notificationTimer);
+  }
+
+  /** Un clic n'importe où ferme le menu « ⋯ » ouvert. */
+  @HostListener('document:click')
+  closeMenu(): void {
+    this.openMenuId = null;
+  }
+
+  // ═════════════════════════════════════════════════════════
+  // CHARGEMENT
+  // ═════════════════════════════════════════════════════════
+
   loadServices(): void {
     this.isLoading = true;
+
     this.servicesPublicsService.getAll().subscribe({
-      next: (data) => {
-        this.services = data;
+      next: services => {
+        this.services = services;
+        this.updateStats();
         this.applyFilters();
         this.isLoading = false;
       },
       error: () => {
         this.isLoading = false;
-        this.showNotificationMessage('Erreur lors du chargement des services', 'error');
+        this.notify('Erreur lors du chargement des services', 'error');
       }
     });
   }
+
+  // ═════════════════════════════════════════════════════════
+  // FILTRES ET PAGINATION
+  // ═════════════════════════════════════════════════════════
 
   applyFilters(): void {
     const term = this.searchTerm.toLowerCase().trim();
 
     this.filteredServices = this.services.filter(service => {
-      const matchesSearch = !term ||
-        service.abreviation.toLowerCase().includes(term) ||
-        service.description.toLowerCase().includes(term);
+      const matchesSearch = !term
+        || service.abreviation.toLowerCase().includes(term)
+        || service.description.toLowerCase().includes(term);
 
       const matchesType = !this.selectedType || service.type === this.selectedType;
-      const matchesStatus = !this.selectedStatus ||
-        (this.selectedStatus === 'ACTIF' && service.actif) ||
-        (this.selectedStatus === 'INACTIF' && !service.actif);
+
+      const matchesStatus = !this.selectedStatus
+        || (this.selectedStatus === 'ACTIF') === service.actif;
 
       return matchesSearch && matchesType && matchesStatus;
     });
 
-    this.totalPages = Math.max(1, Math.ceil(this.filteredServices.length / this.itemsPerPage));
-
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = Math.min(startIndex + this.itemsPerPage, this.filteredServices.length);
-    this.paginatedServices = this.filteredServices.slice(startIndex, endIndex);
-
-    this.updateStats();
-  }
-
-  onSearchChange(): void {
-    this.currentPage = 1;
-    this.applyFilters();
+    this.totalPages = Math.max(1, Math.ceil(this.filteredServices.length / this.pageSize));
+    this.currentPage = Math.min(this.currentPage, this.totalPages);
+    this.updatePage();
   }
 
   onFilterChange(): void {
@@ -111,213 +138,142 @@ export class ServicesPublicsListComponent implements OnInit {
     this.applyFilters();
   }
 
-  clearFilters(): void {
+  resetFilters(): void {
     this.searchTerm = '';
     this.selectedType = '';
     this.selectedStatus = '';
-    this.currentPage = 1;
-    this.applyFilters();
-    this.showNotificationMessage('Filtres réinitialisés', 'info');
+    this.onFilterChange();
   }
 
   changePage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
     this.currentPage = page;
-    this.applyFilters();
+    this.updatePage();
   }
 
-  getPaginationPages(): number[] {
-    const pages: number[] = [];
+  get pages(): number[] {
     const maxVisible = 5;
-    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(this.totalPages, start + maxVisible - 1);
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
+    const start = Math.max(1, Math.min(this.currentPage - 2, this.totalPages - maxVisible + 1));
+    const end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
-  updateStats(): void {
-    this.stats = {
-      total: this.services.length,
-      interne: this.services.filter(s => s.type === 'INTERNE').length,
-      externe: this.services.filter(s => s.type === 'EXTERNE').length,
-      actifs: this.services.filter(s => s.actif).length
-    };
+  get startItem(): number {
+    return this.filteredServices.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
   }
 
-  // ============================================================
-  // ACTIONS SUR LES SERVICES
-  // ============================================================
+  get endItem(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredServices.length);
+  }
+
+  private updatePage(): void {
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.paginatedServices = this.filteredServices.slice(start, start + this.pageSize);
+  }
+
+  // ═════════════════════════════════════════════════════════
+  // STATISTIQUES
+  // ═════════════════════════════════════════════════════════
+
+  private updateStats(): void {
+    const total = this.services.length;
+    const actifs = this.services.filter(service => service.actif).length;
+    const paiements = this.services.reduce((sum, service) => sum + this.getPayments(service), 0);
+
+    this.statCards = [
+      { label: 'Total des services', value: this.formatNumber(total), hint: 'Services disponibles sur la plateforme', tone: 'blue', icon: 'grid' },
+      { label: 'Services actifs', value: this.formatNumber(actifs), hint: 'Fonctionnels et disponibles', tone: 'green', icon: 'check' },
+      { label: 'Services désactivés', value: this.formatNumber(total - actifs), hint: 'Non visibles par les utilisateurs', tone: 'red', icon: 'ban' },
+      { label: 'Total des paiements', value: this.formatNumber(paiements), hint: 'Tous les paiements confondus', tone: 'purple', icon: 'card' }
+    ];
+  }
+
+  getUsers(service: ServicePublic): number {
+    return service.statistiques?.totalUtilisateurs ?? 0;
+  }
+
+  getPayments(service: ServicePublic): number {
+    return service.statistiques?.totalPaiements ?? 0;
+  }
+
+  formatNumber(value: number): string {
+    return new Intl.NumberFormat('fr-FR').format(value);
+  }
+
+  // ═════════════════════════════════════════════════════════
+  // ACTIONS SUR UN SERVICE
+  // ═════════════════════════════════════════════════════════
+
+  onAddService(): void {
+    this.router.navigate(['/services-publics/edit', 'new']);
+  }
 
   onViewService(service: ServicePublic): void {
     this.router.navigate(['/services-publics', service.id]);
   }
 
   onEditService(service: ServicePublic): void {
-    if (service && service.id) {
-      this.router.navigate(['/services-publics/edit', service.id]);
-    }
+    this.router.navigate(['/services-publics/edit', service.id]);
+  }
+
+  toggleMenu(event: Event, service: ServicePublic): void {
+    event.stopPropagation();
+    this.openMenuId = this.openMenuId === service.id ? null : service.id;
   }
 
   onToggleStatus(service: ServicePublic): void {
-    if (!service || !service.id) return;
+    const updated: ServicePublic = { ...service, actif: !service.actif };
+    this.openMenuId = null;
 
-    const updatedService = { ...service, actif: !service.actif };
-    this.servicesPublicsService.update(updatedService).subscribe({
+    this.servicesPublicsService.update(updated).subscribe({
       next: () => {
-        this.services = this.services.map(s =>
-          s.id === service.id ? { ...s, actif: !s.actif } : s
-        );
+        this.services = this.services.map(s => (s.id === service.id ? updated : s));
+        this.updateStats();
         this.applyFilters();
-        this.showNotificationMessage(
-          `Service "${service.abreviation}" ${updatedService.actif ? 'activé' : 'désactivé'} avec succès.`,
-          'success'
-        );
+        this.notify(`Service « ${service.abreviation} » ${updated.actif ? 'activé' : 'désactivé'} avec succès.`);
       },
-      error: () => {
-        this.showNotificationMessage('Erreur lors du changement de statut', 'error');
-      }
+      error: () => this.notify('Erreur lors du changement de statut', 'error')
     });
   }
 
   onDeleteService(service: ServicePublic): void {
-    if (!service || !service.id) return;
+    this.openMenuId = null;
 
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le service "${service.abreviation}" ?`)) {
-      this.servicesPublicsService.delete(service.id).subscribe({
-        next: () => {
-          this.services = this.services.filter(s => s.id !== service.id);
-          this.applyFilters();
-          this.showNotificationMessage(
-            `Service "${service.abreviation}" supprimé avec succès.`,
-            'success'
-          );
-        },
-        error: () => {
-          this.showNotificationMessage('Erreur lors de la suppression', 'error');
-        }
-      });
-    }
-  }
-
-  // ============================================================
-  // ACTIONS EN MASSE
-  // ============================================================
-
-  toggleSelectAll(): void {
-    this.selectAll = !this.selectAll;
-    if (this.selectAll) {
-      this.paginatedServices.forEach(s => this.selectedServices.add(s.id));
-    } else {
-      this.selectedServices.clear();
-    }
-  }
-
-  toggleSelect(serviceId: number): void {
-    if (this.selectedServices.has(serviceId)) {
-      this.selectedServices.delete(serviceId);
-    } else {
-      this.selectedServices.add(serviceId);
-    }
-    this.selectAll = this.paginatedServices.every(s => this.selectedServices.has(s.id));
-  }
-
-  bulkActivate(): void {
-    if (this.selectedServices.size === 0) {
-      this.showNotificationMessage('Veuillez sélectionner au moins un service', 'error');
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer le service « ${service.abreviation} » ?`)) {
       return;
     }
-    const count = this.selectedServices.size;
-    this.services = this.services.map(s =>
-      this.selectedServices.has(s.id) ? { ...s, actif: true } : s
-    );
-    this.applyFilters();
-    this.selectedServices.clear();
-    this.selectAll = false;
-    this.showNotificationMessage(`${count} service(s) activé(s) avec succès.`, 'success');
+
+    this.servicesPublicsService.delete(service.id).subscribe({
+      next: () => {
+        this.services = this.services.filter(s => s.id !== service.id);
+        this.updateStats();
+        this.applyFilters();
+        this.notify(`Service « ${service.abreviation} » supprimé avec succès.`);
+      },
+      error: () => this.notify('Erreur lors de la suppression', 'error')
+    });
   }
-
-  bulkDeactivate(): void {
-    if (this.selectedServices.size === 0) {
-      this.showNotificationMessage('Veuillez sélectionner au moins un service', 'error');
-      return;
-    }
-    const count = this.selectedServices.size;
-    this.services = this.services.map(s =>
-      this.selectedServices.has(s.id) ? { ...s, actif: false } : s
-    );
-    this.applyFilters();
-    this.selectedServices.clear();
-    this.selectAll = false;
-    this.showNotificationMessage(`${count} service(s) désactivé(s) avec succès.`, 'success');
-  }
-
-  bulkDelete(): void {
-    if (this.selectedServices.size === 0) {
-      this.showNotificationMessage('Veuillez sélectionner au moins un service', 'error');
-      return;
-    }
-    const count = this.selectedServices.size;
-    if (confirm(`Êtes-vous sûr de vouloir supprimer ${count} service(s) ?`)) {
-      this.services = this.services.filter(s => !this.selectedServices.has(s.id));
-      this.applyFilters();
-      this.selectedServices.clear();
-      this.selectAll = false;
-      this.showNotificationMessage(`${count} service(s) supprimé(s) avec succès.`, 'success');
-    }
-  }
-
-  // ============================================================
-  // EXPORT
-  // ============================================================
-
-  exportData(): void {
-    this.showNotificationMessage('Export des services en cours…', 'info');
-    setTimeout(() => {
-      this.showNotificationMessage('Export terminé avec succès.', 'success');
-    }, 1500);
-  }
-
-  // ============================================================
-  // UTILITAIRES
-  // ============================================================
 
   trackById(index: number, service: ServicePublic): number {
     return service ? service.id : index;
   }
 
-  getServiceColor(abreviation: string): string {
-    if (!abreviation) return '#16293a';
-    const colors: string[] = [
-      '#16293a', '#a9803d', '#386a4e', '#9c4033',
-      '#2c5b76', '#6b4d2e', '#5c6b3f', '#7c5a2e',
-      '#46586a', '#85661f', '#2f4f5e', '#734531'
-    ];
-    let hash = 0;
-    for (let i = 0; i < abreviation.length; i++) {
-      hash = abreviation.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length] || '#16293a';
-  }
+  // ═════════════════════════════════════════════════════════
+  // NOTIFICATION
+  // ═════════════════════════════════════════════════════════
 
-  getStatusLabel(actif: boolean | undefined): string {
-    return actif ? 'Actif' : 'Inactif';
-  }
+  private notify(message: string, type: NotificationType = 'success'): void {
+    clearTimeout(this.notificationTimer);
 
-  getStatusClass(actif: boolean | undefined): string {
-    return actif ? 'status-actif' : 'status-inactif';
-  }
-
-  showNotificationMessage(message: string, type: 'success' | 'error' | 'info' = 'success'): void {
     this.notificationMessage = message;
     this.notificationType = type;
     this.showNotification = true;
-    setTimeout(() => {
+
+    this.notificationTimer = setTimeout(() => {
       this.showNotification = false;
-    }, 3000);
+    }, NOTIFICATION_DURATION);
   }
 }

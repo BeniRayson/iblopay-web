@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
 :host {
-  // ---- Palette (Bleu #111c44) ----
   --ib-ink: #0A0F1E;
   --ib-ink-soft: #3A4366;
   --ib-primary: #111c44;
@@ -39,7 +38,6 @@
   color: var(--ib-ink);
 }
 
-// ---------- Stats Grid ----------
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -117,7 +115,6 @@
   .stats-grid { grid-template-columns: 1fr; }
 }
 
-// ---------- En-tête ----------
 .page-header {
   margin-bottom: 22px;
 
@@ -157,7 +154,6 @@
   }
 }
 
-// ---------- Onglets ----------
 .actor-tabs {
   display: flex;
   gap: 4px;
@@ -192,7 +188,6 @@
   }
 }
 
-// ---------- Barre d'outils ----------
 .toolbar {
   display: flex; flex-wrap: wrap; gap: 10px;
   margin-bottom: 18px;
@@ -240,7 +235,6 @@
 .btn-export { background: var(--ib-accent); color: #fff; box-shadow: 0 6px 16px rgba(42, 74, 138, 0.25); }
 .btn-export:hover:not(:disabled) { background: var(--ib-primary-dark); }
 
-// ---------- Table ----------
 .table-wrapper {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -395,7 +389,6 @@ table {
   }
 }
 
-// ================= CARTE DE DÉTAIL =================
 .detail-overlay {
   position: fixed; inset: 0;
   background: rgba(10, 15, 30, 0.45);
@@ -497,7 +490,6 @@ table {
   flex: 1;
 }
 
-// ---- Info sections ----
 .info-section {
   & + .info-section { margin-top: 22px; }
 
@@ -560,7 +552,6 @@ table {
   margin-bottom: 8px; font-size: 12.5px; font-family: var(--font-mono);
 }
 
-// ---- History Card ----
 .history-card, .documents-card, .limits-card {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -615,7 +606,6 @@ table {
   }
 }
 
-// ---- Limits Card ----
 .limits-card {
   padding: 18px;
 
@@ -676,7 +666,6 @@ table {
   }
 }
 
-// ---- Performance details ----
 .perf-details {
   margin-top: 16px;
 }
@@ -707,7 +696,6 @@ table {
   }
 }
 
-// ================= CARTE DE CRÉATION =================
 .wizard {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
   background: var(--ib-surface); border-radius: var(--ib-radius-lg);
@@ -771,7 +759,6 @@ table {
   gap: 14px;
 }
 
-// ---- Formulaires ----
 .form-group {
   display: flex;
   flex-direction: column;
@@ -828,7 +815,6 @@ select.form-control {
   padding-right: 36px;
 }
 
-// ---- Upload ----
 .upload-area {
   border: 2px dashed var(--ib-border);
   border-radius: var(--ib-radius-sm);
@@ -856,7 +842,6 @@ select.form-control {
   }
 }
 
-// ---- Carte visuelle compacte ----
 .card-visual {
   position: relative;
   border-radius: var(--ib-radius);
@@ -950,7 +935,6 @@ select.form-control {
   font-size: 12.5px; font-weight: 600;
 }
 
-// ---- Récapitulatif ----
 .recap-grid {
   display: grid; grid-template-columns: 1fr; gap: 12px;
 }
@@ -997,7 +981,6 @@ select.form-control {
   .detail-card__quick-actions .qa-btn { font-size: 11px; padding: 6px 10px; }
 }
 
-// ---------- Modales ----------
 .modal-overlay { position: fixed; inset: 0; background: rgba(10, 15, 30, 0.45); z-index: 60; backdrop-filter: blur(1px); }
 
 .modal {
@@ -1014,7 +997,6 @@ select.form-control {
 
 .modal__footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
-// ---------- Toasts ----------
 .toast-stack {
   position: fixed; bottom: 20px; right: 20px; z-index: 100;
   display: flex; flex-direction: column; gap: 8px;
@@ -1067,9 +1049,7 @@ select.form-control {
   .neg { color: var(--ib-danger); font-weight: 700; font-family: var(--font-mono); }
 }
 
-// ... (le reste du SCSS reste identique, ajoutez ces styles à la fin)
 
-// ===== DOCUMENTS CARD =====
 .documents-card {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -1311,7 +1291,6 @@ select.form-control {
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 
-// ===== TYPE BADGES =====
 .type-badge {
   display: inline-block;
   font-size: 10.5px;
@@ -1339,7 +1318,6 @@ select.form-control {
   }
 }
 
-// ===== PERFORMANCE STATS =====
 .perf-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1372,7 +1350,6 @@ select.form-control {
   }
 }
 
-// ===== COMMISSION DETAILS =====
 .commission-details {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1405,7 +1382,6 @@ select.form-control {
   }
 }
 
-// ===== RESPONSIVE =====
 @media (max-width: 640px) {
   .perf-stats {
     grid-template-columns: 1fr;

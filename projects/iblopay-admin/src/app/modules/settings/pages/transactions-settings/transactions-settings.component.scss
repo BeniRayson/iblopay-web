@@ -80,28 +80,26 @@
   }
 }
 
-// ========== STATS GRID - 4 CARTES SUR UNE LIGNE ==========
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
-  
-  @media (max-width: 1024px) { 
+
+  @media (max-width: 1024px) {
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
   }
-  @media (max-width: 768px) { 
+  @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  @media (max-width: 480px) { 
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
     gap: 10px;
   }
 }
 
-// ========== STAT CARD - COULEURS DOUCES ==========
 .stat-card {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -128,61 +126,57 @@
     box-shadow: 0 0 0 3px rgba(17, 28, 68, 0.08);
   }
 
-  // Carte 1 - Bleu doux
   &:nth-child(1) {
     background: linear-gradient(135deg, #F0F4FF, #E8EDF9);
     border-color: #D0DDF5;
-    
+
     .stat-card__icon {
       background: rgba(17, 28, 68, 0.12);
       color: var(--ib-primary);
     }
-    
+
     &:hover {
       background: linear-gradient(135deg, #E8EDF9, #DCE4F5);
     }
   }
 
-  // Carte 2 - Vert doux
   &:nth-child(2) {
     background: linear-gradient(135deg, #EEF7F2, #E2F0E8);
     border-color: #C8E0D4;
-    
+
     .stat-card__icon {
       background: rgba(26, 122, 74, 0.12);
       color: var(--ib-success);
     }
-    
+
     &:hover {
       background: linear-gradient(135deg, #E2F0E8, #D4E8DE);
     }
   }
 
-  // Carte 3 - Orange doux
   &:nth-child(3) {
     background: linear-gradient(135deg, #FDF6EC, #F8EDDD);
     border-color: #F0DDC4;
-    
+
     .stat-card__icon {
       background: rgba(184, 121, 28, 0.12);
       color: var(--ib-warning);
     }
-    
+
     &:hover {
       background: linear-gradient(135deg, #F8EDDD, #F2E4D0);
     }
   }
 
-  // Carte 4 - Rouge doux (Total)
   &:nth-child(4) {
     background: linear-gradient(135deg, #FDF0EF, #F8E4E2);
     border-color: #EFD0CD;
-    
+
     .stat-card__icon {
       background: rgba(193, 68, 59, 0.12);
       color: var(--ib-danger);
     }
-    
+
     &:hover {
       background: linear-gradient(135deg, #F8E4E2, #F2D6D3);
     }
@@ -199,11 +193,11 @@
     flex-shrink: 0;
     z-index: 1;
     transition: all 0.3s ease;
-    
-    @media (max-width: 480px) { 
-      width: 36px; 
-      height: 36px; 
-      font-size: 18px; 
+
+    @media (max-width: 480px) {
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
     }
   }
 
@@ -222,7 +216,7 @@
     line-height: 1.2;
     color: var(--ib-text);
     transition: color 0.3s ease;
-    
+
     @media (max-width: 480px) { font-size: 18px; }
   }
 
@@ -242,14 +236,12 @@
     opacity: 0.8;
   }
 
-  // Style pour la carte Total (4ème) - spécial
   &:nth-child(4) {
     .stat-card__value {
       color: var(--ib-danger);
     }
   }
 
-  // Effet actif pour chaque carte
   &.active {
     &:nth-child(1) {
       border-color: var(--ib-primary);
@@ -270,7 +262,6 @@
   }
 }
 
-// ========== TOOLBAR ==========
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -292,7 +283,6 @@
   }
 }
 
-// ========== SEARCH BAR ==========
 .search-bar {
   display: flex;
   flex-wrap: wrap;
@@ -349,7 +339,6 @@
   }
 }
 
-// ========== TABS ==========
 .tabs {
   display: flex;
   gap: 4px;
@@ -391,7 +380,6 @@
   @media (max-width: 480px) { padding: 8px 12px; font-size: 12px; &__icon { font-size: 13px; } }
 }
 
-// ========== TABLE ==========
 .table-wrapper {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -473,7 +461,6 @@
   }
 }
 
-// ========== CELLS ==========
 .cell-mono {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11.5px;
@@ -503,7 +490,6 @@
   font-weight: 700;
 }
 
-// ========== BADGES ==========
 .statut-badge {
   display: inline-block;
   font-size: 9.5px;
@@ -512,22 +498,22 @@
   border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  
-  &.statut-effectuee { 
-    background: var(--ib-success-light); 
-    color: var(--ib-success); 
+
+  &.statut-effectuee {
+    background: var(--ib-success-light);
+    color: var(--ib-success);
   }
-  &.statut-en_attente { 
-    background: var(--ib-warning-light); 
-    color: var(--ib-warning); 
+  &.statut-en_attente {
+    background: var(--ib-warning-light);
+    color: var(--ib-warning);
   }
-  &.statut-annulee { 
-    background: var(--ib-danger-light); 
-    color: var(--ib-danger); 
+  &.statut-annulee {
+    background: var(--ib-danger-light);
+    color: var(--ib-danger);
   }
-  &.statut-echouee { 
-    background: var(--ib-danger-light); 
-    color: var(--ib-danger); 
+  &.statut-echouee {
+    background: var(--ib-danger-light);
+    color: var(--ib-danger);
   }
 }
 
@@ -548,7 +534,6 @@
   &.type-commission { background: var(--ib-success-light); color: var(--ib-success); }
 }
 
-// ========== BUTTONS ==========
 .action-buttons {
   display: flex;
   gap: 4px;
@@ -571,16 +556,16 @@
   justify-content: center;
   &:hover { background: var(--ib-primary); color: #fff; transform: scale(1.05); }
 
-  &--danger { 
-    background: var(--ib-danger-light); 
-    color: var(--ib-danger); 
-    &:hover { background: var(--ib-danger); color: #fff; } 
+  &--danger {
+    background: var(--ib-danger-light);
+    color: var(--ib-danger);
+    &:hover { background: var(--ib-danger); color: #fff; }
   }
-  @media (max-width: 480px) { 
-    width: 24px; 
-    height: 24px; 
-    font-size: 10px; 
-    border-radius: 4px; 
+  @media (max-width: 480px) {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+    border-radius: 4px;
   }
 }
 
@@ -596,29 +581,28 @@
   transition: all 0.15s ease;
   font-family: 'Inter', 'Segoe UI', sans-serif;
   white-space: nowrap;
-  
+
   &:hover { background: var(--ib-primary); color: #fff; }
-  
-  &.btn-danger { 
-    background: var(--ib-danger-light); 
-    color: var(--ib-danger); 
-    &:hover { background: var(--ib-danger); color: #fff; } 
+
+  &.btn-danger {
+    background: var(--ib-danger-light);
+    color: var(--ib-danger);
+    &:hover { background: var(--ib-danger); color: #fff; }
   }
-  
+
   &.btn-primary {
     background: var(--ib-primary);
     color: #fff;
     box-shadow: 0 4px 12px rgba(17, 28, 68, 0.25);
     &:hover { background: var(--ib-primary-dark); }
   }
-  
-  @media (max-width: 480px) { 
-    padding: 4px 8px; 
-    font-size: 10px; 
+
+  @media (max-width: 480px) {
+    padding: 4px 8px;
+    font-size: 10px;
   }
 }
 
-// ========== PAGINATION ==========
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -665,7 +649,6 @@
   }
 }
 
-// ========== TYPES GRID ==========
 .types-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -697,27 +680,27 @@
   }
 
   &__icon { font-size: 24px; }
-  
+
   &__content { flex: 1; }
-  
+
   &__name {
     font-weight: 600;
     font-size: 13px;
     color: var(--ib-primary-dark);
   }
-  
+
   &__count {
     font-size: 11px;
     color: var(--ib-text-muted);
   }
-  
+
   &__total {
     font-weight: 700;
     font-size: 13px;
     font-family: 'JetBrains Mono', monospace;
     color: var(--ib-primary-dark);
   }
-  
+
   &__statut {
     display: flex;
     gap: 4px;
@@ -727,7 +710,6 @@
   }
 }
 
-// ========== FILTERS GRID ==========
 .filters-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -758,34 +740,33 @@
   }
 
   &__icon { font-size: 20px; }
-  
+
   &__content { flex: 1; }
-  
+
   &__name {
     font-weight: 600;
     font-size: 12.5px;
     color: var(--ib-primary-dark);
   }
-  
+
   &__desc {
     font-size: 10.5px;
     color: var(--ib-text-muted);
   }
-  
+
   &__value {
     font-size: 10px;
     color: var(--ib-primary);
     font-weight: 600;
     margin-top: 2px;
   }
-  
+
   &__arrow {
     font-size: 18px;
     color: var(--ib-text-muted);
   }
 }
 
-// ========== ANALYTIQUE ==========
 .analytics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -849,7 +830,7 @@
   }
 
   &__content { flex: 1; }
-  
+
   &__label {
     font-size: 11px;
     font-weight: 600;
@@ -857,7 +838,7 @@
     letter-spacing: 0.04em;
     color: var(--ib-text-muted);
   }
-  
+
   &__value {
     font-size: 22px;
     font-weight: 800;
@@ -865,12 +846,12 @@
     color: var(--ib-primary-dark);
     line-height: 1.2;
   }
-  
+
   &__sub {
     font-size: 11px;
     color: var(--ib-text-muted);
   }
-  
+
   &__trend {
     font-size: 12px;
     font-weight: 700;
@@ -895,7 +876,6 @@
   }
 }
 
-// ========== VIEW STATS ==========
 .view-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -931,7 +911,6 @@
   }
 }
 
-// ========== CHECKBOX ==========
 input[type="checkbox"] {
   width: 16px;
   height: 16px;
@@ -939,14 +918,12 @@ input[type="checkbox"] {
   accent-color: var(--ib-primary);
 }
 
-// ========== TEXTAREA ==========
 textarea.form-control {
   resize: vertical;
   min-height: 60px;
   font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
-// ========== MODALES ==========
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -972,7 +949,7 @@ textarea.form-control {
 
   &--transaction { width: 620px; }
   &--action { width: 560px; }
-  
+
   @media (max-width: 480px) {
     width: 98vw !important;
     max-height: 95vh;
@@ -986,7 +963,7 @@ textarea.form-control {
     border-bottom: 1px solid var(--ib-border);
     background: var(--ib-bg);
     flex-shrink: 0;
-    
+
     h2 {
       margin: 0;
       font-size: 15px;
@@ -1053,7 +1030,6 @@ textarea.form-control {
   }
 }
 
-// ========== TRANSACTION DETAIL ==========
 .transaction-detail {
   &__header {
     display: flex;
@@ -1113,7 +1089,6 @@ textarea.form-control {
   }
 }
 
-// ========== ACTION CARD ==========
 .action-card {
   &__icon {
     font-size: 36px;
@@ -1138,7 +1113,6 @@ textarea.form-control {
   }
 }
 
-// ========== FORM ==========
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1178,7 +1152,6 @@ select.form-control {
   padding-right: 30px;
 }
 
-// ========== RECEIPT ==========
 .receipt-preview {
   border: 1px solid var(--ib-border);
   border-radius: var(--ib-radius);
@@ -1221,7 +1194,6 @@ select.form-control {
   }
 }
 
-// ========== BUTTONS ==========
 .btn-primary, .btn-secondary {
   border: none;
   border-radius: var(--ib-radius-sm);
@@ -1232,13 +1204,13 @@ select.form-control {
   font-family: 'Inter', 'Segoe UI', sans-serif;
   transition: all 0.15s ease;
   white-space: nowrap;
-  
+
   &:hover:not(:disabled) { transform: translateY(-1px); }
   &:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-  
-  @media (max-width: 480px) { 
-    padding: 6px 12px; 
-    font-size: 11px; 
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 11px;
   }
 }
 
@@ -1256,7 +1228,6 @@ select.form-control {
   &:hover:not(:disabled) { background: var(--ib-bg); }
 }
 
-// ========== TOASTS ==========
 .toast-stack {
   position: fixed;
   bottom: 20px;
@@ -1318,24 +1289,22 @@ select.form-control {
 .text-center { text-align: center; }
 .cell-sub { font-size: 11px; color: var(--ib-text-muted); }
 
-// ========== SELECTION ==========
 .selected-row {
   background: var(--ib-primary-light) !important;
 }
 
-// ========== RESPONSIVE FINE ==========
 @media (max-width: 480px) {
   .stat-card {
     padding: 12px 14px;
-    
+
     &__value {
       font-size: 16px;
     }
-    
+
     &__label {
       font-size: 10px;
     }
-    
+
     &__sub {
       font-size: 9px;
     }

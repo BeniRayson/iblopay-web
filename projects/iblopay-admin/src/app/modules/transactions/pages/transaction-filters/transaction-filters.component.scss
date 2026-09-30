@@ -1,8 +1,6 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LES FILTRES
-   ========================================================== */
+
 :root {
-  /* Mode Lumière (Light) */
+
   --filter-surface: rgba(255, 255, 255, 0.75);
   --filter-surface-hover: rgba(255, 255, 255, 0.95);
   --filter-border: var(--border-light, rgba(0, 0, 0, 0.08));
@@ -22,7 +20,7 @@
 
 [data-theme='dark'],
 body.dark-theme {
-  /* Mode Sombre (Dark) */
+
   --filter-surface: rgba(18, 26, 47, 0.65);
   --filter-surface-hover: rgba(26, 37, 66, 0.85);
   --filter-border: var(--border-light, rgba(255, 255, 255, 0.12));
@@ -41,9 +39,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   BARRE DE FILTRES (.tx-filters)
-   ========================================================== */
+
 .tx-filters {
   display: flex;
   flex-wrap: wrap;
@@ -51,7 +47,7 @@ body.dark-theme {
   align-items: flex-end;
   padding: 16px;
 
-  /* Effet Glassmorphism */
+
   background: var(--filter-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -62,7 +58,7 @@ body.dark-theme {
   box-shadow: 0 4px 16px var(--filter-shadow);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 
-  /* --- CHAMPS DE FORMULAIRE --- */
+
   &__field {
     display: flex;
     flex-direction: column;
@@ -88,18 +84,18 @@ body.dark-theme {
       outline: none;
       transition: all 0.2s ease;
 
-      /* Style du placeholder en mode sombre */
+
       &::placeholder {
         color: var(--text-faint, rgba(255, 255, 255, 0.3));
       }
 
-      /* Focus / État actif */
+
       &:focus {
         border-color: var(--sun, #3b82f6);
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
       }
 
-      /* Options du select en mode sombre */
+
       option {
         background: var(--surface-3, #1e293b);
         color: var(--text, #ffffff);
@@ -107,7 +103,7 @@ body.dark-theme {
     }
   }
 
-  /* --- BARRE D'ACTIONS --- */
+
   &__actions {
     display: flex;
     gap: 8px;
@@ -122,9 +118,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   BOUTONS (.btn)
-   ========================================================== */
+
 .btn {
   border: 1px solid var(--btn-default-border);
   background: var(--btn-default-bg);
@@ -150,7 +144,7 @@ body.dark-theme {
     transform: translateY(0);
   }
 
-  /* Variante bouton principal */
+
   &--primary {
     background: var(--btn-primary-bg);
     color: var(--btn-primary-color);

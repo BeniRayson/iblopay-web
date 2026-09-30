@@ -1,8 +1,13 @@
-// src/app/modules/users/components/users-detail/users-detail.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+type UserRole = 'CLIENT' | 'AGENT' | 'SUPER_AGENT' | 'SHAREHOLDER';
+type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'FROZEN' | 'CLOSED';
+type TabName = 'profile' | 'transactions' | 'commissions' | 'fund';
+type TransactionType = 'TRANSFER' | 'DEPOSIT' | 'WITHDRAWAL' | 'FUND' | 'COMMISSION';
+type TransactionStatus = 'COMPLETED' | 'PENDING' | 'FAILED';
 
 interface User {
   id: string;
@@ -11,8 +16,8 @@ interface User {
   email: string;
   phone: string;
   photoUrl: string;
-  role: 'CLIENT' | 'AGENT' | 'SUPER_AGENT';
-  status: 'ACTIVE' | 'SUSPENDED' | 'FROZEN' | 'CLOSED';
+  role: UserRole;
+  status: UserStatus;
   cardNumber: string;
   cniNumber: string;
   address: {
@@ -27,26 +32,24 @@ interface User {
     firstName: string;
     lastName: string;
     role: string;
-  };
+  } | null;
   accountNumber: string;
   walletBalance: number;
 }
 
-// Interface pour les transactions
 interface Transaction {
   id: string;
-  type: 'TRANSFER' | 'DEPOSIT' | 'WITHDRAWAL' | 'FUND' | 'COMMISSION';
+  type: TransactionType;
   amount: number;
   date: Date;
   description: string;
-  status: 'COMPLETED' | 'PENDING' | 'FAILED';
+  status: TransactionStatus;
   from?: string;
   to?: string;
   reference?: string;
   commission?: number;
 }
 
-// Interface pour les commissions
 interface Commission {
   id: string;
   amount: number;
@@ -57,84 +60,104 @@ interface Commission {
   status: 'COMPLETED' | 'PENDING';
 }
 
-const communes = ['Mukaza', 'Ntahangwa', 'Muha', 'Isale', 'Kabezi', 'Mubimbi', 'Mugongomanga', 
-                   'Muhuta', 'Mukike', 'Mutambu', 'Mutimbuzi', 'Nyabiraba', 'Buyenzi', 'Kinindo'];
-
-const zones = ['Nyakabiga', 'Kigobe', 'Rohero', 'Kanyosha', 'Ruziba', 'Kinama', 'Gihosha', 
-               'Kiriri', 'Musaga', 'Ntare', 'Cibitoke', 'Ngagara', 'Gatoke', 'Vugizo',
-               'Kwijabe', 'Gasenyi', 'Kavumu', 'Rukaramu', 'Taba', 'Bwiza', 'Gatete'];
-
-const provinces = ['Bujumbura Mairie', 'Bujumbura Rural', 'Bururi', 'Gitega', 'Muramvya', 
-                   'Ngozi', 'Muyinga', 'Ruyigi', 'Kirundo', 'Kayanza', 'Karuzi', 'Cankuzo'];
-
 @Component({
   selector: 'app-users-detail',
   templateUrl: './users-detail.component.html',
   styleUrls: ['./users-detail.component.scss']
 })
 export class UsersDetailComponent implements OnInit {
+
   user: User | null = null;
   isLoading = true;
   isDarkMode = false;
-  
-  // Onglet actif
-  activeTab: 'profile' | 'transactions' | 'commissions' | 'fund' = 'profile';
-  
-  // Mode édition
+
+  activeTab: TabName = 'profile';
+
   isEditing = false;
   editForm!: FormGroup;
   editLoading = false;
   editError = '';
   editSuccess = '';
 
-  // Approvisionnement
   fundForm!: FormGroup;
   fundLoading = false;
   fundError = '';
   fundSuccess = '';
-  fundAmount = 0;
 
-  // Données
+  transactionFilter = '';
+  commissionFilter = '';
+
+  readonly pageSize = 10;
+  transactionPage = 1;
+  commissionPage = 1;
+
   transactions: Transaction[] = [];
   commissions: Commission[] = [];
   fundHistory: Transaction[] = [];
 
-  // Filtres
-  transactionFilter = '';
-  commissionFilter = '';
+  provinces = [
+    'Bujumbura Mairie',
+    'Bujumbura Rural',
+    'Gitega',
+    'Ngozi',
+    'Muyinga',
+    'Kayanza',
+    'Karuzi',
+    'Kirundo',
+    'Ruyigi',
+    'Cankuzo',
+    'Bururi',
+    'Rumonge',
+    'Makamba',
+    'Rutana',
+    'Muramvya',
+    'Mwaro',
+    'Bubanza',
+    'Cibitoke'
+  ];
 
-  communes = communes;
-  zones = zones;
-  provinces = provinces;
+  communes = [
+    'Mukaza',
+    'Ntahangwa',
+    'Muha',
+    'Isale',
+    'Kabezi',
+    'Mubimbi',
+    'Mutimbuzi',
+    'Nyabiraba',
+    'Mukike',
+    'Mutambu',
+    'Muhuta',
+    'Mugongomanga'
+  ];
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private location: Location,
     private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
-    const userId = this.route.snapshot.paramMap.get('id');
-    if (userId) {
-      this.loadUser(userId);
-    } else {
-      this.goBack();
-    }
-    this.loadTheme();
     this.initEditForm();
     this.initFundForm();
+    this.loadTheme();
     this.loadMockData();
+
+    const userId = this.route.snapshot.paramMap.get('id') || 'USR-2024-00125';
+    this.loadUser(userId);
   }
 
-  initEditForm(): void {
+  private initEditForm(): void {
     this.editForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^\+257\s?[0-9]{8}$/)]],
-      role: ['', Validators.required],
-      status: ['', Validators.required],
+      phone: ['', [
+        Validators.required,
+        Validators.pattern(/^\+257\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{2}$/)
+      ]],
+      role: ['CLIENT', Validators.required],
+      status: ['ACTIVE', Validators.required],
       cardNumber: [''],
       cniNumber: [''],
       province: [''],
@@ -143,7 +166,7 @@ export class UsersDetailComponent implements OnInit {
     });
   }
 
-  initFundForm(): void {
+  private initFundForm(): void {
     this.fundForm = this.fb.group({
       amount: ['', [Validators.required, Validators.min(100)]],
       reason: ['', Validators.required],
@@ -151,166 +174,172 @@ export class UsersDetailComponent implements OnInit {
     });
   }
 
-  loadTheme(): void {
-    const saved = localStorage.getItem('iblopay-theme');
-    if (saved === 'dark') {
-      this.isDarkMode = true;
-      document.body.classList.add('dark-mode');
-    }
-  }
-
-  toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('iblopay-theme', this.isDarkMode ? 'dark' : 'light');
-  }
-
-  loadUser(id: string): void {
+  private loadUser(id: string): void {
     this.isLoading = true;
+
     setTimeout(() => {
-      this.user = this.getMockUser(id);
-      this.isLoading = false;
+      this.user = {
+        id,
+        firstName: 'Jean Claude',
+        lastName: 'NDAYISHIMIYE',
+        email: 'jeanclaude@gmail.com',
+        phone: '+257 69 12 34 56',
+        photoUrl: '',
+        role: 'CLIENT',
+        status: 'ACTIVE',
+        cardNumber: '1234 5678 9012 3456',
+        cniNumber: '012345678901234',
+        address: {
+          zone: 'Nyakabiga',
+          commune: 'Mukaza',
+          province: 'Bujumbura Mairie',
+          fullAddress: 'Nyakabiga, Mukaza, Bujumbura Mairie'
+        },
+        createdAt: new Date(2024, 0, 12),
+        createdBy: {
+          id: 'SA-0001',
+          firstName: 'Marie',
+          lastName: 'KABURA',
+          role: 'SUPER_AGENT'
+        },
+        accountNumber: 'IBLO-00125',
+        walletBalance: 125000
+      };
+
       this.populateForm();
-    }, 500);
+      this.isLoading = false;
+    }, 250);
   }
 
-  private getMockUser(id: string): User {
-    return {
-      id: id || 'user-0001',
-      firstName: 'Jean',
-      lastName: 'Ndayishimiye',
-      email: 'jean.ndayishimiye@iblopay.bi',
-      phone: '+257 61234567',
-      photoUrl: '',
-      role: 'AGENT',
-      status: 'ACTIVE',
-      cardNumber: 'CARD-2024-001',
-      cniNumber: 'CNI-123456',
-      address: {
-        zone: 'Nyakabiga',
-        commune: 'Mukaza',
-        province: 'Bujumbura Mairie',
-        fullAddress: 'Nyakabiga; Mukaza; Bujumbura Mairie'
-      },
-      createdAt: new Date(2024, 0, 15),
-      createdBy: {
-        id: 'super-001',
-        firstName: 'Marie',
-        lastName: 'Uwimana',
-        role: 'SUPER_AGENT'
-      },
-      accountNumber: 'IBL-123456789',
-      walletBalance: 150000
-    };
-  }
-
-  loadMockData(): void {
-    // Transactions simulées
+  private loadMockData(): void {
     this.transactions = [
       {
-        id: 'txn-1',
-        type: 'TRANSFER',
-        amount: 25000,
-        date: new Date(Date.now() - 1800000),
-        description: 'Transfert vers Client A. Niyonzima',
-        status: 'COMPLETED',
-        from: 'Jean Ndayishimiye',
-        to: 'Alain Niyonzima',
-        reference: 'TXN-2024-001',
-        commission: 500
-      },
-      {
-        id: 'txn-2',
+        id: 'TX-001',
         type: 'DEPOSIT',
         amount: 50000,
-        date: new Date(Date.now() - 7200000),
-        description: 'Dépôt client C. Mukiza',
+        date: new Date(2024, 0, 12, 14, 30),
+        description: 'De MUTONI David',
         status: 'COMPLETED',
-        from: 'Claire Mukiza',
-        to: 'Jean Ndayishimiye',
-        reference: 'DEP-2024-002',
-        commission: 1000
+        from: 'MUTONI David',
+        to: 'Jean Claude NDAYISHIMIYE',
+        reference: 'DEP-2024-001',
+        commission: 5000
       },
       {
-        id: 'txn-3',
-        type: 'WITHDRAWAL',
-        amount: 30000,
-        date: new Date(Date.now() - 14400000),
-        description: 'Retrait par P. Nkurunziza',
+        id: 'TX-002',
+        type: 'TRANSFER',
+        amount: 25000,
+        date: new Date(2024, 0, 11, 10, 15),
+        description: 'Vers KABURA Marie',
         status: 'COMPLETED',
-        from: 'Jean Ndayishimiye',
-        to: 'Pierre Nkurunziza',
-        reference: 'WTH-2024-003',
-        commission: 600
+        from: 'Jean Claude NDAYISHIMIYE',
+        to: 'KABURA Marie',
+        reference: 'TRF-2024-002',
+        commission: 4250
       },
       {
-        id: 'txn-4',
+        id: 'TX-003',
         type: 'FUND',
         amount: 100000,
-        date: new Date(Date.now() - 86400000),
-        description: 'Réapprovisionnement après perte',
+        date: new Date(2024, 0, 10, 16, 45),
+        description: 'Par SUPER AGENT',
         status: 'COMPLETED',
-        reference: 'FUND-2024-001',
+        from: 'SUPER AGENT',
+        to: 'Jean Claude NDAYISHIMIYE',
+        reference: 'FUND-2024-003',
+        commission: 0
+      },
+      {
+        id: 'TX-004',
+        type: 'COMMISSION',
+        amount: 1250,
+        date: new Date(2024, 0, 9, 11, 20),
+        description: 'Sur transfert',
+        status: 'COMPLETED',
+        reference: 'COM-2024-004',
+        commission: 3250
+      },
+      {
+        id: 'TX-005',
+        type: 'TRANSFER',
+        amount: 5000,
+        date: new Date(2024, 0, 8, 9, 10),
+        description: 'Airtime',
+        status: 'FAILED',
+        from: 'Jean Claude NDAYISHIMIYE',
+        to: 'Airtime',
+        reference: 'TRF-2024-005',
+        commission: 0
+      },
+      {
+        id: 'TX-006',
+        type: 'WITHDRAWAL',
+        amount: 15000,
+        date: new Date(2024, 0, 7, 13, 5),
+        description: 'Retrait agence',
+        status: 'COMPLETED',
+        from: 'Jean Claude NDAYISHIMIYE',
+        reference: 'WDR-2024-006',
         commission: 0
       }
     ];
 
-    // Commissions simulées
     this.commissions = [
       {
-        id: 'com-1',
-        amount: 500,
-        date: new Date(Date.now() - 1800000),
-        from: 'Alain Niyonzima',
-        forTransaction: 'TXN-2024-001',
+        id: 'COM-001',
+        amount: 5000,
+        date: new Date(2024, 0, 12, 14, 30),
+        from: 'MUTONI David',
+        forTransaction: 'DEP-2024-001',
         type: 'RECEIVE',
         status: 'COMPLETED'
       },
       {
-        id: 'com-2',
-        amount: 1000,
-        date: new Date(Date.now() - 7200000),
-        from: 'Claire Mukiza',
-        forTransaction: 'DEP-2024-002',
+        id: 'COM-002',
+        amount: 4250,
+        date: new Date(2024, 0, 11, 10, 15),
+        from: 'KABURA Marie',
+        forTransaction: 'TRF-2024-002',
         type: 'RECEIVE',
         status: 'COMPLETED'
       },
       {
-        id: 'com-3',
-        amount: 600,
-        date: new Date(Date.now() - 14400000),
-        from: 'Pierre Nkurunziza',
-        forTransaction: 'WTH-2024-003',
+        id: 'COM-003',
+        amount: 3250,
+        date: new Date(2024, 0, 9, 11, 20),
+        from: 'IBLOPAY',
+        forTransaction: 'COM-2024-004',
         type: 'RECEIVE',
         status: 'COMPLETED'
       }
     ];
 
-    // Historique d'approvisionnement
     this.fundHistory = [
       {
-        id: 'fund-1',
+        id: 'FUND-001',
         type: 'FUND',
         amount: 100000,
-        date: new Date(Date.now() - 86400000),
-        description: 'Réapprovisionnement après perte',
+        date: new Date(2024, 0, 10, 16, 45),
+        description: 'Approvisionnement par SUPER AGENT',
         status: 'COMPLETED',
-        reference: 'FUND-2024-001'
+        reference: 'FUND-2024-003',
+        commission: 0
       },
       {
-        id: 'fund-2',
+        id: 'FUND-002',
         type: 'FUND',
         amount: 50000,
-        date: new Date(Date.now() - 172800000),
-        description: 'Ajustement commission',
+        date: new Date(2024, 0, 5, 9, 25),
+        description: 'Ajustement du portefeuille',
         status: 'COMPLETED',
         reference: 'FUND-2024-002'
       }
     ];
   }
 
-  populateForm(): void {
+  private populateForm(): void {
     if (!this.user) return;
+
     this.editForm.patchValue({
       firstName: this.user.firstName,
       lastName: this.user.lastName,
@@ -330,25 +359,54 @@ export class UsersDetailComponent implements OnInit {
     this.location.back();
   }
 
-  // ─── GESTION DES ONGLETS ──────────────────────────────────
+  setTab(tab: TabName): void {
+    if (tab === 'commissions' && !this.canSeeCommissions) {
+      this.activeTab = 'transactions';
+      return;
+    }
 
-  setTab(tab: 'profile' | 'transactions' | 'commissions' | 'fund'): void {
+    if (tab === 'fund' && !this.canFundAccount) {
+      this.activeTab = 'transactions';
+      return;
+    }
+
     this.activeTab = tab;
+
+    if (tab === 'transactions') {
+      this.transactionPage = 1;
+    }
+
+    if (tab === 'commissions') {
+      this.commissionPage = 1;
+    }
   }
 
-  // ─── MODE ÉDITION ────────────────────────────────────────
+  onFund(): void {
+    if (!this.canFundAccount) return;
+
+    this.setTab('fund');
+
+    setTimeout(() => {
+      document.querySelector('.fund-form-card')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 80);
+  }
+
+  loadTheme(): void {
+    const savedTheme = localStorage.getItem('iblopay-theme');
+    this.isDarkMode = savedTheme === 'dark';
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('iblopay-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   enableEditMode(): void {
     this.isEditing = true;
     this.editError = '';
     this.editSuccess = '';
     this.populateForm();
-    setTimeout(() => {
-      const formElement = document.querySelector('.edit-section');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
   }
 
   cancelEdit(): void {
@@ -364,41 +422,50 @@ export class UsersDetailComponent implements OnInit {
       return;
     }
 
+    if (!this.user) return;
+
     this.editLoading = true;
     this.editError = '';
     this.editSuccess = '';
 
-    const formData = this.editForm.value;
-    
+    const value = this.editForm.getRawValue();
+
     setTimeout(() => {
-      if (this.user) {
-        this.user.firstName = formData.firstName;
-        this.user.lastName = formData.lastName;
-        this.user.email = formData.email;
-        this.user.phone = formData.phone;
-        this.user.role = formData.role;
-        this.user.status = formData.status;
-        this.user.cardNumber = formData.cardNumber;
-        this.user.cniNumber = formData.cniNumber;
-        this.user.address.province = formData.province;
-        this.user.address.commune = formData.commune;
-        this.user.address.zone = formData.zone;
-        this.user.address.fullAddress = `${formData.zone}; ${formData.commune}; ${formData.province}`;
-      }
+      if (!this.user) return;
+
+      this.user = {
+        ...this.user,
+        firstName: value.firstName,
+        lastName: value.lastName,
+        email: value.email,
+        phone: value.phone,
+        role: value.role,
+        status: value.status,
+        cardNumber: value.cardNumber,
+        cniNumber: value.cniNumber,
+        address: {
+          zone: value.zone,
+          commune: value.commune,
+          province: value.province,
+          fullAddress: [value.zone, value.commune, value.province]
+            .filter(Boolean)
+            .join(', ')
+        }
+      };
 
       this.editLoading = false;
-      this.editSuccess = '✅ Utilisateur modifié avec succès !';
-      
+      this.editSuccess = 'Utilisateur modifié avec succès.';
+
       setTimeout(() => {
         this.isEditing = false;
         this.editSuccess = '';
-      }, 2000);
-    }, 1500);
+      }, 1200);
+    }, 650);
   }
 
-  // ─── APPROVISIONNEMENT ────────────────────────────────────
-
   onSubmitFund(): void {
+    if (!this.canFundAccount) return;
+
     if (this.fundForm.invalid) {
       this.fundForm.markAllAsTouched();
       return;
@@ -410,239 +477,531 @@ export class UsersDetailComponent implements OnInit {
     this.fundError = '';
     this.fundSuccess = '';
 
-    const formData = this.fundForm.value;
-    const amount = Number(formData.amount);
-    
+    const value = this.fundForm.getRawValue();
+    const amount = Number(value.amount);
+    const now = new Date();
+
     setTimeout(() => {
-      // Ajouter l'approvisionnement à l'historique
-      const fundEntry: Transaction = {
-        id: `fund-${Date.now()}`,
+      if (!this.user) return;
+
+      const reference = `FUND-${Date.now()}`;
+
+      const operation: Transaction = {
+        id: reference,
         type: 'FUND',
-        amount: amount,
-        date: new Date(),
-        description: formData.reason || 'Réapprovisionnement',
+        amount,
+        date: now,
+        description: value.description?.trim() || value.reason,
         status: 'COMPLETED',
-        reference: `FUND-${Date.now()}`,
-        commission: 0
+        from: 'Administration IBLOPAY',
+        to: `${this.user.firstName} ${this.user.lastName}`,
+        reference
       };
 
-      this.fundHistory.unshift(fundEntry);
-      
-      // Mettre à jour le solde
-      this.user!.walletBalance += amount;
-
-      // Ajouter une notification (simulée)
-      this.transactions.unshift({
-        id: `txn-${Date.now()}`,
-        type: 'FUND',
-        amount: amount,
-        date: new Date(),
-        description: formData.reason || 'Réapprovisionnement du wallet',
-        status: 'COMPLETED',
-        reference: `FUND-${Date.now()}`,
-        commission: 0
-      });
+      this.user.walletBalance += amount;
+      this.transactions = [operation, ...this.transactions];
+      this.fundHistory = [operation, ...this.fundHistory];
 
       this.fundLoading = false;
-      this.fundSuccess = `✅ ${amount.toLocaleString()} Fbu crédités avec succès !`;
-      
+      this.fundSuccess = `${this.formatCurrency(amount)} crédités avec succès.`;
+
       this.fundForm.reset({
         amount: '',
         reason: '',
         description: ''
       });
-      
+
       setTimeout(() => {
         this.fundSuccess = '';
-      }, 3000);
-    }, 1500);
+      }, 2500);
+    }, 650);
   }
 
-  // ─── FILTRES ──────────────────────────────────────────────
+  get isClient(): boolean {
+    return this.user?.role === 'CLIENT';
+  }
+
+  get canSeeCommissions(): boolean {
+    return !!this.user && (
+      this.user.role === 'AGENT' ||
+      this.user.role === 'SUPER_AGENT' ||
+      this.user.role === 'SHAREHOLDER'
+    );
+  }
+
+  get canFundAccount(): boolean {
+    return !this.isClient;
+  }
+
+  get visibleTransactions(): Transaction[] {
+    if (!this.isClient) {
+      return this.transactions;
+    }
+
+    // Pour un client : uniquement les opérations simples.
+    // Les commissions et les approvisionnements administratifs ne sont pas affichés.
+    return this.transactions.filter(
+      txn => txn.type !== 'COMMISSION' && txn.type !== 'FUND'
+    );
+  }
 
   get filteredTransactions(): Transaction[] {
-    if (!this.transactionFilter) return this.transactions;
-    const term = this.transactionFilter.toLowerCase();
-    return this.transactions.filter(t => 
-      t.description.toLowerCase().includes(term) ||
-      t.reference?.toLowerCase().includes(term) ||
-      t.from?.toLowerCase().includes(term) ||
-      t.to?.toLowerCase().includes(term)
+    const term = this.transactionFilter.trim().toLowerCase();
+
+    const source = this.visibleTransactions;
+
+    if (!term) return source;
+
+    return source.filter(txn =>
+      txn.description.toLowerCase().includes(term) ||
+      txn.reference?.toLowerCase().includes(term) ||
+      txn.from?.toLowerCase().includes(term) ||
+      txn.to?.toLowerCase().includes(term)
     );
   }
 
   get filteredCommissions(): Commission[] {
-    if (!this.commissionFilter) return this.commissions;
-    const term = this.commissionFilter.toLowerCase();
-    return this.commissions.filter(c => 
-      c.from.toLowerCase().includes(term) ||
-      c.forTransaction.toLowerCase().includes(term)
+    const term = this.commissionFilter.trim().toLowerCase();
+
+    if (!term) return this.commissions;
+
+    return this.commissions.filter(commission =>
+      commission.from.toLowerCase().includes(term) ||
+      commission.forTransaction.toLowerCase().includes(term)
     );
   }
 
-  get totalCommissions(): number {
-    return this.commissions.reduce((sum, c) => sum + c.amount, 0);
+  get paginatedTransactions(): Transaction[] {
+    this.ensureTransactionPage();
+    const start = (this.transactionPage - 1) * this.pageSize;
+    return this.filteredTransactions.slice(start, start + this.pageSize);
   }
 
-  // ─── MÉTHODES UTILITAIRES ─────────────────────────────────
+  get transactionTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredTransactions.length / this.pageSize));
+  }
+
+  get transactionStartItem(): number {
+    if (this.filteredTransactions.length === 0) return 0;
+    return (this.transactionPage - 1) * this.pageSize + 1;
+  }
+
+  get transactionEndItem(): number {
+    return Math.min(
+      this.transactionPage * this.pageSize,
+      this.filteredTransactions.length
+    );
+  }
+
+  get paginatedCommissions(): Commission[] {
+    this.ensureCommissionPage();
+    const start = (this.commissionPage - 1) * this.pageSize;
+    return this.filteredCommissions.slice(start, start + this.pageSize);
+  }
+
+  get commissionTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredCommissions.length / this.pageSize));
+  }
+
+  get commissionStartItem(): number {
+    if (this.filteredCommissions.length === 0) return 0;
+    return (this.commissionPage - 1) * this.pageSize + 1;
+  }
+
+  get commissionEndItem(): number {
+    return Math.min(
+      this.commissionPage * this.pageSize,
+      this.filteredCommissions.length
+    );
+  }
+
+  onTransactionFilterChange(): void {
+    this.transactionPage = 1;
+  }
+
+  onCommissionFilterChange(): void {
+    this.commissionPage = 1;
+  }
+
+  previousTransactionPage(): void {
+    if (this.transactionPage > 1) {
+      this.transactionPage--;
+    }
+  }
+
+  nextTransactionPage(): void {
+    if (this.transactionPage < this.transactionTotalPages) {
+      this.transactionPage++;
+    }
+  }
+
+  previousCommissionPage(): void {
+    if (this.commissionPage > 1) {
+      this.commissionPage--;
+    }
+  }
+
+  nextCommissionPage(): void {
+    if (this.commissionPage < this.commissionTotalPages) {
+      this.commissionPage++;
+    }
+  }
+
+  private ensureTransactionPage(): void {
+    if (this.transactionPage > this.transactionTotalPages) {
+      this.transactionPage = this.transactionTotalPages;
+    }
+  }
+
+  private ensureCommissionPage(): void {
+    if (this.commissionPage > this.commissionTotalPages) {
+      this.commissionPage = this.commissionTotalPages;
+    }
+  }
+
+  getTransactionCommission(txn: Transaction): number {
+    if (!this.canSeeCommissions || !txn.reference) {
+      return 0;
+    }
+
+    const linked = this.commissions
+      .filter(c => c.forTransaction === txn.reference)
+      .reduce((sum, c) => sum + c.amount, 0);
+
+    if (linked > 0) {
+      return linked;
+    }
+
+    return txn.commission || 0;
+  }
+
+  hasTransactionCommission(txn: Transaction): boolean {
+    return this.getTransactionCommission(txn) > 0;
+  }
+
+  get totalCommissions(): number {
+    return this.commissions.reduce((total, item) => total + item.amount, 0);
+  }
+
+  printTransactions(): void {
+    const rows = this.filteredTransactions.map(txn => `
+      <tr>
+        <td>${this.escapeHtml(this.getTransactionTitle(txn))}</td>
+        <td>${this.escapeHtml(txn.description || '')}</td>
+        <td>${this.escapeHtml((this.isIncoming(txn) ? '+' : '-') + ' ' + this.formatCurrency(txn.amount))}</td>
+        <td>${this.escapeHtml(this.formatDate(txn.date))}</td>
+        <td>${this.escapeHtml(this.getTransactionStatusLabel(txn.status))}</td>
+      </tr>
+    `).join('');
+
+    this.openPrintWindow(
+      'Liste des transactions',
+      ['Type', 'Description', 'Montant', 'Date', 'Statut'],
+      rows
+    );
+  }
+
+  printCommissions(): void {
+    if (!this.canSeeCommissions) return;
+
+    const rows = this.filteredCommissions.map(commission => `
+      <tr>
+        <td>${this.escapeHtml(commission.from)}</td>
+        <td>${this.escapeHtml(commission.forTransaction)}</td>
+        <td>${this.escapeHtml(this.formatCurrency(commission.amount))}</td>
+        <td>${this.escapeHtml(this.formatDate(commission.date))}</td>
+        <td>${this.escapeHtml(this.getCommissionStatusLabel(commission.status))}</td>
+      </tr>
+    `).join('');
+
+    this.openPrintWindow(
+      'Liste des commissions',
+      ['Origine', 'Transaction', 'Montant', 'Date', 'Statut'],
+      rows
+    );
+  }
+
+  private openPrintWindow(
+    title: string,
+    columns: string[],
+    rows: string
+  ): void {
+    const printWindow = window.open('', '_blank', 'width=1000,height=700');
+
+    if (!printWindow) {
+      return;
+    }
+
+    const userName = this.user
+      ? `${this.user.firstName} ${this.user.lastName}`
+      : '';
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html lang="fr">
+        <head>
+          <meta charset="utf-8">
+          <title>${this.escapeHtml(title)}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              color: #172554;
+              margin: 28px;
+              font-size: 12px;
+            }
+            h1 {
+              margin: 0 0 4px;
+              font-size: 20px;
+            }
+            .meta {
+              color: #64748b;
+              margin-bottom: 20px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th, td {
+              padding: 8px 7px;
+              border-bottom: 1px solid #e2e8f0;
+              text-align: left;
+              vertical-align: top;
+            }
+            th {
+              background: #f1f5f9;
+              font-size: 11px;
+            }
+            @media print {
+              body { margin: 10mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${this.escapeHtml(title)}</h1>
+          <div class="meta">
+            ${this.escapeHtml(userName)}
+            ${this.user ? ' • ' + this.escapeHtml(this.user.accountNumber) : ''}
+            • ${this.escapeHtml(new Date().toLocaleString('fr-FR'))}
+          </div>
+          <table>
+            <thead>
+              <tr>${columns.map(column => `<th>${this.escapeHtml(column)}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${rows || `<tr><td colspan="${columns.length}">Aucune donnée.</td></tr>`}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function () {
+              window.print();
+            };
+          <\/script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+  }
+
+  private escapeHtml(value: string): string {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   getFieldError(fieldName: string): string {
     const control = this.editForm.get(fieldName);
-    if (!control || !control.errors || !control.touched) return '';
 
-    if (control.errors['required']) return 'Ce champ est requis';
-    if (control.errors['minlength']) return 'Minimum 2 caractères';
-    if (control.errors['email']) return 'Email invalide';
-    if (control.errors['pattern']) return 'Format invalide';
-    
-    return 'Valeur invalide';
+    if (!control || !control.touched || !control.errors) return '';
+
+    if (control.errors['required']) return 'Ce champ est requis.';
+    if (control.errors['minlength']) return 'Minimum 2 caractères.';
+    if (control.errors['email']) return 'Adresse email invalide.';
+    if (control.errors['pattern']) return 'Format attendu : +257 69 12 34 56.';
+
+    return 'Valeur invalide.';
   }
 
   getFundFieldError(fieldName: string): string {
     const control = this.fundForm.get(fieldName);
-    if (!control || !control.errors || !control.touched) return '';
 
-    if (control.errors['required']) return 'Ce champ est requis';
-    if (control.errors['min']) return 'Le montant minimum est de 100 Fbu';
-    
-    return 'Valeur invalide';
+    if (!control || !control.touched || !control.errors) return '';
+
+    if (control.errors['required']) return 'Ce champ est requis.';
+    if (control.errors['min']) return 'Le montant minimum est de 100 BIF.';
+
+    return 'Valeur invalide.';
+  }
+
+  copyValue(value: string): void {
+    if (!value) return;
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(value).catch(() => this.fallbackCopy(value));
+      return;
+    }
+
+    this.fallbackCopy(value);
+  }
+
+  private fallbackCopy(value: string): void {
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
   }
 
   getInitials(firstName: string, lastName: string): string {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    const first = firstName?.trim()?.charAt(0) || '';
+    const last = lastName?.trim()?.charAt(0) || '';
+    return `${first}${last}`.toUpperCase();
   }
 
   getAvatarColor(id: string): string {
-    const colors = ['#4f46e5', '#7c3aed', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
+    const palette = [
+      '#4f83e8',
+      '#6f74e8',
+      '#4f9dbb',
+      '#5e92d9',
+      '#6a79c7',
+      '#4f96a8'
+    ];
+
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return colors[Math.abs(hash) % colors.length] || '#4f46e5';
+
+    return palette[Math.abs(hash) % palette.length];
   }
 
-  getStatusLabel(status: string): string {
+  getStatusLabel(status: UserStatus | string): string {
     const labels: Record<string, string> = {
-      'ACTIVE': 'Actif',
-      'SUSPENDED': 'Suspendu',
-      'FROZEN': 'Gelé',
-      'CLOSED': 'Fermé'
+      ACTIVE: 'Actif',
+      SUSPENDED: 'Suspendu',
+      FROZEN: 'Gelé',
+      CLOSED: 'Fermé'
     };
+
     return labels[status] || status;
   }
 
-  getStatusClass(status: string): string {
+  getStatusClass(status: UserStatus | string): string {
     return `status-${status.toLowerCase()}`;
   }
 
-  getRoleLabel(role: string): string {
+  getRoleLabel(role: UserRole | string): string {
     const labels: Record<string, string> = {
-      'CLIENT': 'Client',
-      'AGENT': 'Agent',
-      'SUPER_AGENT': 'Super Agent'
+      CLIENT: 'Client',
+      AGENT: 'Agent',
+      SUPER_AGENT: 'Super Agent',
+      SHAREHOLDER: 'Actionnaire'
     };
+
     return labels[role] || role;
   }
 
-  getRoleClass(role: string): string {
-    return `role-${role.toLowerCase().replace('_', '-')}`;
+  getRoleClass(role: UserRole | string): string {
+    return `role-${role.toLowerCase().replace(/_/g, '-')}`;
   }
 
   getCreatorRoleLabel(role: string): string {
     const labels: Record<string, string> = {
-      'AGENT': 'Agent',
-      'SUPER_AGENT': 'Super Agent'
+      CLIENT: 'Client',
+      AGENT: 'Agent',
+      SUPER_AGENT: 'Super Agent',
+      SHAREHOLDER: 'Actionnaire',
+      ADMIN: 'Administrateur'
     };
-    return labels[role] || '';
+
+    return labels[role] || role;
   }
 
-  getTransactionTypeLabel(type: string): string {
-    const labels: Record<string, string> = {
-      'TRANSFER': 'Transfert',
-      'DEPOSIT': 'Dépôt',
-      'WITHDRAWAL': 'Retrait',
-      'FUND': 'Approvisionnement',
-      'COMMISSION': 'Commission'
-    };
-    return labels[type] || type;
+  getTransactionTitle(txn: Transaction): string {
+    if (txn.type === 'DEPOSIT') return "Réception d'argent";
+    if (txn.type === 'TRANSFER') return txn.status === 'FAILED' ? 'Achat marchand' : 'Transfert envoyé';
+    if (txn.type === 'WITHDRAWAL') return 'Retrait';
+    if (txn.type === 'FUND') return 'Approvisionnement';
+    if (txn.type === 'COMMISSION') return 'Commission reçue';
+    return 'Transaction';
   }
 
-  getTransactionTypeClass(type: string): string {
-    const classes: Record<string, string> = {
-      'TRANSFER': 'type-transfer',
-      'DEPOSIT': 'type-deposit',
-      'WITHDRAWAL': 'type-withdrawal',
-      'FUND': 'type-fund',
-      'COMMISSION': 'type-commission'
+  getTransactionTypeClass(type: TransactionType): string {
+    const classes: Record<TransactionType, string> = {
+      TRANSFER: 'type-transfer',
+      DEPOSIT: 'type-deposit',
+      WITHDRAWAL: 'type-withdrawal',
+      FUND: 'type-fund',
+      COMMISSION: 'type-commission'
     };
-    return classes[type] || '';
+
+    return classes[type];
   }
 
-  getTransactionStatusClass(status: string): string {
-    const classes: Record<string, string> = {
-      'COMPLETED': 'status-completed',
-      'PENDING': 'status-pending',
-      'FAILED': 'status-failed'
-    };
-    return classes[status] || '';
+  isIncoming(txn: Transaction): boolean {
+    return txn.type === 'DEPOSIT' ||
+           txn.type === 'FUND' ||
+           txn.type === 'COMMISSION';
   }
 
-  getTransactionStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      'COMPLETED': '✅ Complété',
-      'PENDING': '⏳ En attente',
-      'FAILED': '❌ Échoué'
+  getTransactionStatusClass(status: TransactionStatus): string {
+    const classes: Record<TransactionStatus, string> = {
+      COMPLETED: 'status-completed',
+      PENDING: 'status-pending',
+      FAILED: 'status-failed'
     };
-    return labels[status] || status;
+
+    return classes[status];
   }
 
-  getCommissionStatusClass(status: string): string {
+  getTransactionStatusLabel(status: TransactionStatus): string {
+    const labels: Record<TransactionStatus, string> = {
+      COMPLETED: 'Complété',
+      PENDING: 'En attente',
+      FAILED: 'Échoué'
+    };
+
+    return labels[status];
+  }
+
+  getCommissionStatusClass(status: Commission['status']): string {
     return `commission-${status.toLowerCase()}`;
   }
 
-  getCommissionStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      'COMPLETED': '✅ Validée',
-      'PENDING': '⏳ En attente'
-    };
-    return labels[status] || status;
-  }
-
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  getCommissionStatusLabel(status: Commission['status']): string {
+    return status === 'COMPLETED' ? 'Validée' : 'En attente';
   }
 
   formatCurrency(amount: number): string {
-    return amount.toLocaleString('fr-FR') + ' Fbu';
+    return `${new Intl.NumberFormat('fr-FR', {
+      maximumFractionDigits: 0
+    }).format(amount)} BIF`;
   }
 
-  // ─── ACTIONS ──────────────────────────────────────────────
-
-  onEdit(): void {
-    this.enableEditMode();
+  formatDateOnly(date: Date | string): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).format(new Date(date));
   }
 
-  onFund(): void {
-    this.setTab('fund');
-    setTimeout(() => {
-      const fundSection = document.querySelector('.fund-section');
-      if (fundSection) {
-        fundSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
+  formatTime(date: Date | string): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(date));
   }
 
-  onToggleStatus(): void {
-    console.log('Changer statut de:', this.user?.id);
-  }
-
-  onDelete(): void {
-    console.log('Supprimer l\'utilisateur:', this.user?.id);
+  formatDate(date: Date | string): string {
+    return `${this.formatDateOnly(date)} • ${this.formatTime(date)}`;
   }
 }

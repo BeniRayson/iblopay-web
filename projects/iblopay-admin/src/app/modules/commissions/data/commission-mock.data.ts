@@ -87,13 +87,11 @@ export function generateMockCommissions(count: number = 200): Commission[] {
     });
   }
 
-  // Sort by createdAt descending
   return commissions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export const MOCK_COMMISSIONS = generateMockCommissions(200);
 
-// Pre-computed dashboard KPIs
 export function computeDashboardKpis(commissions: Commission[]) {
   const totalCommissions = commissions.reduce((sum, c) => sum + c.amount, 0);
   const totalPending = commissions.filter(c => c.status === 'PENDING').reduce((sum, c) => sum + c.amount, 0);
@@ -106,7 +104,6 @@ export function computeDashboardKpis(commissions: Commission[]) {
   return { totalCommissions, totalPending, totalCredited, transactionCount, averageRate };
 }
 
-// Pre-compute data for charts
 export function getCommissionTrendData(days: number): { labels: string[]; agentValues: number[]; superAgentValues: number[] } {
   const now = new Date();
   const labels: string[] = [];
@@ -154,7 +151,6 @@ export function getCommissionStatusBreakdown(): { status: string; amount: number
   });
 }
 
-// Generate leaderboard data
 export function getAgentLeaderboard(): { agentId: string; agentName: string; totalCommissions: number; transactionCount: number; averageRate: number; trend: 'up' | 'down' | 'stable'; previousPeriodTotal: number }[] {
   const now = new Date();
   const currentPeriodStart = new Date(now);
@@ -207,7 +203,6 @@ export function getSuperAgentLeaderboard(): { agentId: string; agentName: string
   const saMap = new Map<string, { currentTotal: number; prevTotal: number; count: number; totalRate: number }>();
 
   for (const c of MOCK_COMMISSIONS) {
-    // Only count SUPER_AGENT_COMMISSION for super agent leaderboard
     if (c.commissionType !== 'SUPER_AGENT_COMMISSION') continue;
     const createdDate = new Date(c.createdAt);
     if (!saMap.has(c.superAgentId)) {
@@ -224,7 +219,6 @@ export function getSuperAgentLeaderboard(): { agentId: string; agentName: string
     }
   }
 
-  // If no super agent commissions exist, create entries from agent data
   if (saMap.size === 0) {
     for (const c of MOCK_COMMISSIONS) {
       if (!saMap.has(c.superAgentId)) {
@@ -259,7 +253,6 @@ export function getSuperAgentLeaderboard(): { agentId: string; agentName: string
     .sort((a, b) => b.totalCommissions - a.totalCommissions);
 }
 
-// Get hierarchy data
 export function getAgentHierarchy(): {
   superAgentId: string;
   superAgentName: string;

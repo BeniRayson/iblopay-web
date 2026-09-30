@@ -1,0 +1,101 @@
+/* ==========================================================
+   IBLOPAY — Unified Theme Variable Matrix
+   Ajusté pour correspondre au look "Premium Tech Indigo"
+   + FOND BLANC PAR DÉFAUT (plus de noir en haut)
+   ========================================================== */
+
+:root {
+    /* ─── FOND GLOBAL & PAREMENTS ─── */
+    --bg-darkest: #f5f8fc;      /* Fond application : gris-bleu très clair */
+    --bg-dark: #eef3f9;         /* Arrière-plan intermédiaire */
+    --bg-card: #ffffff;         /* Fond des cartes et sidebar : BLANC PUR */
+    --bg-card-hover: #f7fafd;   /* État survolé */
+    --bg-sidebar: #ffffff;      /* Sidebar blanche */
+
+    /* ─── BORDURES & SÉPARATEURS ─── */
+    --border-color: #e2e8f0;
+    --border-light: #cbd5e1;
+
+    /* ─── TYPOGRAPHIE & HIÉRARCHIE ─── */
+    --text-primary: #0a0f1a;    /* Noir profond pour toutes les écritures */
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    /* ─── COULEURS D'ACCENTS ET BADGES ─── */
+    --accent-blue: #3b82f6;
+    --accent-blue-rgb: 59, 130, 246;
+
+    --accent-green: #22c55e;
+    --accent-green-rgb: 34, 197, 94;
+
+    --accent-purple: #7c3aed;
+    --accent-purple-rgb: 124, 58, 237;
+
+    --accent-orange: #f97316;
+    --accent-orange-rgb: 249, 115, 22;
+
+    --accent-yellow: #ca8a04;
+    --accent-yellow-rgb: 202, 138, 4;
+
+    --accent-red: #ef4444;
+    --accent-red-rgb: 239, 68, 68;
+
+    --accent-cyan: #06b6d4;
+    --accent-cyan-rgb: 6, 182, 212;
+
+    --accent-pink: #ec4899;
+    --accent-pink-rgb: 236, 72, 153;
+
+    /* Ombres portées diffuses style Dashboard */
+    --shadow-color: rgba(15, 23, 42, 0.06);
+}
+
+/* ─── MODE CLAIR PROFESSIONNEL (déjà le défaut maintenant) ─── */
+body.light-mode {
+    --bg-darkest: #f8fafc;
+    --bg-dark: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --bg-sidebar: #ffffff;
+
+    --border-color: #e2e8f0;
+    --border-light: #cbd5e1;
+
+    --text-primary: #0a0f1a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    --accent-blue: #2563eb;
+    --accent-green: #16a34a;
+    --accent-purple: #6d28d9;
+    --accent-red: #dc2626;
+
+    --shadow-color: rgba(15, 23, 42, 0.05);
+}
+
+/* ==========================================================
+   RESET GLOBAL — supprime marges, padding et fond noir
+   ========================================================== */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    background: #f5f8fc;
+}
+
+body {
+    overflow-x: hidden;
+    background-color: #f5f8fc;
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+app-root {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    background: #f5f8fc;
+}

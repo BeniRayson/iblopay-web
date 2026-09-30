@@ -1,4 +1,3 @@
-// src/app/modules/agents/pages/agent-create/agent-create.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,7 +11,9 @@ import { AgentService } from '../../services/agent.service';
 export class AgentCreateComponent implements OnInit {
   agentForm!: FormGroup;
   isLoading = false;
-  
+  showPassword = false;
+  showConfirmPassword = false;
+
   provinces = [
     'Bujumbura Mairie', 'Bubanza', 'Bururi', 'Cankuzo', 'Cibitoke',
     'Gitega', 'Karuzi', 'Kayanza', 'Kirundo', 'Makamba',
@@ -33,10 +34,11 @@ export class AgentCreateComponent implements OnInit {
     this.agentForm = this.fb.group({
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       firstName: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
       dateOfBirth: ['', Validators.required],
-      cin: ['', [Validators.required, Validators.minLength(10)]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{8,15}$/)]],
-      cardNumber: ['', [Validators.required, Validators.minLength(10)]],
+      cin: ['', [Validators.required, Validators.minLength(8)]],
+      phone: ['', [Validators.required, Validators.pattern(/^[0-9 +()-]{8,20}$/)]],
+      cardNumber: [''],
       province: ['', Validators.required],
       commune: ['', Validators.required],
       zone: ['', Validators.required],
@@ -44,12 +46,20 @@ export class AgentCreateComponent implements OnInit {
       quartier: [''],
       nif: ['', [Validators.required, Validators.minLength(5)]],
       commerceRegister: ['', [Validators.required, Validators.minLength(5)]],
-      approvalLetter: [null, Validators.required],
+      approvalLetter: [null],
+      username: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]]
-    }, {
-      validator: this.passwordMatchValidator
-    });
+      confirmPassword: ['', [Validators.required]],
+      status: ['ACTIVE', Validators.required],
+      commissionRate: [0, [Validators.min(0), Validators.max(100)]],
+      dailyLimit: [0, [Validators.min(0)]],
+      initialBalance: [0, [Validators.min(0)]],
+      allowAgentCreation: [true],
+      allowCardManagement: [true],
+      allowTransactions: [true],
+      receiveReports: [false],
+      notes: ['']
+    }, { validators: this.passwordMatchValidator });
   }
 
   passwordMatchValidator(g: FormGroup): any {
@@ -58,8 +68,9 @@ export class AgentCreateComponent implements OnInit {
     return password === confirm ? null : { mismatch: true };
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (file) {
       this.agentForm.patchValue({ approvalLetter: file });
     }
@@ -73,10 +84,11 @@ export class AgentCreateComponent implements OnInit {
 
     this.isLoading = true;
     const formData = this.agentForm.value;
-    
+
     const agentData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
+      email: formData.email,
       cin: formData.cin,
       cardNumber: formData.cardNumber,
       phone: formData.phone,
@@ -89,14 +101,26 @@ export class AgentCreateComponent implements OnInit {
       nif: formData.nif,
       commerceRegister: formData.commerceRegister,
       password: formData.password,
-      approvalLetter: `documents/approval_${Date.now()}.pdf`,
-      approvalLetterName: formData.approvalLetter?.name || 'approval_letter.pdf'
+      username: formData.username,
+      status: formData.status,
+      commissionRate: Number(formData.commissionRate || 0),
+      dailyLimit: Number(formData.dailyLimit || 0),
+      initialBalance: Number(formData.initialBalance || 0),
+      permissions: {
+        allowAgentCreation: formData.allowAgentCreation,
+        allowCardManagement: formData.allowCardManagement,
+        allowTransactions: formData.allowTransactions,
+        receiveReports: formData.receiveReports
+      },
+      notes: formData.notes,
+      approvalLetter: formData.approvalLetter ? `documents/approval_${Date.now()}.pdf` : undefined,
+      approvalLetterName: formData.approvalLetter?.name || undefined
     };
-    
+
     this.agentService.createAgent(agentData).subscribe({
       next: (agent) => {
         this.isLoading = false;
-        this.router.navigate(['/agents/detail', agent.id]);
+        this.router.navigate(['/agents', agent.id]);
       },
       error: () => {
         this.isLoading = false;

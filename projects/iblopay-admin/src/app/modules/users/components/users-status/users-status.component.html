@@ -1,4 +1,4 @@
-<!-- src/app/modules/users/components/users-status/users-status.component.html -->
+
 <div class="status-modal-overlay" *ngIf="isOpen" (click)="onClose()">
   <div class="status-modal-container" (click)="$event.stopPropagation()">
     <div class="status-modal-header">
@@ -11,17 +11,15 @@
     </div>
 
     <div class="status-modal-body">
-      
-      <!-- ================================================================
-           ÉTAPE 1: OTP
-           ================================================================ -->
+
+
       <div *ngIf="showOtpStep">
         <h2>🔐 Vérification OTP</h2>
         <p class="status-modal-subtitle">
           Pour des raisons de sécurité, veuillez saisir le code OTP envoyé à votre adresse email.
         </p>
 
-        <!-- Informations de l'utilisateur -->
+
         <div class="status-user-info" *ngIf="user">
           <div class="status-avatar-wrapper">
             <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="status-avatar-img" />
@@ -36,7 +34,7 @@
           </div>
         </div>
 
-        <!-- Messages OTP -->
+
         <div class="status-alert status-success" *ngIf="success && !otpVerified">
           <i class="fas fa-check-circle"></i> {{ success }}
         </div>
@@ -44,26 +42,26 @@
           <i class="fas fa-exclamation-circle"></i> {{ otpError }}
         </div>
 
-        <!-- Champ OTP avec chrono intégré -->
+
         <div class="status-form-group">
           <div class="status-otp-header">
             <label for="status-otpCode">
               Code OTP <span class="required">*</span>
               <span class="otp-hint">(Simulation: 123456)</span>
             </label>
-            <!-- Petit chrono circulaire -->
+
             <div class="status-otp-timer" [class.expired]="otpTimer <= 0">
               <svg viewBox="0 0 36 36" class="status-otp-timer-svg">
-                <circle 
-                  cx="18" 
-                  cy="18" 
-                  r="14" 
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="14"
                   class="status-otp-timer-bg"
                 />
-                <circle 
-                  cx="18" 
-                  cy="18" 
-                  r="14" 
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="14"
                   class="status-otp-timer-progress"
                   [style.stroke-dasharray]="87.96"
                   [style.stroke-dashoffset]="87.96 - (87.96 * otpTimer / 60)"
@@ -73,11 +71,11 @@
               <span class="status-otp-timer-text">{{ otpTimer }}</span>
             </div>
           </div>
-          
+
           <div class="status-otp-input-group">
-            <input 
+            <input
               id="status-otpCode"
-              type="text" 
+              type="text"
               inputmode="numeric"
               pattern="[0-9]*"
               maxlength="6"
@@ -87,8 +85,8 @@
               [disabled]="isLoading || isOtpLocked || otpTimer <= 0"
               (keyup.enter)="verifyOtp()"
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               class="status-otp-resend"
               (click)="resendOtp()"
               [disabled]="isOtpLocked || isLoading"
@@ -97,7 +95,7 @@
               <i class="fas fa-redo"></i>
             </button>
           </div>
-          
+
           <div class="status-otp-footer">
             <small class="otp-help" *ngIf="isOtpLocked">
               🔒 Verrouillé pour {{ getLockRemainingTime() }}
@@ -117,9 +115,9 @@
           </div>
         </div>
 
-        <!-- Bouton Vérifier -->
-        <button 
-          type="button" 
+
+        <button
+          type="button"
           class="status-btn-verify"
           (click)="verifyOtp()"
           [disabled]="!otpCode || otpCode.length < 4 || isOtpLocked || isLoading || otpTimer <= 0"
@@ -128,9 +126,7 @@
         </button>
       </div>
 
-      <!-- ================================================================
-           ÉTAPE 2: CHANGEMENT DE STATUT
-           ================================================================ -->
+
       <div *ngIf="showStatusStep">
         <div class="status-verified-badge">
           <i class="fas fa-check-circle"></i>
@@ -142,7 +138,7 @@
           Sélectionnez le nouveau statut pour cet utilisateur.
         </p>
 
-        <!-- Informations de l'utilisateur -->
+
         <div class="status-user-info" *ngIf="user">
           <div class="status-avatar-wrapper">
             <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Photo" class="status-avatar-img" />
@@ -157,7 +153,7 @@
           </div>
         </div>
 
-        <!-- Statut actuel -->
+
         <div class="status-current" *ngIf="user">
           <span class="status-current-label">Statut actuel</span>
           <span class="status-badge" [class]="getStatusClass(currentStatus)">
@@ -166,7 +162,7 @@
           </span>
         </div>
 
-        <!-- Messages -->
+
         <div class="status-alert status-success" *ngIf="success">
           <i class="fas fa-check-circle"></i> {{ success }}
         </div>
@@ -174,12 +170,12 @@
           <i class="fas fa-exclamation-circle"></i> {{ error }}
         </div>
 
-        <!-- Sélection du nouveau statut -->
+
         <div class="status-select-section">
           <label>Nouveau statut</label>
           <div class="status-options-grid">
-            <div 
-              class="status-option" 
+            <div
+              class="status-option"
               *ngFor="let option of statusOptions"
               [class.selected]="selectedStatus === option.value"
               [class.disabled]="option.value === currentStatus"
@@ -199,14 +195,14 @@
           </div>
         </div>
 
-        <!-- Actions -->
+
         <div class="status-modal-footer">
           <button type="button" class="status-btn-secondary" (click)="goBackToOtp()" [disabled]="isLoading">
             <i class="fas fa-arrow-left"></i> Retour
           </button>
-          <button 
-            type="button" 
-            class="status-btn-primary" 
+          <button
+            type="button"
+            class="status-btn-primary"
             [disabled]="selectedStatus === currentStatus || isLoading"
             (click)="onConfirm()"
           >

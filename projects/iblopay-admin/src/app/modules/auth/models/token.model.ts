@@ -1,4 +1,3 @@
-// src/app/modules/auth/models/token.model.ts
 export interface TokenPair {
   access_token: string;
   refresh_token: string;
@@ -7,8 +6,8 @@ export interface TokenPair {
 }
 
 export interface DecodedToken {
-  sub: string;         // user_id
-  role: string;        // role name
+  sub: string;
+  role: string;
   permissions: string[];
   iat: number;
   exp: number;

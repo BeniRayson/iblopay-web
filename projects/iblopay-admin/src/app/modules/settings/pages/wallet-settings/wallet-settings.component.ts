@@ -59,14 +59,12 @@ export class WalletSettingsComponent {
   private toastSeq = 0;
   private transactionSeq = 1000;
 
-  // Pagination
   private currentPages: { [key: string]: number } = {
     client: 1,
     agent: 1,
     'super-agent': 1
   };
 
-  // Couleurs pour les avatars
   private avatarColors: string[] = [
     '#111c44', '#2A4A8A', '#1A7A4A', '#B8791C', '#C1443B',
     '#6B3FA0', '#008080', '#D4760A', '#2C7A7B', '#805AD5',
@@ -99,14 +97,13 @@ export class WalletSettingsComponent {
       'SINDAGAYA', 'NAHIMANA', 'NIZIGIYIMANA', 'NTAHOMVUKIYE', 'NIRAGIRA', 'NTAKIRUTIMANA', 'NSHIMIRIMANA',
       'NIKIZA', 'NISHIMWE', 'NIYONKURU', 'NIZEYIMANA', 'NSANZABAGANWA', 'NTAKIRUTIMANA', 'NTEZIMANA', 'NIYONGABO'];
 
-    // 50 clients
     for (let i = 0; i < 50; i++) {
       const id = `CL-${String(i + 1).padStart(3, '0')}`;
       const nom = `${prenoms[i % prenoms.length]} ${noms[i % noms.length]}`;
       const solde = 5000 + Math.floor(Math.random() * 500000);
       const kycLevel = [1, 2, 3][Math.floor(i % 3)] || 1;
       const statut: 'actif' | 'suspendu' | 'archive' = i % 7 === 0 ? 'suspendu' : i % 13 === 0 ? 'archive' : 'actif';
-      
+
       this.wallets.push({
         id: `WAL-${id}`,
         userId: id,
@@ -125,7 +122,6 @@ export class WalletSettingsComponent {
       });
     }
 
-    // 50 agents
     for (let i = 0; i < 50; i++) {
       const id = `AG-${String(i + 1).padStart(3, '0')}`;
       const nom = `${prenoms[(i + 5) % prenoms.length]} ${noms[(i + 3) % noms.length]}`;
@@ -133,7 +129,7 @@ export class WalletSettingsComponent {
       const cash = 5000 + Math.floor(Math.random() * 150000);
       const performance = 30 + Math.floor(Math.random() * 60);
       const statut: 'actif' | 'suspendu' | 'archive' = i % 9 === 0 ? 'suspendu' : i % 17 === 0 ? 'archive' : 'actif';
-      
+
       this.wallets.push({
         id: `WAL-${id}`,
         userId: id,
@@ -152,7 +148,6 @@ export class WalletSettingsComponent {
       });
     }
 
-    // 10 super agents
     for (let i = 0; i < 10; i++) {
       const id = `SA-${String(i + 1).padStart(3, '0')}`;
       const nom = `Super ${prenoms[(i + 10) % prenoms.length]} ${noms[(i + 7) % noms.length]}`;
@@ -160,7 +155,7 @@ export class WalletSettingsComponent {
       const performance = 40 + Math.floor(Math.random() * 50);
       const nbAgents = 4 + Math.floor(Math.random() * 8);
       const statut: 'actif' | 'suspendu' | 'archive' = i % 11 === 0 ? 'suspendu' : 'actif';
-      
+
       this.wallets.push({
         id: `WAL-${id}`,
         userId: id,
@@ -179,7 +174,6 @@ export class WalletSettingsComponent {
       });
     }
 
-    // Transactions
     this.wallets.forEach(w => {
       const nbTransactions = 2 + Math.floor(Math.random() * 5);
       for (let i = 0; i < nbTransactions; i++) {
@@ -188,7 +182,7 @@ export class WalletSettingsComponent {
         const type = isCredit ? 'credit' : 'debit';
         const typeLabel = isCredit ? 'Crédit' : 'Débit';
         const description = isCredit ? 'Dépôt effectué' : 'Retrait effectué';
-        
+
         this.transactions.push({
           id: `TXN-${String(++this.transactionSeq).padStart(4, '0')}`,
           walletId: w.id,
@@ -212,7 +206,6 @@ export class WalletSettingsComponent {
       }));
   }
 
-  // ========== AVATAR ==========
 
   getAvatarColor(userId: string): string {
     let hash = 0;
@@ -220,11 +213,9 @@ export class WalletSettingsComponent {
       hash = userId.charCodeAt(i) + ((hash << 5) - hash);
     }
     const index = Math.abs(hash) % this.avatarColors.length;
-    // Utilisation de l'opérateur de coalescence pour garantir une valeur de retour
     return this.avatarColors[index] || '#111c44';
   }
 
-  // ========== PAGINATION ==========
 
   getPaginatedWallets(type: string): WalletData[] {
     const wallets = this.getWalletsByType(type);
@@ -257,7 +248,6 @@ export class WalletSettingsComponent {
     }
   }
 
-  // ========== MÉTHODES PUBLIQUES ==========
 
   setActiveTab(tab: 'client' | 'agent' | 'super-agent'): void {
     this.activeTab = tab;
@@ -316,14 +306,13 @@ export class WalletSettingsComponent {
     return wallet ? wallet.nbAgents : 0;
   }
 
-  // ========== ACTIONS ==========
 
   openWalletHistory(wallet: WalletData): void {
     this.selectedWallet = wallet;
     this.modalTitle = `Historique - ${wallet.userNom}`;
     this.modalAction = 'historique';
     this.modalOpen = true;
-    
+
     this.historiqueTransactions = this.transactions
       .filter(t => t.walletId === wallet.id)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())

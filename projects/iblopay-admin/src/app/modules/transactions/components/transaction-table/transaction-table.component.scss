@@ -1,7 +1,3 @@
-// ============================================================
-// IBLOPay — Transaction Table
-// Style back-office professionnel (commission style)
-// ============================================================
 
 $font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
 $font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -22,7 +18,6 @@ $blue-primary: #1a56db;
 $blue-light: #3b82f6;
 $blue-50: #eff6ff;
 
-// ─── Table Section ──────────────────────────────────────
 .table-section {
   background: $white;
   border: 1px solid $gray-200;
@@ -90,7 +85,6 @@ $blue-50: #eff6ff;
   overflow-x: auto;
 }
 
-// ─── Transaction Table ──────────────────────────────────
 .transaction-table {
   width: 100%;
   border-collapse: collapse;
@@ -155,7 +149,6 @@ $blue-50: #eff6ff;
   }
 }
 
-// ─── Pills / Badges ─────────────────────────────────────
 .pill {
   display: inline-block;
   padding: 3px 10px;
@@ -165,7 +158,6 @@ $blue-50: #eff6ff;
   white-space: nowrap;
 }
 
-// ─── Canal Label ────────────────────────────────────────
 .canal-label {
   display: inline-block;
   padding: 3px 10px;
@@ -192,7 +184,6 @@ $blue-50: #eff6ff;
   }
 }
 
-// ─── Action Button (Reverse) ────────────────────────────
 .action-btn {
   background: none;
   border: none;
@@ -220,7 +211,6 @@ $blue-50: #eff6ff;
   }
 }
 
-// ─── Pagination ─────────────────────────────────────────
 .pagination {
   display: flex;
   align-items: center;

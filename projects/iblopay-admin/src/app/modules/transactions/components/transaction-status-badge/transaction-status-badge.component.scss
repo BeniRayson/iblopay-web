@@ -1,23 +1,20 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LES BADGES DE STATUT
-   ========================================================== */
-:root {
-  /* Mode Lumière (Light) */
+
+:host {
+
   --badge-bg-opacity: 12%;
   --badge-border-opacity: 18%;
 }
 
-[data-theme='dark'],
-body.dark-theme {
-  /* Mode Sombre (Dark) - Opacité renforcée pour contrastes sur fonds sombres */
+:host-context([data-theme='dark']),
+:host-context(body.dark-theme),
+:host-context(body.dark-mode) {
+
   --badge-bg-opacity: 18%;
   --badge-border-opacity: 30%;
 }
 
 
-/* ==========================================================
-   COMPOSANT BADGE DE STATUT (.status-badge)
-   ========================================================== */
+
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -28,7 +25,7 @@ body.dark-theme {
   font-weight: 600;
   color: var(--badge-color, var(--text));
 
-  /* Arrière-plan dynamique calculé via la couleur du badge */
+
   background: color-mix(in srgb, var(--badge-color, var(--text)) var(--badge-bg-opacity), transparent);
   border: 1px solid color-mix(in srgb, var(--badge-color, var(--text)) var(--badge-border-opacity), transparent);
 
@@ -39,9 +36,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   PUCE INDICATRICE (.status-dot)
-   ========================================================== */
+
 .status-dot {
   width: 6px;
   height: 6px;

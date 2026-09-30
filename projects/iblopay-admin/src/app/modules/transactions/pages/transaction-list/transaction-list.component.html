@@ -1,57 +1,275 @@
 <div class="transaction-list-page">
+
+  <!-- ================= HEADER ================= -->
   <header class="transaction-list-page__header">
-    <h1>Transactions</h1>
-    <a class="btn" routerLink="/transactions/export">Export</a>
+    <div>
+      <h1>Transactions</h1>
+      <p>Suivi en temps réel des transactions IBLOPay Service Wallet.</p>
+    </div>
+
+    <a class="export-btn" routerLink="/transactions/export">
+      <i class="fas fa-download"></i>
+      <span>Exporter</span>
+    </a>
   </header>
 
-  <!-- Stats Cards - Version Compacte -->
-  <div class="stats-compact">
-    <div class="stats-compact__item" *ngFor="let stat of summaryStats">
-      <div class="stats-compact__icon" [style.background]="stat.color">
+  <!-- ================= STATS COMPACTES ================= -->
+  <section class="stats-compact">
+    <article
+      class="stats-compact__item"
+      *ngFor="let stat of summaryStats">
+
+      <span
+        class="stats-compact__icon"
+        [ngClass]="stat.className">
         <i [class]="stat.icon"></i>
-      </div>
+      </span>
+
       <div class="stats-compact__info">
-        <span class="stats-compact__value">{{ stat.value }}</span>
-        <span class="stats-compact__label">{{ stat.label }}</span>
+        <strong>{{ stat.value }}</strong>
+        <span>{{ stat.label }}</span>
       </div>
-    </div>
+    </article>
+  </section>
+
+  <!-- ================= FILTRES ================= -->
+  <section class="filters-card">
+    <app-transaction-filters
+      (filterChange)="onFilterChange($event)">
+    </app-transaction-filters>
+  </section>
+
+  <!-- ================= ETATS ================= -->
+  <div *ngIf="isLoading" class="state-message">
+    <span class="loader"></span>
+    <span>Chargement des transactions...</span>
   </div>
 
-  <div class="transaction-list-page__layout">
-    <div class="transaction-list-page__main">
-      <app-transaction-filters (filterChange)="onFilterChange($event)"></app-transaction-filters>
+  <div *ngIf="errorMessage" class="state-message state-message--error">
+    <i class="fas fa-circle-exclamation"></i>
+    <span>{{ errorMessage }}</span>
+    <button type="button" (click)="reloadAll()">Réessayer</button>
+  </div>
 
-      <div *ngIf="isLoading" class="state-message">Loading transactions…</div>
+  <div
+    *ngIf="!isLoading && !errorMessage && transactions.length === 0"
+    class="state-message">
+    <i class="far fa-folder-open"></i>
+    <span>Aucune transaction ne correspond aux filtres sélectionnés.</span>
+  </div>
 
-      <div *ngIf="errorMessage" class="state-message state-message--error">
-        {{ errorMessage }}
-        <button (click)="loadTransactions()">Retry</button>
+  <!-- ================= TABLE ================= -->
+  <section
+    class="transactions-card"
+    *ngIf="!isLoading && !errorMessage && transactions.length > 0">
+
+    <div class="transactions-card__top">
+      <div>
+        <h2>Liste des transactions</h2>
+        <span>{{ total }} transaction(s)</span>
       </div>
 
-      <div *ngIf="!isLoading && !errorMessage && transactions.length === 0" class="state-message">
-        No transactions match this filter.
-      </div>
+      <span class="live-indicator">
+        <i></i>
+        Mise à jour automatique
+      </span>
+    </div>
 
-      <div class="transaction-list" *ngIf="!isLoading && !errorMessage">
-        <div
-          class="transaction-list__item"
-          *ngFor="let tx of transactions"
-          (click)="openTransaction(tx)"
-        >
-          <app-transaction-card [transaction]="tx"></app-transaction-card>
+    <div class="table-scroll">
+      <table class="transactions-table">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Type</th>
+            <th>Expéditeur</th>
+            <th>Bénéficiaire</th>
+            <th>Montant</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th class="action-column">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let tx of transactions; trackBy: trackByTransaction">
+            <td>
+              <div class="reference-cell">
+                <span
+                  class="transaction-type-icon"
+                  [ngClass]="getTransactionTypeClass(tx)">
+                  <i [class]="getTransactionTypeIcon(tx)"></i>
+                </span>
+
+                <div>
+                  <strong>{{ getTransactionReference(tx) }}</strong>
+                  <small>{{ getTransactionId(tx) }}</small>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="type-label">{{ getTransactionTypeLabel(tx) }}</span>
+            </td>
+
+            <td>
+              <div class="actor-cell">
+                <strong>{{ getSenderName(tx) }}</strong>
+                <small>{{ getSenderAccount(tx) }}</small>
+              </div>
+            </td>
+
+            <td>
+              <div class="actor-cell">
+                <strong>{{ getReceiverName(tx) }}</strong>
+                <small>{{ getReceiverAccount(tx) }}</small>
+              </div>
+            </td>
+
+            <td>
+              <strong class="amount-cell">{{ formatAmount(tx) }}</strong>
+            </td>
+
+            <td>
+              <div class="date-cell">
+                <strong>{{ formatTransactionDate(tx) }}</strong>
+                <small>{{ formatTransactionTime(tx) }}</small>
+              </div>
+            </td>
+
+            <td>
+              <span
+                class="status-badge"
+                [ngClass]="getStatusClass(tx)">
+                {{ getStatusLabel(tx) }}
+              </span>
+            </td>
+
+            <td class="action-column">
+              <button
+                type="button"
+                class="view-action"
+                title="Voir les détails"
+                aria-label="Voir les détails de cette transaction"
+                (click)="showTransactionDetails(tx)">
+                <i class="far fa-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ================= PAGINATION ================= -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <span class="pagination__info">
+        Page {{ currentPage }} sur {{ totalPages }}
+      </span>
+
+      <div class="pagination__actions">
+        <button
+          type="button"
+          [disabled]="currentPage <= 1"
+          (click)="goToPage(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <button
+          *ngFor="let page of visiblePages"
+          type="button"
+          class="page-number"
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+
+        <button
+          type="button"
+          [disabled]="currentPage >= totalPages"
+          (click)="goToPage(currentPage + 1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ================= MODALE DETAILS ================= -->
+  <div
+    class="transaction-modal-backdrop"
+    *ngIf="selectedTransaction"
+    (click)="closeTransactionDetails()">
+
+    <section
+      class="transaction-modal"
+      role="dialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()">
+
+      <header class="transaction-modal__header">
+        <div class="transaction-modal__title">
+          <span class="transaction-modal__icon">
+            <i class="fas fa-receipt"></i>
+          </span>
+
+          <div>
+            <h2>Détails de la transaction</h2>
+            <span>{{ getTransactionReference(selectedTransaction) }}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          aria-label="Fermer"
+          (click)="closeTransactionDetails()">
+          <i class="fas fa-times"></i>
+        </button>
+      </header>
+
+      <div class="transaction-modal__summary">
+        <div>
+          <span>Montant</span>
+          <strong>{{ formatAmount(selectedTransaction) }}</strong>
+        </div>
+
+        <div>
+          <span>Statut</span>
+          <strong
+            class="status-badge"
+            [ngClass]="getStatusClass(selectedTransaction)">
+            {{ getStatusLabel(selectedTransaction) }}
+          </strong>
         </div>
       </div>
 
-      <div class="pagination" *ngIf="!isLoading && totalPages > 1">
-        <button [disabled]="currentPage <= 1" (click)="goToPage(currentPage - 1)">Previous</button>
-        <span>Page {{ currentPage }} of {{ totalPages }}</span>
-        <button [disabled]="currentPage >= totalPages" (click)="goToPage(currentPage + 1)">Next</button>
-      </div>
-    </div>
+      <div class="transaction-modal__body">
+        <div
+          class="detail-row"
+          *ngFor="let detail of selectedTransactionDetails">
 
-    <aside class="transaction-list-page__sidebar">
-      <h2>By type</h2>
-      <app-transaction-chart [summary]="summary"></app-transaction-chart>
-    </aside>
+          <span class="detail-row__label">{{ detail.label }}</span>
+          <strong class="detail-row__value">{{ detail.value }}</strong>
+        </div>
+      </div>
+
+      <footer class="transaction-modal__footer">
+        <button
+          type="button"
+          class="modal-secondary-btn"
+          (click)="closeTransactionDetails()">
+          Fermer
+        </button>
+
+        <button
+          type="button"
+          class="modal-print-btn"
+          (click)="printSelectedTransaction()">
+          <i class="fas fa-print"></i>
+          Imprimer
+        </button>
+      </footer>
+
+    </section>
   </div>
+
 </div>

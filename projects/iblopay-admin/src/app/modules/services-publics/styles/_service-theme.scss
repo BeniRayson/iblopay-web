@@ -1,0 +1,117 @@
+// ============================================================
+//  THÈME PARTAGÉ — module « Services publics »
+//  Importé par la liste, le formulaire (créer / modifier) et le détail
+//  pour garantir exactement le même design partout.
+// ============================================================
+
+// ─── Couleurs ───────────────────────────────────────────────
+$blue:        #1d6df2;
+$blue-dark:   #1558c9;
+$blue-soft:   #e8f0ff;
+$green:       #12a66a;
+$green-soft:  #dcf7ea;
+$red:         #ee3a49;
+$red-soft:    #ffe3e6;
+$purple:      #7048e8;
+$purple-soft: #ece5ff;
+$teal:        #0b8f8f;
+$teal-soft:   #dcf6f6;
+$orange:      #f08c00;
+$orange-soft: #fff1d6;
+
+$ink:         #10214f;
+$text:        #5a6a8c;
+$muted:       #8b98b4;
+$border:      #e3eaf6;
+$border-soft: #eef2f9;
+$surface:     #ffffff;
+$surface-alt: #f7faff;
+$page-bg:     #f4f8ff;
+
+// ─── Formes ─────────────────────────────────────────────────
+$radius:       12px;
+$radius-sm:    8px;
+$shadow:       0 3px 14px rgba(28, 64, 128, .06);
+$shadow-hover: 0 8px 22px rgba(28, 64, 128, .12);
+
+$font: Inter, "Segoe UI", Arial, sans-serif;
+
+// ─── Base de page (fond clair propre à la page) ─────────────
+@mixin page-base {
+  display: block;
+  min-height: 100%;
+  padding: 14px 22px 26px;
+  font-family: $font;
+  color: $ink;
+  color-scheme: light;
+  background: $page-bg;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ─── Boutons ────────────────────────────────────────────────
+@mixin btn {
+  min-height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  font-family: $font;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, box-shadow .15s;
+}
+
+@mixin btn-primary {
+  color: #fff;
+  background: $blue;
+  box-shadow: 0 3px 10px rgba($blue, .26);
+  &:hover:not(:disabled) { background: $blue-dark; }
+  &:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+}
+
+@mixin btn-outline {
+  color: $ink;
+  background: $surface;
+  border-color: $border;
+  &:hover:not(:disabled) { background: $surface-alt; border-color: #cddcf3; }
+}
+
+// ─── Pastilles ──────────────────────────────────────────────
+@mixin chip($color, $bg) {
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: $color;
+  background: $bg;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@mixin pill($color, $bg) {
+  padding: 3px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: $color;
+  background: $bg;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+// ─── Carte blanche standard ─────────────────────────────────
+@mixin card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow;
+}

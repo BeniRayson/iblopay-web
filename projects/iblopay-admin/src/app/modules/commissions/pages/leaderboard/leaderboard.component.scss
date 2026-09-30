@@ -1,8 +1,4 @@
-// ============================================================
-// Leaderboard — Premium Redesign
-// ============================================================
 
-// ─── Animations ─────────────────────────────────────────
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -27,7 +23,6 @@
   50%      { opacity: 0.5; }
 }
 
-// ─── Page Root ──────────────────────────────────────────
 .commission-page {
   padding: 28px 32px;
   min-height: 100vh;
@@ -35,7 +30,6 @@
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-// ─── Page Header ────────────────────────────────────────
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -72,7 +66,6 @@
   }
 }
 
-// ─── View Toggle ────────────────────────────────────────
 .view-toggle {
   display: flex;
   background: var(--surface);
@@ -121,7 +114,6 @@
   }
 }
 
-// ─── Tabs ───────────────────────────────────────────────
 .tabs {
   display: inline-flex;
   gap: 4px;
@@ -173,7 +165,6 @@
   }
 }
 
-// ─── Loading ────────────────────────────────────────────
 .loading-state {
   display: flex;
   align-items: center;
@@ -195,13 +186,11 @@
   }
 }
 
-// ─── Leaderboard ────────────────────────────────────────
 .leaderboard {
   display: flex;
   flex-direction: column;
   gap: 16px;
 
-  // ── Top 3 Cards ──
   &__card {
     display: flex;
     align-items: center;
@@ -219,7 +208,6 @@
     &:nth-child(2) { animation-delay: 0.1s; }
     &:nth-child(3) { animation-delay: 0.15s; }
 
-    // Left accent bar for top 3
     &--top::before {
       content: '';
       position: absolute;
@@ -253,7 +241,6 @@
     }
   }
 
-  // ── Rank Badge ──
   &__rank-badge {
     display: inline-flex;
     align-items: center;
@@ -286,7 +273,6 @@
     }
   }
 
-  // ── Avatar ──
   &__avatar {
     width: 50px;
     height: 50px;
@@ -311,7 +297,6 @@
     }
   }
 
-  // ── Info ──
   &__info {
     flex: 1;
     display: flex;
@@ -333,7 +318,6 @@
     font-weight: 500;
   }
 
-  // ── Amount & Trend ──
   &__amount {
     text-align: right;
     display: flex;
@@ -364,7 +348,6 @@
     }
   }
 
-  // ── Table (remaining entries) ──
   &__table {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -440,7 +423,6 @@
   }
 }
 
-// ─── Empty State ────────────────────────────────────────
 .empty-state {
   text-align: center;
   padding: 80px 20px;
@@ -464,7 +446,6 @@
   }
 }
 
-// ─── Responsive ─────────────────────────────────────────
 @media (max-width: 768px) {
   .commission-page {
     padding: 16px;

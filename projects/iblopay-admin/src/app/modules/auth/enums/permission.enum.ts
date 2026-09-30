@@ -1,6 +1,4 @@
-// src/app/modules/auth/enums/permission.enum.ts
 export enum Permission {
-  // User management
   USER_CREATE = 'USER_CREATE',
   USER_READ = 'USER_READ',
   USER_UPDATE = 'USER_UPDATE',
@@ -8,22 +6,18 @@ export enum Permission {
   USER_SUSPEND = 'USER_SUSPEND',
   USER_ACTIVATE = 'USER_ACTIVATE',
 
-  // Role management
   ROLE_CREATE = 'ROLE_CREATE',
   ROLE_READ = 'ROLE_READ',
   ROLE_UPDATE = 'ROLE_UPDATE',
   ROLE_DELETE = 'ROLE_DELETE',
   ROLE_ASSIGN = 'ROLE_ASSIGN',
 
-  // Permission management
   PERMISSION_READ = 'PERMISSION_READ',
   PERMISSION_ASSIGN = 'PERMISSION_ASSIGN',
   PERMISSION_REVOKE = 'PERMISSION_REVOKE',
 
-  // Dashboard
   DASHBOARD_VIEW = 'DASHBOARD_VIEW',
 
-  // System
   SYSTEM_SETTINGS = 'SYSTEM_SETTINGS',
   AUDIT_LOG_VIEW = 'AUDIT_LOG_VIEW'
 }

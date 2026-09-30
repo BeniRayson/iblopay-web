@@ -1,5 +1,5 @@
 <div class="commission-page">
-  <!-- Page Header -->
+
   <div class="page-header">
     <div class="page-header__left">
       <h1 class="page-header__title">Classement des Commissions</h1>
@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  <!-- Tabs -->
+
   <div class="tabs">
     <button class="tab-btn" [class.tab-btn--active]="activeTab === 'agents'" (click)="onTabChange('agents')">
       <i class="bi bi-person-badge"></i> Agents
@@ -24,13 +24,13 @@
     </button>
   </div>
 
-  <!-- Loading -->
+
   <div class="loading-state" *ngIf="isLoading">
     <div class="spinner"></div>
     <span>Chargement du classement...</span>
   </div>
 
-  <!-- Leaderboard -->
+
   <div class="leaderboard" *ngIf="!isLoading && entries.length > 0">
     <div class="leaderboard__card leaderboard__card--top" *ngFor="let entry of entries.slice(0, 3); let i = index">
       <div class="leaderboard__rank">
@@ -52,7 +52,7 @@
       </div>
     </div>
 
-    <!-- Remaining entries table -->
+
     <div class="leaderboard__table" *ngIf="entries.length > 3">
       <div class="leaderboard__table-header">
         <span class="leaderboard__col-rank">Rang</span>
@@ -75,7 +75,7 @@
     </div>
   </div>
 
-  <!-- Empty -->
+
   <div class="empty-state" *ngIf="!isLoading && entries.length === 0">
     <i class="bi bi-trophy"></i>
     <p>Aucune donnée de classement disponible</p>

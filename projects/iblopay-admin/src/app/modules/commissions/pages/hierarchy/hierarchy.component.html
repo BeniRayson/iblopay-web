@@ -1,5 +1,5 @@
 <div class="commission-page">
-  <!-- Page Header -->
+
   <div class="page-header">
     <div class="page-header__left">
       <h1 class="page-header__title">Hiérarchie Super Agents</h1>
@@ -14,16 +14,16 @@
     </div>
   </div>
 
-  <!-- Loading -->
+
   <div class="loading-state" *ngIf="isLoading">
     <div class="spinner"></div>
     <span>Chargement de la hiérarchie...</span>
   </div>
 
-  <!-- Hierarchy List -->
+
   <div class="hierarchy-list" *ngIf="!isLoading">
     <div class="hierarchy-card" *ngFor="let h of hierarchies">
-      <!-- Super Agent Header -->
+
       <div class="hierarchy-card__header" (click)="toggleSuperAgent(h.superAgentId)">
         <div class="hierarchy-card__header-left">
           <i class="bi bi-chevron-right hierarchy-card__chevron" [class.hierarchy-card__chevron--open]="expandedSuperAgent === h.superAgentId"></i>
@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <!-- Agents List (expanded) -->
+
       <div class="hierarchy-card__body" *ngIf="expandedSuperAgent === h.superAgentId">
         <div class="hierarchy-card__agent" *ngFor="let agent of h.agents">
           <div class="hierarchy-card__agent-header" (click)="toggleAgent(agent.agentId)">
@@ -63,7 +63,7 @@
             <div class="hierarchy-card__agent-total">{{ formatBif(agent.totalCommissions) }}</div>
           </div>
 
-          <!-- Agent Commissions (expanded) -->
+
           <div class="hierarchy-card__commissions" *ngIf="expandedAgent === agent.agentId">
             <div class="hierarchy-card__commission" *ngFor="let c of agent.commissions">
               <div class="hierarchy-card__commission-info">

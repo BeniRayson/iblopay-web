@@ -137,7 +137,7 @@ export class FinancialSettingsComponent {
       this.comptabiliteData,
       this.rapportsData
     ];
-    
+
     tabKeys.forEach((key, index) => {
       const tab = this.tabs.find(t => t.key === key);
       if (tab) {
@@ -151,17 +151,16 @@ export class FinancialSettingsComponent {
       return;
     }
 
-    // Bordereaux
     const noms: string[] = ['Jean NDAYISHIMIYE', 'Marie NSABIMANA', 'Pierre NIZIGIYIMANA', 'Claire NDIKUMANA', 'Emmanuel NTAKIRUTIMANA'];
     const statuts: Bordereau['statut'][] = ['valide', 'valide', 'valide', 'en_attente', 'rejete'];
-    
+
     for (let i = 0; i < 25; i++) {
       const nomIndex = i % noms.length;
       const nom: string = noms[nomIndex]!;
       const statutIndex = i % statuts.length;
       const statut: Bordereau['statut'] = statuts[statutIndex]!;
       const montant = 50000 + Math.floor(Math.random() * 450000);
-      
+
       this.bordereaux.push({
         id: `BR-${String(100000 + i).padStart(6, '0')}`,
         numero: `BOR-${String(100000 + i).padStart(6, '0')}`,
@@ -174,7 +173,6 @@ export class FinancialSettingsComponent {
       this.liquiditeUtilisee += montant;
     }
 
-    // Comptabilité
     const comptes: { code: string, label: string }[] = [
       { code: '411001', label: 'Clients' },
       { code: '512001', label: 'Banque' },
@@ -187,7 +185,7 @@ export class FinancialSettingsComponent {
     ];
     const libelles: string[] = ['Vente de carte', 'Commission agent', 'Dépôt client', 'Retrait agent', 'Transfert e-Money', 'Frais de transaction'];
     const typesEcriture: string[] = ['achat', 'vente', 'transfert', 'ajustement', 'commission'];
-    
+
     for (let i = 0; i < 20; i++) {
       const compteIndex = i % comptes.length;
       const compte: { code: string, label: string } = comptes[compteIndex]!;
@@ -195,7 +193,7 @@ export class FinancialSettingsComponent {
       const libelle: string = libelles[libelleIndex]!;
       const debit = i % 2 === 0 ? 10000 + Math.floor(Math.random() * 50000) : null;
       const credit = i % 2 !== 0 ? 10000 + Math.floor(Math.random() * 50000) : null;
-      
+
       this.comptabiliteData.push({
         id: `EC-${String(100000 + i).padStart(6, '0')}`,
         date: new Date(Date.now() - i * 86400000 * 3).toLocaleDateString('fr-FR'),
@@ -208,61 +206,59 @@ export class FinancialSettingsComponent {
       });
     }
 
-    // Rapports avec contenu
     this.rapportsData = [
-      { 
-        id: 'RP-001', 
-        titre: 'Rapport Journalier', 
-        description: 'Résumé complet des transactions du jour', 
-        icon: '📅', 
-        date: new Date().toLocaleDateString('fr-FR'), 
-        taille: '245 KB', 
+      {
+        id: 'RP-001',
+        titre: 'Rapport Journalier',
+        description: 'Résumé complet des transactions du jour',
+        icon: '📅',
+        date: new Date().toLocaleDateString('fr-FR'),
+        taille: '245 KB',
         type: 'Journalier',
         contenu: this.generateRapportJournalier()
       },
-      { 
-        id: 'RP-002', 
-        titre: 'Rapport Hebdomadaire', 
-        description: 'Analyse détaillée des 7 derniers jours', 
-        icon: '📊', 
-        date: new Date(Date.now() - 2 * 86400000).toLocaleDateString('fr-FR'), 
-        taille: '1.2 MB', 
+      {
+        id: 'RP-002',
+        titre: 'Rapport Hebdomadaire',
+        description: 'Analyse détaillée des 7 derniers jours',
+        icon: '📊',
+        date: new Date(Date.now() - 2 * 86400000).toLocaleDateString('fr-FR'),
+        taille: '1.2 MB',
         type: 'Hebdomadaire',
         contenu: this.generateRapportHebdomadaire()
       },
-      { 
-        id: 'RP-003', 
-        titre: 'Rapport Mensuel', 
-        description: 'Bilan financier complet du mois', 
-        icon: '📈', 
-        date: new Date(Date.now() - 5 * 86400000).toLocaleDateString('fr-FR'), 
-        taille: '3.8 MB', 
+      {
+        id: 'RP-003',
+        titre: 'Rapport Mensuel',
+        description: 'Bilan financier complet du mois',
+        icon: '📈',
+        date: new Date(Date.now() - 5 * 86400000).toLocaleDateString('fr-FR'),
+        taille: '3.8 MB',
         type: 'Mensuel',
         contenu: this.generateRapportMensuel()
       },
-      { 
-        id: 'RP-004', 
-        titre: 'Rapport des Commissions', 
-        description: 'Détail des commissions par agent', 
-        icon: '💵', 
-        date: new Date(Date.now() - 7 * 86400000).toLocaleDateString('fr-FR'), 
-        taille: '890 KB', 
+      {
+        id: 'RP-004',
+        titre: 'Rapport des Commissions',
+        description: 'Détail des commissions par agent',
+        icon: '💵',
+        date: new Date(Date.now() - 7 * 86400000).toLocaleDateString('fr-FR'),
+        taille: '890 KB',
         type: 'Commissions',
         contenu: this.generateRapportCommissions()
       },
-      { 
-        id: 'RP-005', 
-        titre: 'Rapport des Bordereaux', 
-        description: 'Liste des bordereaux de versement', 
-        icon: '📋', 
-        date: new Date(Date.now() - 14 * 86400000).toLocaleDateString('fr-FR'), 
-        taille: '567 KB', 
+      {
+        id: 'RP-005',
+        titre: 'Rapport des Bordereaux',
+        description: 'Liste des bordereaux de versement',
+        icon: '📋',
+        date: new Date(Date.now() - 14 * 86400000).toLocaleDateString('fr-FR'),
+        taille: '567 KB',
         type: 'Bordereaux',
         contenu: this.generateRapportBordereaux()
       }
     ];
 
-    // Configuration
     this.configData = [
       {
         icon: '💰',
@@ -299,7 +295,6 @@ export class FinancialSettingsComponent {
     this.saveData();
   }
 
-  // ========== GÉNÉRATION DE RAPPORTS ==========
 
   private generateRapportJournalier(): string {
     return `📊 RAPPORT JOURNALIER - ${new Date().toLocaleDateString('fr-FR')}\n\n` +
@@ -347,7 +342,6 @@ export class FinancialSettingsComponent {
            `❌ Rejetés: ${this.bordereaux.filter(b => b.statut === 'rejete').length}`;
   }
 
-  // ========== KPI DATA ==========
 
   getKpiData(): any[] {
     return [
@@ -386,7 +380,6 @@ export class FinancialSettingsComponent {
     ];
   }
 
-  // ========== BORDEREAUX ==========
 
   getTotalBordereaux(): number {
     return this.bordereaux.length;
@@ -427,7 +420,6 @@ export class FinancialSettingsComponent {
     }
   }
 
-  // ========== TRANSACTIONS ==========
 
   getNombreTransactions(): number {
     return this.bordereaux.length + this.comptabiliteData.length;
@@ -437,7 +429,6 @@ export class FinancialSettingsComponent {
     return this.bordereaux.filter(b => b.statut === 'valide').length;
   }
 
-  // ========== COMPTABILITÉ ==========
 
   getComptabiliteData(): ComptabiliteItem[] {
     return this.comptabiliteData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -453,7 +444,6 @@ export class FinancialSettingsComponent {
     return Math.ceil(this.getComptabiliteData().length / this.pageSize);
   }
 
-  // ========== RAPPORTS ==========
 
   getRapports(): RapportItem[] {
     return this.rapportsData;
@@ -482,13 +472,11 @@ export class FinancialSettingsComponent {
     this.toast(`Rapport "${rapport.titre}" téléchargé avec succès.`, 'success');
   }
 
-  // ========== CONFIGURATION ==========
 
   getConfiguration(): any[] {
     return this.configData;
   }
 
-  // ========== PAGINATION ==========
 
   getCurrentPage(type: string): number {
     return this.currentPages[type] || 1;
@@ -514,7 +502,6 @@ export class FinancialSettingsComponent {
     this.currentPages[tab] = 1;
   }
 
-  // ========== MODALES ==========
 
   openNouveauBordereau(): void {
     this.modalType = 'nouveau_bordereau';
@@ -647,10 +634,10 @@ export class FinancialSettingsComponent {
   private genererRapport(): void {
     const type = this.formData.type || 'journalier';
     const format = this.formData.format || 'pdf';
-    
+
     let contenu = '';
     let titre = '';
-    
+
     switch(type) {
       case 'journalier':
         titre = 'Rapport Journalier';
@@ -675,7 +662,7 @@ export class FinancialSettingsComponent {
       default:
         contenu = 'Type de rapport non reconnu.';
     }
-    
+
     const nouveauRapport: RapportItem = {
       id: `RP-${String(100000 + this.rapportsData.length + 1).padStart(6, '0')}`,
       titre: titre,
@@ -686,7 +673,7 @@ export class FinancialSettingsComponent {
       type: type.charAt(0).toUpperCase() + type.slice(1),
       contenu: contenu
     };
-    
+
     this.rapportsData.push(nouveauRapport);
     this.updateTabsCount();
     this.saveData();
@@ -697,12 +684,12 @@ export class FinancialSettingsComponent {
     if (!this.selectedItem) return;
     const nouvelleValeur = this.formData.nouvelleValeur;
     const raison = this.formData.raison;
-    
+
     if (!nouvelleValeur) {
       this.toast('Veuillez entrer une nouvelle valeur.', 'danger');
       return;
     }
-    
+
     this.selectedItem.value = nouvelleValeur;
     this.saveData();
     this.toast(`Configuration "${this.selectedItem.label}" modifiée avec succès.`, 'success');
@@ -717,7 +704,6 @@ export class FinancialSettingsComponent {
     return 'Période personnalisée';
   }
 
-  // ========== EXPORTS ==========
 
   exportBordereaux(): void {
     const data = JSON.stringify(this.bordereaux, null, 2);
@@ -759,7 +745,6 @@ export class FinancialSettingsComponent {
     window.URL.revokeObjectURL(url);
   }
 
-  // ========== UTILITAIRES ==========
 
   getStatutLabel(statut: string): string {
     const labels: Record<string, string> = {
@@ -770,7 +755,6 @@ export class FinancialSettingsComponent {
     return labels[statut] || statut;
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;

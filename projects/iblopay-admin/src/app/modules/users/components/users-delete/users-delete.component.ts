@@ -1,4 +1,3 @@
-// src/app/modules/users/components/users-delete/users-delete.component.ts
 import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 
 @Component({
@@ -16,7 +15,6 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
   @Output() close = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<void>();
 
-  // Étape 1: OTP
   showOtpStep: boolean = true;
   otpCode: string = '';
   otpError: string = '';
@@ -29,7 +27,6 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
   private lockTimerInterval: any;
   otpVerified: boolean = false;
 
-  // Étape 2: Formulaire de suppression
   showDeleteStep: boolean = false;
   deleteReason: string = '';
   confirmText: string = '';
@@ -48,10 +45,8 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
   ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Détecter l'ouverture du modal
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
       this.resetForm();
-      // Démarrer l'OTP automatiquement
       setTimeout(() => {
         this.generateAndSendOtp();
       }, 300);
@@ -62,7 +57,6 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
     this.clearAllTimers();
   }
 
-  // ─── OTP ──────────────────────────────────────────────────
 
   generateAndSendOtp(): void {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -78,8 +72,7 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
 
   private startOtpTimer(): void {
     this.clearAllTimers();
-    
-    // Timer pour l'OTP (60 secondes)
+
     this.otpTimerInterval = setInterval(() => {
       if (this.otpTimer > 0) {
         this.otpTimer--;
@@ -140,7 +133,7 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     const validOtp = '123456';
-    
+
     if (this.otpCode === validOtp) {
       this.otpError = '';
       this.otpVerified = true;
@@ -150,7 +143,7 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
     } else {
       this.otpAttempts++;
       const remainingAttempts = this.maxOtpAttempts - this.otpAttempts;
-      
+
       if (this.otpAttempts >= this.maxOtpAttempts) {
         this.isOtpLocked = true;
         this.otpError = `❌ Code OTP incorrect. Compte verrouillé pour 3 minutes après ${this.maxOtpAttempts} tentatives.`;
@@ -182,7 +175,6 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
     }, 3000);
   }
 
-  // ─── SUPPRESSION ──────────────────────────────────────────
 
   onConfirmDelete(): void {
     if (!this.deleteReason) {
@@ -196,7 +188,6 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
     this.confirm.emit();
   }
 
-  // ─── NAVIGATION ───────────────────────────────────────────
 
   onClose(): void {
     this.resetForm();
@@ -228,7 +219,6 @@ export class UsersDeleteComponent implements OnInit, OnDestroy, OnChanges {
     this.clearAllTimers();
   }
 
-  // ─── UTILITAIRES ──────────────────────────────────────────
 
   getInitials(firstName: string, lastName: string): string {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();

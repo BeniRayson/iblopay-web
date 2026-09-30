@@ -1,71 +1,266 @@
-// src/app/modules/auth/login/login.component.spec.ts
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { LoginComponent } from './login.component';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { AUTH_CONSTANTS } from '../auth.constants';
+import { phoneValidator } from '../validators/email.validator';
+import { pinValidator } from '../validators/password.validator';
 
-describe('LoginComponent', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule
+  ],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
+})
+export class LoginComponent implements OnInit, OnDestroy {
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [LoginComponent],
-      imports: [ReactiveFormsModule, RouterTestingModule, HttpClientTestingModule],
-      providers: [AuthService]
-    }).compileComponents();
+  loginForm!: FormGroup;
 
-    fixture = TestBed.createComponent(LoginComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+  isLoading = false;
+  errorMessage = '';
+  sessionExpired = false;
+  showPin = false;
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  currentYear = new Date().getFullYear();
 
-  it('should have an invalid form initially', () => {
-    expect(component.loginForm.valid).toBeFalse();
-  });
+  readonly testIdentifier = '+25779551080';
+  readonly testPin = '5816';
 
-  it('should require phone_number', () => {
-    const control = component.loginForm.get('phone_number');
-    expect(control?.errors?.['required']).toBeTruthy();
-  });
+  private destroy$ = new Subject<void>();
 
-  it('should require pin', () => {
-    const control = component.loginForm.get('pin');
-    expect(control?.errors?.['required']).toBeTruthy();
-  });
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
-  it('should validate phone format', () => {
-    const control = component.loginForm.get('phone_number');
-    control?.setValue('abc');
-    expect(control?.errors?.['phoneFormat']).toBeTruthy();
+  ngOnInit(): void {
 
-    control?.setValue('+237699999999');
-    expect(control?.errors).toBeNull();
-  });
+    this.loginForm = this.fb.group({
+      phone_number: [
+        '',
+        [
+          Validators.required,
+          phoneValidator()
+        ]
+      ],
+      pin: [
+        '',
+        [
+          Validators.required,
+          pinValidator()
+        ]
+      ]
+    });
 
-  it('should validate pin format', () => {
-    const control = component.loginForm.get('pin');
-    control?.setValue('ab');
-    expect(control?.errors?.['pinFormat']).toBeTruthy();
+    this.route.queryParams
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(params => {
 
-    control?.setValue('1234');
-    expect(control?.errors).toBeNull();
-  });
+        if (params['expired'] === 'true') {
 
-  it('should toggle pin visibility', () => {
-    expect(component.showPin).toBeFalse();
-    component.togglePinVisibility();
-    expect(component.showPin).toBeTrue();
-  });
+          this.sessionExpired = true;
 
-  it('should not submit if form is invalid', () => {
-    component.onSubmit();
-    expect(component.loginForm.touched).toBeFalse(); // markAllAsTouched is called
-  });
-});
+          this.errorMessage =
+            AUTH_CONSTANTS.MESSAGES.SESSION_EXPIRED;
+
+        }
+
+      });
+
+  }
+
+  ngOnDestroy(): void {
+
+    this.destroy$.next();
+    this.destroy$.complete();
+
+  }
+
+  onSubmit(): void {
+
+    if (this.loginForm.invalid) {
+
+      this.loginForm.markAllAsTouched();
+
+      return;
+
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.sessionExpired = false;
+
+    const credentials = {
+      phone_number:
+        this.loginForm.value.phone_number?.trim(),
+
+      pin:
+        this.loginForm.value.pin
+    };
+
+    this.authService
+      .login(credentials)
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+
+        next: response => {
+
+          this.isLoading = false;
+
+          if (
+            response.success &&
+            response.data?.user
+          ) {
+
+            this.router.navigate([
+              AUTH_CONSTANTS.DASHBOARD_ROUTE
+            ]);
+
+          }
+
+        },
+
+        error: error => {
+
+          this.isLoading = false;
+
+          if (error.status === 401) {
+
+            this.errorMessage =
+              AUTH_CONSTANTS.MESSAGES.LOGIN_FAILED;
+
+          } else if (error.status === 0) {
+
+            this.errorMessage =
+              AUTH_CONSTANTS.MESSAGES.NETWORK_ERROR;
+
+          } else if (
+            error.status === 403 &&
+            error.error?.requires_2fa
+          ) {
+
+            this.router.navigate(
+              [
+                AUTH_CONSTANTS.TWO_FACTOR_ROUTE
+              ],
+              {
+                queryParams: {
+                  phone:
+                    credentials.phone_number
+                }
+              }
+            );
+
+          } else {
+
+            this.errorMessage =
+              error.userMessage ||
+              error.error?.message ||
+              AUTH_CONSTANTS.MESSAGES.LOGIN_FAILED;
+
+          }
+
+        }
+
+      });
+
+  }
+
+  utiliserCompteTest(): void {
+
+    this.loginForm.patchValue({
+      phone_number: this.testIdentifier,
+      pin: this.testPin
+    });
+
+    this.errorMessage = '';
+    this.sessionExpired = false;
+
+  }
+
+  togglePinVisibility(): void {
+
+    this.showPin =
+      !this.showPin;
+
+  }
+
+  getFieldError(
+    fieldName: string
+  ): string {
+
+    const control =
+      this.loginForm.get(fieldName);
+
+    if (
+      !control ||
+      !control.errors ||
+      !control.touched
+    ) {
+
+      return '';
+
+    }
+
+    if (
+      control.errors['required']
+    ) {
+
+      return 'Ce champ est requis';
+
+    }
+
+    if (
+      control.errors['phoneFormat']
+    ) {
+
+      return control.errors['phoneFormat'];
+
+    }
+
+    if (
+      control.errors['pinFormat']
+    ) {
+
+      return control.errors['pinFormat'];
+
+    }
+
+    if (
+      control.errors['pinMinLength']
+    ) {
+
+      return control.errors['pinMinLength'];
+
+    }
+
+    if (
+      control.errors['pinMaxLength']
+    ) {
+
+      return control.errors['pinMaxLength'];
+
+    }
+
+    return 'Valeur invalide';
+
+  }
+
+}

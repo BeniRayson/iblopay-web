@@ -1,8 +1,6 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LE GRAPHIQUE HORIZONTAL
-   ========================================================== */
+
 :root {
-  /* Mode Lumière (Light) */
+
   --tx-chart-empty: #8a8f98;
   --tx-chart-label: #4a4f57;
   --tx-chart-track: #eef0f3;
@@ -12,7 +10,7 @@
 
 [data-theme='dark'],
 body.dark-theme {
-  /* Mode Sombre (Dark) */
+
   --tx-chart-empty: var(--text-dim, rgba(255, 255, 255, 0.5));
   --tx-chart-label: var(--text-dim, rgba(255, 255, 255, 0.7));
   --tx-chart-track: rgba(255, 255, 255, 0.08);
@@ -21,9 +19,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   COMPOSANT GRAPHIQUE HORIZONTAL (.tx-chart)
-   ========================================================== */
+
 .tx-chart {
   display: flex;
   flex-direction: column;

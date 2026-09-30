@@ -1,7 +1,7 @@
 <div class="settings-page">
-  <!-- HEADER -->
+
   <header class="page-header">
-    
+
     <div class="page-header__title">
       <span class="icon">🔐</span>
       <div>
@@ -11,7 +11,7 @@
     </div>
   </header>
 
-  <!-- TABS -->
+
   <nav class="tabs-nav">
     <button class="tab-btn" *ngFor="let tab of tabs"
             [class.active]="activeTab === tab.key"
@@ -22,9 +22,9 @@
     </button>
   </nav>
 
-  <!-- ============ DASHBOARD ============ -->
+
   <div *ngIf="activeTab === 'dashboard'" class="panel">
-    <!-- KPI Cards -->
+
     <div class="kpi-grid">
       <div class="kpi-card" *ngFor="let kpi of kpiData">
         <div class="kpi-card__icon" [style.background-color]="kpi.color">
@@ -41,7 +41,7 @@
       </div>
     </div>
 
-    <!-- Dernières activités -->
+
     <div class="activity-section">
       <div class="activity-section__header">
         <h3>📋 Dernières activités</h3>
@@ -59,7 +59,7 @@
     </div>
   </div>
 
-  <!-- ============ AUDIT COMPLET ============ -->
+
   <div *ngIf="activeTab === 'audit'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">📋 Audit Complet</h3>
@@ -69,7 +69,7 @@
       </div>
     </div>
 
-    <!-- Filtres -->
+
     <div class="audit-filters">
       <input type="text" class="filter-input" placeholder="🔍 Rechercher..." [(ngModel)]="auditSearchTerm" (input)="applyAuditFilters()" />
       <select class="filter-select" [(ngModel)]="auditTypeFilter" (change)="applyAuditFilters()">
@@ -93,7 +93,7 @@
       <button class="btn btn--secondary" (click)="resetAuditFilters()">↺ Réinitialiser</button>
     </div>
 
-    <!-- Alerte transaction > 1 million -->
+
     <div *ngIf="getHighValueTransactions().length > 0" class="alert-banner alert-banner--danger">
       <span class="alert-banner__icon">🚨</span>
       <span class="alert-banner__message">
@@ -142,7 +142,7 @@
       </table>
     </div>
 
-    <!-- Pagination Audit -->
+
     <div class="pagination">
       <div class="pagination__info">
         Affichage de {{ (auditCurrentPage - 1) * auditPageSize + 1 }} à {{ Math.min(auditCurrentPage * auditPageSize, filteredAuditLogs.length) }} sur {{ filteredAuditLogs.length }} entrées
@@ -160,7 +160,7 @@
     </div>
   </div>
 
-  <!-- ============ FRAUDE ============ -->
+
   <div *ngIf="activeTab === 'fraude'" class="panel">
     <div class="panel__header panel__header--danger">
       <h3 class="panel__title">🚨 Détection de fraude</h3>
@@ -191,7 +191,7 @@
     </div>
   </div>
 
-  <!-- ============ KYC ============ -->
+
   <div *ngIf="activeTab === 'kyc'" class="panel">
     <div class="panel__header panel__header--kyc">
       <h3 class="panel__title">🪪 Vérification KYC</h3>
@@ -229,14 +229,14 @@
     </div>
   </div>
 
-  <!-- ============ AML ============ -->
+
   <div *ngIf="activeTab === 'aml'" class="panel">
     <div class="panel__header panel__header--aml">
       <h3 class="panel__title">⚖️ Anti-Blanchiment (AML)</h3>
       <span class="panel__badge panel__badge--aml">{{ getActiveAMLAlertsCount() }} alertes actives</span>
     </div>
 
-    <!-- Filtres AML -->
+
     <div class="audit-filters">
       <select class="filter-select" [(ngModel)]="amlStatusFilter" (change)="applyAMLFilters()">
         <option value="">Tous les statuts</option>
@@ -271,7 +271,7 @@
       </div>
     </div>
 
-    <!-- Pagination AML -->
+
     <div class="pagination" *ngIf="filteredAMLLogs.length > 0">
       <div class="pagination__info">
         Affichage de {{ (amlCurrentPage - 1) * amlPageSize + 1 }} à {{ Math.min(amlCurrentPage * amlPageSize, filteredAMLLogs.length) }} sur {{ filteredAMLLogs.length }} alertes
@@ -289,7 +289,7 @@
     </div>
   </div>
 
-  <!-- ============ MODALES ============ -->
+
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()"></div>
   <div class="modal modal--animated modal--large" *ngIf="showModal">
     <div class="modal__header">
@@ -298,7 +298,7 @@
     </div>
     <div class="modal__body modal__body--large">
 
-      <!-- Détail Audit -->
+
       <div *ngIf="modalType === 'audit_detail'">
         <div class="modal__icon">📋</div>
         <div class="detail-grid">
@@ -318,7 +318,7 @@
         </div>
       </div>
 
-      <!-- Configuration Fraude -->
+
       <div *ngIf="modalType === 'fraud_config'">
         <div class="modal__icon">🚨</div>
         <h3 class="modal__subtitle">Configuration de {{ formData.name }}</h3>
@@ -402,7 +402,7 @@
         </div>
       </div>
 
-      <!-- Détail KYC -->
+
       <div *ngIf="modalType === 'kyc_detail'">
         <div class="modal__icon">🪪</div>
         <div class="detail-grid">
@@ -423,7 +423,7 @@
         </div>
       </div>
 
-      <!-- Détail AML -->
+
       <div *ngIf="modalType === 'aml_detail'">
         <div class="modal__icon">⚖️</div>
         <div class="detail-grid">
@@ -447,7 +447,7 @@
     </div>
   </div>
 
-  <!-- ============ TOASTS ============ -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>

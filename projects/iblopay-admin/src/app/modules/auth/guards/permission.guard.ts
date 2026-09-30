@@ -1,4 +1,3 @@
-// src/app/modules/auth/guards/permission.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router, UrlTree } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -20,7 +19,6 @@ export class PermissionGuard implements CanActivate {
       return true;
     }
 
-    // Check if user has ANY of the required permissions
     if (this.authService.hasAnyPermission(requiredPermissions)) {
       return true;
     }

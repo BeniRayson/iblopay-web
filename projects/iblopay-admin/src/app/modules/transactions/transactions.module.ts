@@ -1,23 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 import { TransactionsRoutingModule } from './transactions-routing.module';
 
-// Pages
 import { TransactionHubComponent } from './pages/transaction-hub/transaction-hub.component';
 import { TransactionListComponent } from './pages/transaction-list/transaction-list.component';
 import { TransactionDetailComponent } from './pages/transaction-detail/transaction-detail.component';
 import { TransactionFiltersComponent } from './pages/transaction-filters/transaction-filters.component';
 import { TransactionExportComponent } from './pages/transaction-export/transaction-export.component';
 
-// Existing Components
 import { TransactionCardComponent } from './components/transaction-card/transaction-card.component';
 import { TransactionStatusBadgeComponent } from './components/transaction-status-badge/transaction-status-badge.component';
 import { TransactionChartComponent } from './components/transaction-chart/transaction-chart.component';
 import { TransactionSummaryComponent } from './components/transaction-summary/transaction-summary.component';
-
-// Hub Components
 import { KpiCardsComponent } from './components/kpi-cards/kpi-cards.component';
 import { QuickActionsComponent } from './components/quick-actions/quick-actions.component';
 import { FilterBarComponent } from './components/filter-bar/filter-bar.component';
@@ -32,20 +29,15 @@ import { SystemActivitiesComponent } from './components/system-activities/system
 
 @NgModule({
   declarations: [
-    // Pages
     TransactionHubComponent,
     TransactionListComponent,
     TransactionDetailComponent,
     TransactionFiltersComponent,
     TransactionExportComponent,
-
-    // Existing Components
     TransactionCardComponent,
     TransactionStatusBadgeComponent,
     TransactionChartComponent,
     TransactionSummaryComponent,
-
-    // Hub Components
     KpiCardsComponent,
     QuickActionsComponent,
     FilterBarComponent,
@@ -58,8 +50,15 @@ import { SystemActivitiesComponent } from './components/system-activities/system
     AlertsListComponent,
     SystemActivitiesComponent
   ],
-  imports: [CommonModule, FormsModule, TransactionsRoutingModule]
-  // TransactionService, TransactionExportService, and TransactionHubService
-  // are all providedIn: 'root', so they don't need to be listed here.
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TransactionsRoutingModule
+  ],
+  exports: [
+    TransactionHubComponent,
+    TransactionListComponent
+  ]
 })
 export class TransactionsModule {}

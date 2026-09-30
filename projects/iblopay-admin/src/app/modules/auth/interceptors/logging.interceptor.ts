@@ -1,4 +1,3 @@
-// src/app/modules/auth/interceptors/logging.interceptor.ts
 import { Injectable } from '@angular/core';
 import {
   HttpInterceptor,

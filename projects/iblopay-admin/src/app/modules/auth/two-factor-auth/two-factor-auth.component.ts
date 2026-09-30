@@ -1,4 +1,3 @@
-// src/app/modules/auth/two-factor-auth/two-factor-auth.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -23,11 +22,11 @@ export class TwoFactorAuthComponent implements OnInit, OnDestroy {
   successMessage = '';
   phoneNumber = '';
   maskedPhone = '';
-  
+
   cooldown = AUTH_CONSTANTS.OTP_RESEND_COOLDOWN;
   canResend = false;
   timerSub?: Subscription;
-  
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -38,11 +37,9 @@ export class TwoFactorAuthComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Get phone number from query params
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.phoneNumber = params['phone'] || '';
       if (!this.phoneNumber) {
-        // Fallback to login if no phone provided
         this.router.navigate([AUTH_CONSTANTS.LOGIN_ROUTE]);
         return;
       }
@@ -76,7 +73,7 @@ export class TwoFactorAuthComponent implements OnInit, OnDestroy {
   startResendTimer(): void {
     this.canResend = false;
     this.cooldown = AUTH_CONSTANTS.OTP_RESEND_COOLDOWN;
-    
+
     if (this.timerSub) {
       this.timerSub.unsubscribe();
     }

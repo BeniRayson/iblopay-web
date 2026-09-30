@@ -96,7 +96,6 @@ export class SecuritySettingsComponent implements OnInit {
   toasts: Toast[] = [];
   private toastSeq = 0;
 
-  // Audit filters
   auditSearchTerm: string = '';
   auditTypeFilter: string = '';
   auditDateFrom: string = '';
@@ -104,16 +103,13 @@ export class SecuritySettingsComponent implements OnInit {
   auditStatusFilter: string = '';
   filteredAuditLogs: AuditLog[] = [];
 
-  // Audit pagination
   auditPageSize: number = 100;
   auditCurrentPage: number = 1;
 
-  // AML filters
   amlStatusFilter: string = '';
   amlRiskFilter: string = '';
   filteredAMLLogs: any[] = [];
 
-  // AML pagination
   amlPageSize: number = 50;
   amlCurrentPage: number = 1;
 
@@ -157,7 +153,6 @@ export class SecuritySettingsComponent implements OnInit {
     { id: '10', date: '15/01', time: '12:30', user: 'Marie C.', type: 'transfert', action: 'Transfert inter-comptes', description: 'Transfert de 75 000 BIF entre comptes', amount: 75000, ip: '192.168.1.101', status: 'success', service: 'IBLOPAY', reference: 'TRX-002' },
     { id: '11', date: '15/01', time: '12:15', user: 'Pierre H.', type: 'taxe', action: 'Taxe sur transaction', description: 'Taxe prélevée sur transaction', amount: 4500, ip: '10.0.0.50', status: 'danger', service: 'État', reference: 'TAX-002' },
     { id: '12', date: '15/01', time: '12:00', user: 'Françoise N.', type: 'transaction', action: 'Retrait client', description: 'Retrait de 200 000 BIF effectué', amount: 200000, ip: '192.168.1.102', status: 'success', service: 'Client', reference: 'RET-001' },
-    // Ajout de transactions > 1 million pour tester l'alerte
     { id: '13', date: '15/01', time: '11:45', user: 'Test User', type: 'transaction', action: 'Dépôt exceptionnel', description: 'Dépôt de 2 500 000 BIF', amount: 2500000, ip: '192.168.1.106', status: 'success', service: 'Client', reference: 'DEP-002' },
     { id: '14', date: '15/01', time: '11:30', user: 'VIP Client', type: 'transfert', action: 'Transfert important', description: 'Transfert de 1 500 000 BIF', amount: 1500000, ip: '192.168.1.107', status: 'success', service: 'Agent', reference: 'TRX-003' }
   ];
@@ -264,7 +259,6 @@ export class SecuritySettingsComponent implements OnInit {
     this.applyAMLFilters();
   }
 
-  // ========== MÉTHODES POUR LES COMPTES ==========
 
   getActiveFraudRulesCount(): number {
     return this.fraudRules.filter(r => r.active).length;
@@ -278,12 +272,10 @@ export class SecuritySettingsComponent implements OnInit {
     return this.amlAlerts.filter(a => a.status === 'new' || a.status === 'reviewing').length;
   }
 
-  // ========== AUDIT FILTERS ==========
 
   applyAuditFilters(): void {
     let filtered = [...this.auditLogs];
 
-    // Search filter
     if (this.auditSearchTerm.trim()) {
       const term = this.auditSearchTerm.toLowerCase().trim();
       filtered = filtered.filter(log =>
@@ -295,17 +287,14 @@ export class SecuritySettingsComponent implements OnInit {
       );
     }
 
-    // Type filter
     if (this.auditTypeFilter) {
       filtered = filtered.filter(log => log.type === this.auditTypeFilter);
     }
 
-    // Status filter
     if (this.auditStatusFilter) {
       filtered = filtered.filter(log => log.status === this.auditStatusFilter);
     }
 
-    // Date range filter
     if (this.auditDateFrom) {
       filtered = filtered.filter(log => log.date >= this.auditDateFrom);
     }
@@ -326,7 +315,6 @@ export class SecuritySettingsComponent implements OnInit {
     this.applyAuditFilters();
   }
 
-  // ========== AUDIT PAGINATION ==========
 
   get paginatedAuditLogs(): AuditLog[] {
     const start = (this.auditCurrentPage - 1) * this.auditPageSize;
@@ -350,7 +338,6 @@ export class SecuritySettingsComponent implements OnInit {
     }
   }
 
-  // ========== AML FILTERS ==========
 
   applyAMLFilters(): void {
     let filtered = [...this.amlAlerts];
@@ -367,7 +354,6 @@ export class SecuritySettingsComponent implements OnInit {
     this.amlCurrentPage = 1;
   }
 
-  // ========== AML PAGINATION ==========
 
   get paginatedAMLLogs(): any[] {
     const start = (this.amlCurrentPage - 1) * this.amlPageSize;
@@ -391,13 +377,11 @@ export class SecuritySettingsComponent implements OnInit {
     }
   }
 
-  // ========== HIGH VALUE TRANSACTIONS ==========
 
   getHighValueTransactions(): AuditLog[] {
     return this.auditLogs.filter(log => log.amount > 1000000);
   }
 
-  // ========== ACTIONS ==========
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
@@ -472,7 +456,6 @@ export class SecuritySettingsComponent implements OnInit {
     this.formData = {};
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;
@@ -484,7 +467,6 @@ export class SecuritySettingsComponent implements OnInit {
     this.toasts = this.toasts.filter(t => t.id !== id);
   }
 
-  // ========== UTILITAIRES ==========
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {

@@ -1,1 +1,117 @@
-<p>super-agents-list works!</p>
+<section class="super-agents-page">
+  <div class="page-heading">
+    <div>
+      <div class="breadcrumb"><span>Accueil</span><b>›</b><span>Supers Agents</span></div>
+      <h1>Supers Agents</h1>
+      <p>Gestion des super agents du réseau IBLOPAY.</p>
+    </div>
+    <button class="btn-primary" type="button" (click)="createSuperAgent()">
+      <span class="plus">＋</span> Nouveau Super Agent
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <article class="stat-card blue">
+      <div class="stat-icon">SA</div>
+      <div><strong>{{ totalAgents }}</strong><span>Total Supers Agents</span></div>
+      <small>Réseau global</small>
+    </article>
+    <article class="stat-card green">
+      <div class="stat-icon">✓</div>
+      <div><strong>{{ activeAgents }}</strong><span>Actifs</span></div>
+      <small>{{ totalAgents ? ((activeAgents / totalAgents) * 100 | number:'1.0-0') : 0 }}%</small>
+    </article>
+    <article class="stat-card orange">
+      <div class="stat-icon">◷</div>
+      <div><strong>{{ suspendedAgents }}</strong><span>Suspendus</span></div>
+      <small>Accès temporairement limité</small>
+    </article>
+    <article class="stat-card red">
+      <div class="stat-icon">×</div>
+      <div><strong>{{ blockedAgents }}</strong><span>Bloqués</span></div>
+      <small>Accès désactivé</small>
+    </article>
+  </div>
+
+  <div class="table-card">
+    <div class="toolbar">
+      <label class="search-box">
+        <span>⌕</span>
+        <input [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" placeholder="Rechercher par nom, téléphone, email, zone..." />
+      </label>
+
+      <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+        <option value="Tous">Tous les statuts</option>
+        <option value="Actif">Actif</option>
+        <option value="Suspendu">Suspendu</option>
+        <option value="Bloqué">Bloqué</option>
+      </select>
+
+      <select [(ngModel)]="regionFilter" (ngModelChange)="onFilterChange()">
+        <option value="Toutes">Toutes les régions</option>
+        <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
+      </select>
+
+      <select [(ngModel)]="communeFilter" (ngModelChange)="onFilterChange()">
+        <option value="Toutes">Toutes les communes</option>
+        <option *ngFor="let commune of communes" [value]="commune">{{ commune }}</option>
+      </select>
+
+      <button class="btn-export" type="button" (click)="exportCsv()">⇩ Exporter</button>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Nom complet</th><th>Téléphone</th><th>Email</th><th>Région / Commune</th>
+            <th>Utilisateurs</th><th>Transactions</th><th>Commissions</th><th>Statut</th><th>Date création</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let agent of paginatedAgents; let i = index; trackBy: trackByAgent">
+            <td class="index">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <div class="identity">
+                <span class="avatar">{{ initials(agent) }}</span>
+                <strong>{{ agent.lastName }} {{ agent.firstName }}</strong>
+              </div>
+            </td>
+            <td class="muted">{{ agent.phone }}</td>
+            <td class="muted">{{ agent.email }}</td>
+            <td><span class="location">{{ agent.region }}</span><small>{{ agent.commune }}</small></td>
+            <td class="number">{{ agent.users | number }}</td>
+            <td class="number">{{ agent.transactions | number }}</td>
+            <td class="amount">{{ formatAmount(agent.commissions) }}</td>
+            <td><span class="status" [class.active]="agent.status === 'Actif'" [class.suspended]="agent.status === 'Suspendu'" [class.blocked]="agent.status === 'Bloqué'">{{ agent.status }}</span></td>
+            <td class="date">{{ agent.createdAt }}</td>
+            <td>
+              <div class="actions">
+                <button type="button" class="action view" title="Voir" (click)="viewAgent(agent)">◉</button>
+                <button type="button" class="action edit" title="Modifier" (click)="editAgent(agent)">✎</button>
+                <button type="button" class="action delete" title="Supprimer" (click)="deleteAgent(agent)">⌫</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="paginatedAgents.length === 0">
+            <td colspan="11" class="empty">Aucun Super Agent ne correspond à votre recherche.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="table-footer">
+      <span>Affichage de {{ filteredAgents.length ? ((currentPage - 1) * pageSize + 1) : 0 }} à {{ currentPage * pageSize > filteredAgents.length ? filteredAgents.length : currentPage * pageSize }} sur {{ filteredAgents.length }} super agents</span>
+      <div class="pagination">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+        <button *ngFor="let _ of [].constructor(totalPages); let page = index" (click)="goToPage(page + 1)" [class.active]="currentPage === page + 1">{{ page + 1 }}</button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">›</button>
+        <select [(ngModel)]="pageSize" (ngModelChange)="currentPage = 1">
+          <option [ngValue]="5">5 par page</option>
+          <option [ngValue]="10">10 par page</option>
+          <option [ngValue]="20">20 par page</option>
+        </select>
+      </div>
+    </footer>
+  </div>
+</section>

@@ -22,7 +22,6 @@ export class DashboardService {
     provinceStats$ = this.provinceStatsSubject.asObservable();
 
     constructor() {
-        // Simuler des mises à jour en temps réel
         setInterval(() => {
             this.simulateUpdates();
         }, 30000);
@@ -215,16 +214,13 @@ export class DashboardService {
     }
 
     private simulateUpdates(): void {
-        // Mettre à jour les stats avec de petites variations
         const current = this.statsSubject.value;
 
-        // Simuler des changements aléatoires
         const randomChange = (base: number, percent: number) => {
             const factor = 1 + (Math.random() - 0.5) * 0.02;
             return Math.round(base * factor);
         };
 
-        // Mise à jour des valeurs numériques
         if (typeof current.users.value === 'number') {
             current.users.value = randomChange(current.users.value, 0.02);
         }
@@ -241,7 +237,6 @@ export class DashboardService {
             current.publicServices.value = randomChange(current.publicServices.value, 0.02);
         }
 
-        // Mise à jour des commissions avec nouvelles valeurs
         const stateComm = 1245800000 + Math.round((Math.random() - 0.5) * 10000000);
         const iblopayComm = 2229100000 + Math.round((Math.random() - 0.5) * 20000000);
         current.stateCommission.value = stateComm.toLocaleString('fr-FR') + ' Fbu';
@@ -249,7 +244,6 @@ export class DashboardService {
 
         this.statsSubject.next(current);
 
-        // Mise à jour des provinces
         const provinceStats = this.provinceStatsSubject.value;
         provinceStats.depots.forEach(p => {
             p.amount += Math.round((Math.random() - 0.45) * 1500000);

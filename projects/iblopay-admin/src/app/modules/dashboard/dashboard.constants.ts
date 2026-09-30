@@ -1,5 +1,4 @@
 export const DASHBOARD_CONSTANTS = {
-    // Périodes pour le graphique
     CHART_PERIODS: [
         { value: 7, label: '1 semaine' },
         { value: 14, label: '2 semaines' },
@@ -10,8 +9,6 @@ export const DASHBOARD_CONSTANTS = {
         { value: 90, label: '90 jours' }
     ],
 
-    // Couleurs des statistiques — alignées sur la palette de marque
-    // "soleil levant" du dashboard (voir dashboard.component.scss)
     STAT_COLORS: {
         blue: '#4C8DFF',
         green: '#2BC98A',
@@ -23,7 +20,6 @@ export const DASHBOARD_CONSTANTS = {
         pink: '#ec4899'
     },
 
-    // Messages
     WELCOME_MESSAGE: 'Vue d\'ensemble de toute la plateforme IBLOPAY',
     REFRESH_BUTTON: 'Actualiser'
 };

@@ -39,13 +39,11 @@ export class TransactionsSettingsComponent {
   activeTab: 'toutes' | 'types' | 'filtres' | 'analytique' = 'toutes';
   private currentPage = 1;
 
-  // Filtres
   searchTerm: string = '';
   filterStatut: string = 'tous';
   filterType: string = 'tous';
   filterPeriode: string = 'all';
 
-  // Sélection
   selectedIds: Set<string> = new Set();
 
   private transactions: Transaction[] = [];
@@ -75,12 +73,12 @@ export class TransactionsSettingsComponent {
       { key: 'achat' as const, label: 'Achat', icon: '🛍️' },
       { key: 'commission' as const, label: 'Commission', icon: '💵' }
     ];
-    
+
     const utilisateurs = [
       'Jean NDAYISHIMIYE', 'Marie NSABIMANA', 'Pierre NIZIGIYIMANA',
       'Claire NDIKUMANA', 'Emmanuel NTAKIRUTIMANA', 'Françoise NIKIZA'
     ];
-    
+
     const agents = ['AG-001', 'AG-002', 'AG-003', 'AG-004', 'AG-005'];
     const statuts: Transaction['statut'][] = ['effectuee', 'effectuee', 'effectuee', 'en_attente', 'annulee', 'echouee'];
     const descriptions = [
@@ -105,7 +103,7 @@ export class TransactionsSettingsComponent {
       const ip = ips[ipIndex]!;
       const montant = 1000 + Math.floor(Math.random() * 200000);
       const date = new Date(Date.now() - i * 3600000 * (1 + Math.floor(Math.random() * 24)));
-      
+
       this.transactions.push({
         id: `TXN-${String(100000 + i).padStart(6, '0')}`,
         type: type.key,
@@ -122,7 +120,6 @@ export class TransactionsSettingsComponent {
     }
   }
 
-  // ========== SÉLECTION ==========
 
   toggleSelection(id: string): void {
     if (this.selectedIds.has(id)) {
@@ -153,7 +150,6 @@ export class TransactionsSettingsComponent {
     return this.selectedIds.size;
   }
 
-  // ========== STATISTIQUES ==========
 
   getAllTransactions(): Transaction[] {
     return this.transactions;
@@ -205,7 +201,6 @@ export class TransactionsSettingsComponent {
     return classes[type] || '';
   }
 
-  // ========== ANALYTIQUE ==========
 
   getAnalyticsData(): any[] {
     const total = this.transactions.length;
@@ -214,7 +209,7 @@ export class TransactionsSettingsComponent {
     const annulees = this.getTransactionsByStatut('annulee').length;
     const echouees = this.getTransactionsByStatut('echouee').length;
     const montantTotal = this.getMontantTotal();
-    
+
     return [
       {
         icon: '✅',
@@ -267,14 +262,13 @@ export class TransactionsSettingsComponent {
     ];
   }
 
-  // ========== FILTRES ==========
 
   getFilteredTransactions(): Transaction[] {
     let result = this.transactions;
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      result = result.filter(t => 
+      result = result.filter(t =>
         t.id.toLowerCase().includes(term) ||
         t.utilisateur.toLowerCase().includes(term) ||
         t.agent.toLowerCase().includes(term) ||
@@ -282,11 +276,11 @@ export class TransactionsSettingsComponent {
         (t.reference && t.reference.toLowerCase().includes(term))
       );
     }
-    
+
     if (this.filterStatut !== 'tous') {
       result = result.filter(t => t.statut === this.filterStatut);
     }
-    
+
     if (this.filterType !== 'tous') {
       result = result.filter(t => t.type === this.filterType);
     }
@@ -309,7 +303,7 @@ export class TransactionsSettingsComponent {
         return true;
       });
     }
-    
+
     return result;
   }
 
@@ -323,7 +317,6 @@ export class TransactionsSettingsComponent {
     this.selectedIds.clear();
   }
 
-  // ========== PAGINATION ==========
 
   getPaginatedFilteredTransactions(): Transaction[] {
     const start = (this.currentPage - 1) * this.pageSize;
@@ -358,17 +351,16 @@ export class TransactionsSettingsComponent {
     this.selectedIds.clear();
   }
 
-  // ========== TYPES ==========
 
   getTypes(): any[] {
     const typeMap = new Map<string, any>();
     this.transactions.forEach(t => {
       if (!typeMap.has(t.type)) {
-        typeMap.set(t.type, { 
-          key: t.type, 
-          label: t.typeLabel, 
-          count: 0, 
-          total: 0, 
+        typeMap.set(t.type, {
+          key: t.type,
+          label: t.typeLabel,
+          count: 0,
+          total: 0,
           icon: this.getTypeIcon(t.type),
           effectuees: 0,
           enAttente: 0
@@ -404,7 +396,6 @@ export class TransactionsSettingsComponent {
     this.selectedIds.clear();
   }
 
-  // ========== FILTRES ==========
 
   getFiltres(): any[] {
     const now = new Date();
@@ -439,7 +430,6 @@ export class TransactionsSettingsComponent {
     this.openAction(filter.key);
   }
 
-  // ========== ACTIONS ==========
 
   openTransactionDetails(transaction: Transaction): void {
     this.selectedTransaction = transaction;
@@ -539,7 +529,6 @@ export class TransactionsSettingsComponent {
     this.closeActionModal();
   }
 
-  // ========== ACTIONS MÉTIER ==========
 
   private exportTransactions(): void {
     const format = this.formData.format || 'excel';
@@ -555,7 +544,7 @@ export class TransactionsSettingsComponent {
     const raison = this.formData.raison || 'Correction';
     const nouveauMontant = this.formData.montant;
     const nouveauType = this.formData.type;
-    
+
     if (nouveauMontant) {
       this.selectedTransaction.montant = nouveauMontant;
     }
@@ -605,7 +594,7 @@ export class TransactionsSettingsComponent {
     if (!this.selectedTransaction) return;
     const nouvelUtilisateur = this.formData.nouvelUtilisateur;
     const nouvelAgent = this.formData.nouvelAgent;
-    
+
     if (nouvelUtilisateur) {
       this.selectedTransaction.utilisateur = nouvelUtilisateur;
     }
@@ -632,7 +621,6 @@ export class TransactionsSettingsComponent {
     this.toast(`Transaction partagée via ${methode} vers ${destinataire}.`, 'success');
   }
 
-  // ========== EXPORT ET IMPRESSION ==========
 
   exportExcel(): void {
     this.toast('Export Excel des transactions en cours...', 'info');
@@ -651,7 +639,6 @@ export class TransactionsSettingsComponent {
     window.print();
   }
 
-  // ========== MODALES ==========
 
   closeModal(): void {
     this.modalOpen = false;
@@ -666,7 +653,6 @@ export class TransactionsSettingsComponent {
     this.selectedTransaction = null;
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;

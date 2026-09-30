@@ -1,4 +1,3 @@
-// src/app/modules/agents/models/agent.model.ts
 export interface Agent {
   id: string;
   code: string;
@@ -38,7 +37,6 @@ export interface AgentAddress {
   longitude?: string;
 }
 
-// src/app/modules/agents/models/agent.model.ts
 export interface Electronic {
   id: string;
   type: 'PHONE' | 'TABLET' | 'POS_TERMINAL' | 'OTHER';
@@ -49,7 +47,7 @@ export interface Electronic {
   assignedDate: Date;
   lastMaintenance?: Date;
   notes?: string;
-  amountInCirculation: number; // Montant en circulation
+  amountInCirculation: number;
   currency: string;
 }
 
@@ -98,7 +96,6 @@ export interface AgentDocument {
   status: 'PENDING' | 'VERIFIED' | 'REJECTED';
 }
 
-// src/app/modules/agents/models/agent.model.ts
 export enum DocumentType {
   CIN = 'CIN',
   NIF = 'NIF',

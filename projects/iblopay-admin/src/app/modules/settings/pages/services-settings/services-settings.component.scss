@@ -32,7 +32,6 @@
   color: var(--ib-text);
 }
 
-// ========== RESPONSIVE ==========
 @media (max-width: 1200px) {
   :host { padding: 24px; }
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
@@ -99,7 +98,6 @@
   .action-btn { width: 22px; height: 22px; font-size: 8px; }
 }
 
-// ========== HEADER ==========
 .page-header {
   margin-bottom: 24px;
   .back-btn {
@@ -141,7 +139,6 @@
   }
 }
 
-// ========== KPI CARDS ==========
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -213,7 +210,6 @@
   }
 }
 
-// ========== TABS ==========
 .tabs-nav {
   display: flex;
   gap: 4px;
@@ -254,7 +250,6 @@
   }
 }
 
-// ========== PANEL ==========
 .panel {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
@@ -288,7 +283,6 @@
   &__actions { display: flex; gap: 6px; flex-wrap: wrap; }
 }
 
-// ========== DASHBOARD ==========
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -322,17 +316,16 @@
   }
 }
 
-// ========== TABLE ==========
-.table-wrap { 
-  overflow-x: auto; 
-  padding: 0 16px 16px; 
+.table-wrap {
+  overflow-x: auto;
+  padding: 0 16px 16px;
 }
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12.5px;
   min-width: 900px;
-  
+
   thead th {
     text-align: left;
     font-size: 10px;
@@ -345,7 +338,7 @@
     background: var(--ib-bg);
     white-space: nowrap;
   }
-  
+
   tbody td {
     padding: 10px 12px;
     border-bottom: 1px solid var(--ib-border);
@@ -353,18 +346,17 @@
     font-size: 12px;
     white-space: nowrap;
   }
-  
+
   tbody tr {
     transition: background 0.15s ease;
-    &:hover { 
-      background: var(--ib-primary-light); 
+    &:hover {
+      background: var(--ib-primary-light);
     }
   }
 }
 .text-center { text-align: center; }
 .text-muted { color: var(--ib-text-muted); }
 
-// ========== BADGES ==========
 .badge {
   display: inline-block;
   font-size: 10px;
@@ -383,7 +375,7 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   white-space: nowrap;
-  
+
   &--actif { background: var(--ib-success-light); color: var(--ib-success); }
   &--inactif { background: var(--ib-danger-light); color: var(--ib-danger); }
   &--collecte { background: var(--ib-primary-light); color: var(--ib-primary-dark); }
@@ -401,7 +393,6 @@
   &--danger { color: var(--ib-danger); }
 }
 
-// ========== ACTION GROUP - 2 LIGNES (4 + 3) ==========
 .action-group {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -425,18 +416,16 @@
   position: relative;
   font-weight: 600;
   padding: 0 2px;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: var(--ib-shadow-md);
   }
-  
+
   &:active {
     transform: scale(0.95);
   }
-  
-  // Position des boutons: 4 en haut, 3 en bas
-  // Les 4 premiers sont sur la 1ère ligne, les 3 suivants sur la 2ème
+
   &:nth-child(1) { grid-row: 1; grid-column: 1; }
   &:nth-child(2) { grid-row: 1; grid-column: 2; }
   &:nth-child(3) { grid-row: 1; grid-column: 3; }
@@ -444,65 +433,62 @@
   &:nth-child(5) { grid-row: 2; grid-column: 1; }
   &:nth-child(6) { grid-row: 2; grid-column: 2; }
   &:nth-child(7) { grid-row: 2; grid-column: 3; }
-  // Le 8ème bouton (si présent) serait sur la 2ème ligne, colonne 4
   &:nth-child(8) { grid-row: 2; grid-column: 4; }
-  
-  // Couleurs par type
+
   &--view {
     background: var(--ib-info-light);
     color: var(--ib-info);
     &:hover { background: var(--ib-info); color: white; }
   }
-  
+
   &--activate {
     background: var(--ib-success-light);
     color: var(--ib-success);
     &:hover { background: var(--ib-success); color: white; }
   }
-  
+
   &--deactivate {
     background: var(--ib-danger-light);
     color: var(--ib-danger);
     &:hover { background: var(--ib-danger); color: white; }
   }
-  
+
   &--edit {
     background: var(--ib-warning-light);
     color: var(--ib-warning);
     &:hover { background: var(--ib-warning); color: white; }
   }
-  
+
   &--fee {
     background: var(--ib-primary-light);
     color: var(--ib-primary);
     &:hover { background: var(--ib-primary); color: white; }
   }
-  
+
   &--doc {
     background: #E3F2FD;
     color: #0D47A1;
     &:hover { background: #0D47A1; color: white; }
   }
-  
+
   &--procedure {
     background: #F3E5F5;
     color: #4A148C;
     &:hover { background: #4A148C; color: white; }
   }
-  
+
   &--approve {
     background: var(--ib-success-light);
     color: var(--ib-success);
     &:hover { background: var(--ib-success); color: white; }
   }
-  
+
   &--reject {
     background: var(--ib-danger-light);
     color: var(--ib-danger);
     &:hover { background: var(--ib-danger); color: white; }
   }
-  
-  // Tooltip
+
   &__tooltip {
     position: absolute;
     bottom: calc(100% + 8px);
@@ -519,7 +505,7 @@
     pointer-events: none;
     transition: all 0.2s ease;
     z-index: 10;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -530,14 +516,13 @@
       border-top-color: var(--ib-text);
     }
   }
-  
+
   &:hover &__tooltip {
     opacity: 1;
     transform: translateX(-50%) scale(1);
   }
 }
 
-// ========== PAGINATION ==========
 .pagination {
   display: flex;
   justify-content: center;
@@ -560,7 +545,6 @@
   &__info { font-size: 12px; font-weight: 600; color: var(--ib-text-muted); }
 }
 
-// ========== BUTTONS ==========
 .btn {
   padding: 6px 16px;
   border: none;
@@ -573,10 +557,10 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  
+
   &:hover { transform: translateY(-2px); box-shadow: var(--ib-shadow-md); }
   &:active { transform: scale(0.98); }
-  
+
   &--primary { background: var(--ib-primary); color: #fff; &:hover { background: var(--ib-primary-dark); } }
   &--secondary { background: var(--ib-bg); color: var(--ib-text); border: 1px solid var(--ib-border); &:hover { background: var(--ib-border); } }
   &--success { background: var(--ib-success); color: #fff; &:hover { background: var(--ib-success-dark); } }
@@ -585,7 +569,6 @@
   &--lg { padding: 10px 24px; font-size: 14px; }
 }
 
-// ========== SERVICES PAR CATÉGORIE ==========
 .services-by-category { padding: 16px; }
 
 .category-section {
@@ -666,7 +649,6 @@
   .amount--success { color: var(--ib-success); }
 }
 
-// ========== CATEGORIES GRID ==========
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -719,14 +701,13 @@
   }
 }
 
-// ========== DETAIL CARD ==========
 .detail-card {
   background: var(--ib-surface);
   border: 1px solid var(--ib-border);
   border-radius: var(--ib-radius);
   overflow: hidden;
   box-shadow: var(--ib-shadow);
-  
+
   &__header {
     display: flex;
     align-items: center;
@@ -735,10 +716,10 @@
     background: var(--ib-primary);
     color: white;
     border-bottom: 2px solid var(--ib-primary-dark);
-    
+
     &__icon { font-size: 24px; }
     h4 { margin: 0; font-size: 15px; font-weight: 700; color: white; }
-    
+
     &__badge {
       margin-left: auto;
       padding: 4px 12px;
@@ -748,12 +729,12 @@
       font-weight: 600;
     }
   }
-  
+
   &__body {
     padding: 16px 20px;
     background: var(--ib-bg);
   }
-  
+
   &__footer {
     padding: 12px 20px;
     background: var(--ib-surface);
@@ -773,11 +754,11 @@
   border-radius: var(--ib-radius-xs);
   margin-bottom: 4px;
   transition: background 0.15s ease;
-  
+
   &:hover {
     background: var(--ib-primary-light);
   }
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -790,7 +771,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   &__icon {
     font-size: 14px;
     opacity: 0.7;
@@ -806,7 +787,6 @@
   word-break: break-word;
 }
 
-// ========== DÉTAILS SERVICE (MODAL) ==========
 .detail-section {
   margin-bottom: 24px;
   .section-title {
@@ -834,12 +814,12 @@
   border-radius: var(--ib-radius-sm);
   border: 1px solid var(--ib-border);
   transition: all 0.2s ease;
-  
+
   &:hover {
     border-color: var(--ib-primary);
     box-shadow: var(--ib-shadow);
   }
-  
+
   &__label {
     display: block;
     font-size: 10px;
@@ -878,11 +858,11 @@
   border-radius: var(--ib-radius-sm);
   border: 1px solid var(--ib-border);
   transition: all 0.2s ease;
-  
+
   &:hover {
     border-color: var(--ib-primary);
   }
-  
+
   h4 {
     font-size: 13px;
     font-weight: 700;
@@ -923,7 +903,6 @@
   }
 }
 
-// ========== FORMULAIRE ==========
 .form-card {
   background: var(--ib-bg);
   border: 1px solid var(--ib-border);
@@ -1013,37 +992,35 @@ textarea.form-control {
   justify-content: flex-end;
 }
 
-// ========== TABLE SMALL (Clients) ==========
 .table--small {
   font-size: 11px;
   min-width: 700px;
-  
+
   thead th {
     font-size: 9px;
     padding: 8px 10px;
     white-space: nowrap;
   }
-  
+
   tbody td {
     padding: 8px 10px;
     white-space: nowrap;
     vertical-align: middle;
   }
-  
-  // Les boutons d'action dans le tableau client
+
   .action-group {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 3px;
     max-width: 100px;
   }
-  
+
   .action-btn {
     height: 24px;
     font-size: 9px;
     border-radius: 4px;
     padding: 0 2px;
-    
+
     &__tooltip {
       font-size: 8px;
       padding: 2px 6px;
@@ -1051,7 +1028,6 @@ textarea.form-control {
   }
 }
 
-// ========== PIN MODAL ==========
 .pin-input-group { display: flex; justify-content: center; margin-bottom: 20px; }
 .pin-input {
   width: 120px;
@@ -1103,7 +1079,6 @@ textarea.form-control {
   font-weight: 600;
 }
 
-// ========== ALERTS ==========
 .alert {
   padding: 12px 16px;
   border-radius: var(--ib-radius-sm);
@@ -1117,7 +1092,6 @@ textarea.form-control {
   &--danger { background: var(--ib-danger-light); color: var(--ib-danger); }
 }
 
-// ========== TOASTS ==========
 .toast-stack {
   position: fixed;
   bottom: 20px;
@@ -1157,22 +1131,21 @@ textarea.form-control {
   &--info { background: var(--ib-primary-dark); }
 }
 
-// ========== FORMULAIRE ADMINISTRATIF ==========
 .form-card--admin {
   background: white;
   border: 2px solid var(--ib-primary);
-  
+
   .form-card__header {
     background: var(--ib-primary);
     color: white;
     border-bottom: 2px solid var(--ib-primary-dark);
     flex-wrap: wrap;
-    
+
     h4 {
       color: white;
       flex: 1;
     }
-    
+
     .form-card__ref {
       background: rgba(255,255,255,0.2);
       padding: 4px 12px;
@@ -1191,12 +1164,12 @@ textarea.form-control {
   margin-bottom: 16px;
   flex-wrap: wrap;
   gap: 8px;
-  
+
   p {
     margin: 2px 0;
     font-size: 13px;
   }
-  
+
   &__right {
     text-align: right;
   }
@@ -1208,7 +1181,7 @@ textarea.form-control {
   padding: 12px;
   background: var(--ib-primary-light);
   border-radius: var(--ib-radius-sm);
-  
+
   h3 {
     margin: 0;
     font-size: 16px;
@@ -1223,53 +1196,53 @@ textarea.form-control {
     font-size: 13px;
     line-height: 1.6;
   }
-  
+
   .admin-object {
     margin-top: 16px;
     font-weight: 600;
   }
-  
+
   .admin-service-info {
     background: var(--ib-bg);
     padding: 12px 16px;
     border-radius: var(--ib-radius-sm);
     margin: 12px 0;
     border-left: 4px solid var(--ib-primary);
-    
+
     p {
       margin: 4px 0;
     }
   }
-  
+
   .admin-motivation {
     font-weight: 600;
     margin-top: 12px;
   }
-  
+
   .admin-documents {
     margin: 8px 0 16px 20px;
     padding: 0;
-    
+
     li {
       list-style: none;
       padding: 4px 0;
       font-size: 13px;
     }
   }
-  
+
   .admin-signature {
     margin-top: 24px;
     padding-top: 16px;
     border-top: 2px solid var(--ib-border);
-    
+
     &__line {
       text-align: center;
       margin-top: 12px;
-      
+
       p {
         margin: 4px 0;
       }
-      
+
       em {
         color: var(--ib-text-muted);
         font-size: 12px;
@@ -1283,7 +1256,7 @@ textarea.form-control {
   padding-top: 16px;
   border-top: 2px solid var(--ib-border);
   text-align: center;
-  
+
   p {
     margin: 4px 0;
     font-size: 12px;
@@ -1301,7 +1274,6 @@ textarea.form-control {
   flex-wrap: wrap;
 }
 
-// ========== SERVICE NAME ==========
 .service-name {
   font-weight: 600;
   font-size: 13px;
@@ -1312,7 +1284,6 @@ textarea.form-control {
   margin-right: 8px;
 }
 
-// ========== MODAL ==========
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1374,7 +1345,6 @@ textarea.form-control {
   }
 }
 
-// ========== EMPTY STATE ==========
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -1382,12 +1352,12 @@ textarea.form-control {
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  
+
   &__icon {
     font-size: 48px;
     margin-bottom: 16px;
   }
-  
+
   p {
     color: var(--ib-text-muted);
     font-size: 14px;
@@ -1395,29 +1365,27 @@ textarea.form-control {
   }
 }
 
-// ========== LEGAL BOX ==========
 .legal-box {
   background: var(--ib-bg);
   padding: 16px;
   border-radius: var(--ib-radius-sm);
   border-left: 4px solid var(--ib-primary);
-  
+
   p {
     margin: 0 0 8px;
     font-size: 13px;
     color: var(--ib-text-muted);
     line-height: 1.6;
-    
+
     &:last-child { margin-bottom: 0; }
   }
-  
+
   .legal-reference {
     font-weight: 600;
     color: var(--ib-primary-dark);
   }
 }
 
-// ========== PANEL ACTIONS ==========
 .panel__actions {
   display: flex;
   gap: 8px;
@@ -1425,7 +1393,6 @@ textarea.form-control {
   align-items: center;
 }
 
-// ========== ANIMATIONS ==========
 @keyframes modalIn {
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.98); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }

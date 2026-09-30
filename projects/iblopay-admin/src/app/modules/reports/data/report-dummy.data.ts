@@ -53,7 +53,6 @@ export class ReportDummyData {
     { id: 'AGT-012', name: 'Havyarimana Salvator' },
   ];
 
-  // ─── HELPERS ─────────────────────────────────────────
   private rand(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
@@ -78,7 +77,6 @@ export class ReportDummyData {
     return [{ id: '', name: 'Tous les agents' }, ...this.agents];
   }
 
-  // ─── 1. FINANCIAL / TRANSACTIONS ─────────────────────
   getFinancialKpis(): KpiCard[] {
     return [
       { label: 'Volume Total', value: 523690000, prefix: '', suffix: ' BIF', change: 8.1, changeLabel: 'vs période préc.', icon: 'fa-solid fa-arrows-rotate', color: '#3b82f6' },
@@ -131,7 +129,6 @@ export class ReportDummyData {
     return rows.sort((a, b) => b.date.getTime() - a.date.getTime());
   }
 
-  // ─── 2. COMMISSIONS ──────────────────────────────────
   getCommissionKpis(): KpiCard[] {
     return [
       { label: 'Commissions Totales', value: 3474900, suffix: ' BIF', change: 12.4, changeLabel: 'vs mois préc.', icon: 'fa-solid fa-coins', color: '#22c55e' },
@@ -178,7 +175,6 @@ export class ReportDummyData {
     return rows.sort((a, b) => b.date.getTime() - a.date.getTime());
   }
 
-  // ─── 3. TRUST ACCOUNT ────────────────────────────────
   getTrustAccountKpis(): KpiCard[] {
     return [
       { label: 'Solde e-Money', value: 1256000000, suffix: ' BIF', icon: 'fa-solid fa-wallet', color: '#3b82f6' },
@@ -219,7 +215,6 @@ export class ReportDummyData {
     return rows;
   }
 
-  // ─── 4. CASH MANAGEMENT ────────────────────────────
   getCashManagementKpis(): KpiCard[] {
     return [
       { label: 'Déclarations Totales', value: 482, change: 6.8, changeLabel: 'vs mois préc.', icon: 'fa-solid fa-file-invoice', color: '#eab308' },
@@ -260,7 +255,6 @@ export class ReportDummyData {
     return rows.sort((a, b) => b.date.getTime() - a.date.getTime());
   }
 
-  // ─── 5. OFFLINE / POS ────────────────────────────────
   getOfflineKpis(): KpiCard[] {
     return [
       { label: 'Lots Reçus', value: 234, change: 11.2, changeLabel: 'vs mois préc.', icon: 'fa-solid fa-database', color: '#f97316' },
@@ -306,7 +300,6 @@ export class ReportDummyData {
     return rows.sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime());
   }
 
-  // ─── 6. COMPLIANCE / AUDIT ──────────────────────────
   getComplianceKpis(): KpiCard[] {
     return [
       { label: 'Actions Sensibles', value: 142, change: -8.3, changeLabel: 'vs mois préc.', icon: 'fa-solid fa-shield-halved', color: '#ef4444' },
@@ -355,7 +348,6 @@ export class ReportDummyData {
     return rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  // ─── 7. KYC / USERS ──────────────────────────────────
   getKycKpis(): KpiCard[] {
     return [
       { label: 'Utilisateurs Total', value: 12548, change: 8.7, changeLabel: 'vs mois préc.', icon: 'fa-solid fa-users', color: '#06b6d4' },

@@ -1,4 +1,3 @@
-// src/app/core/layout/layout.component.ts
 import { Component, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Observable, Subscription, interval } from 'rxjs';
@@ -35,7 +34,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
     isSearchOpen: boolean = false;
     searchResults$: Observable<SearchResult[]> = this.searchService.results$;
 
-    // Notifications
     isNotifOpen: boolean = false;
     notifications$: Observable<AppNotification[]> = this.notificationService.getForModule(null);
     unreadCount$: Observable<number> = this.notificationService.unreadCountForModule(null);
@@ -67,19 +65,17 @@ export class LayoutComponent implements OnInit, OnDestroy {
         this.initClock();
         this.loadTheme();
         this.updateRouteContext();
-        
+
         this.routerSubscription = this.router.events
             .pipe(filter((e) => e instanceof NavigationEnd))
             .subscribe(() => this.updateRouteContext());
 
-        // Nettoyage auto toutes les 5 minutes
         this.cleanupSubscription = interval(300000).subscribe(() => {
             const now = new Date();
             const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
             this.notificationService.cleanup(twentyFourHoursAgo);
         });
 
-        // Log pour vérifier les notifications
         this.notifications$.subscribe(notifs => {
             console.log('📊 Notifications dans le composant:', notifs.length);
         });
@@ -327,19 +323,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
         }
     }
 
-    // ✅ Marquer toutes les notifications comme lues
     markAllNotificationsRead(event: Event): void {
         event.stopPropagation();
         console.log('🔔 Marquer tout comme lu - Module:', this.currentModuleKey);
         this.notificationService.markAllAsRead();
-        // Supprimer les notifications lues après un petit délai
         setTimeout(() => {
             this.notificationService.removeAllRead();
             console.log('✅ Notifications lues supprimées');
         }, 300);
     }
 
-    // ✅ Supprimer toutes les notifications
     clearAllNotifications(event: Event): void {
         event.stopPropagation();
         console.log('🗑️ Supprimer toutes les notifications');

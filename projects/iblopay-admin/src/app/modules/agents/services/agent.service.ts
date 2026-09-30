@@ -1,4 +1,3 @@
-// src/app/modules/agents/services/agent.service.ts
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { Agent, AgentStatus, AgentType, SubAgent, Electronic, Deposit, Transaction } from '../models/agent.model';
@@ -8,9 +7,6 @@ import { Agent, AgentStatus, AgentType, SubAgent, Electronic, Deposit, Transacti
 })
 export class AgentService {
   private mockAgents: Agent[] = [
-    // ================================================================
-    // SUPER AGENT 1 - Jean Mukiza (5 agents)
-    // ================================================================
     {
       id: '1',
       code: 'SA-001',
@@ -189,9 +185,6 @@ export class AgentService {
         }
       ]
     },
-    // ================================================================
-    // SUPER AGENT 2 - Marie Ndayisenga (5 agents)
-    // ================================================================
     {
       id: '2',
       code: 'SA-002',
@@ -310,9 +303,6 @@ export class AgentService {
         }
       ]
     },
-    // ================================================================
-    // SUPER AGENT 3 - Pierre Ndayishimiye (5 agents)
-    // ================================================================
     {
       id: '3',
       code: 'SA-003',
@@ -442,9 +432,6 @@ export class AgentService {
         }
       ]
     },
-    // ================================================================
-    // SUPER AGENT 4 - Claire Iradukunda (5 agents)
-    // ================================================================
     {
       id: '4',
       code: 'SA-004',
@@ -551,9 +538,6 @@ export class AgentService {
         }
       ]
     },
-    // ================================================================
-    // SUPER AGENT 5 - David Hakizimana (5 agents)
-    // ================================================================
     {
       id: '5',
       code: 'SA-005',
@@ -672,9 +656,6 @@ export class AgentService {
         }
       ]
     },
-    // ================================================================
-    // SUPER AGENT 6 - Esther Niyonzima (5 agents)
-    // ================================================================
     {
       id: '6',
       code: 'SA-006',
@@ -793,9 +774,6 @@ export class AgentService {
         }
       ]
     },
-    // ================================================================
-    // SUPER AGENT 7 à 10 (sans agents pour l'instant)
-    // ================================================================
     {
       id: '7',
       code: 'SA-007',
@@ -954,9 +932,6 @@ export class AgentService {
     }
   ];
 
-  // ============================================
-  // MÉTHODES PUBLIQUES
-  // ============================================
 
   getAgents(): Observable<Agent[]> {
     return of([...this.mockAgents]);
@@ -1012,7 +987,7 @@ export class AgentService {
     if (index === -1) {
       return throwError(() => new Error('Agent non trouvé'));
     }
-    
+
     const currentAgent = this.mockAgents[index];
     if (!currentAgent) {
       return throwError(() => new Error('Agent non trouvé'));
@@ -1023,7 +998,7 @@ export class AgentService {
       ...agentData,
       updatedAt: new Date()
     };
-    
+
     this.mockAgents[index] = updatedAgent;
     return of(updatedAgent);
   }
@@ -1044,14 +1019,14 @@ export class AgentService {
     const blocked = this.mockAgents.filter(a => a.status === AgentStatus.BLOCKED).length;
     const suspended = this.mockAgents.filter(a => a.status === AgentStatus.SUSPENDED).length;
     const inactive = this.mockAgents.filter(a => a.status === AgentStatus.INACTIVE).length;
-    
+
     const totalElectronics = this.mockAgents.reduce((acc, a) => acc + (a.electronics?.length || 0), 0);
     const totalAgents = this.mockAgents.reduce((acc, a) => acc + (a.agents?.length || 0), 0);
     const totalDeposits = this.mockAgents.reduce((acc, a) => acc + (a.deposits?.length || 0), 0);
-    
+
     let totalDepositAmount = 0;
     let totalTransactionAmount = 0;
-    
+
     this.mockAgents.forEach(agent => {
       agent.deposits?.forEach(d => {
         if (d.status === 'COMPLETED') {
@@ -1066,7 +1041,7 @@ export class AgentService {
         });
       });
     });
-    
+
     return of({
       total,
       active,
@@ -1101,9 +1076,9 @@ export class AgentService {
     if (!query || query.trim() === '') {
       return of([...this.mockAgents]);
     }
-    
+
     const searchTerm = query.toLowerCase().trim();
-    const filtered = this.mockAgents.filter(a => 
+    const filtered = this.mockAgents.filter(a =>
       a.firstName.toLowerCase().includes(searchTerm) ||
       a.lastName.toLowerCase().includes(searchTerm) ||
       a.phone.includes(searchTerm) ||

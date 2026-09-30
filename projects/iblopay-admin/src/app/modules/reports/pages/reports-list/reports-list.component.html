@@ -1,48 +1,235 @@
 <div class="reports-page">
-  <!-- Page Header -->
-  <div class="page-header">
-    <div class="page-header__left">
-      <h1 class="page-header__title">Rapports & Analytics</h1>
-      <p class="page-header__subtitle">Sélectionnez un rapport pour voir les détails</p>
-    </div>
-    <div class="page-header__right">
-      <div class="role-toggle">
-        <button [class.active]="currentRole === 'admin'" (click)="setRole('admin')">Admin</button>
-        <button [class.active]="currentRole === 'super_agent'" (click)="setRole('super_agent')">Super Agent</button>
-        <button [class.active]="currentRole === 'agent'" (click)="setRole('agent')">Agent</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Category Sections -->
-  <ng-container *ngFor="let catKey of getCategoryKeys()">
-    <h3 class="category-title">
-      {{ categoryLabels[catKey] || catKey }}
-    </h3>
-    <div class="reports-grid">
-      <div class="report-card" *ngFor="let r of getReportsByCategory(catKey)" (click)="openReport(r.route)">
-        <div class="report-card__inner">
-          <div class="report-card-icon" [style.background]="categoryColors[r.category] + '18'" [style.color]="categoryColors[r.category]">
-            <i [class]="r.icon"></i>
-          </div>
-          <div class="report-card__body">
-            <div class="report-card__header">
-              <h4 class="report-card__name">{{ r.name }}</h4>
-              <span class="category-badge" [style.background]="(categoryColors[r.category] || '#3b82f6') + '22'" [style.color]="categoryColors[r.category] || '#3b82f6'">
-                {{ (categoryLabels[r.category] || r.category).split(' &')[0] }}
-              </span>
-            </div>
-            <p class="report-card__desc">{{ r.description }}</p>
-          </div>
-          <i class="fa-solid fa-chevron-right report-card__arrow"></i>
+  <section class="page-heading">
+    <div>
+      <div class="breadcrumb"><span>Accueil</span><i class="fa-solid fa-chevron-right"></i><strong>Rapports</strong></div>
+      <div class="title-row">
+        <span class="title-icon"><i class="fa-solid fa-chart-simple"></i></span>
+        <div>
+          <h1>Rapports</h1>
+          <p>Consultez, filtrez et exportez tous les rapports de la plateforme.</p>
         </div>
       </div>
     </div>
-  </ng-container>
 
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="filteredReports.length === 0">
-    <i class="fa-solid fa-eye-slash"></i>
-    <p>Aucun rapport disponible pour ce rôle.</p>
-  </div>
+    <div class="heading-actions">
+      <div class="date-range">
+        <i class="fa-regular fa-calendar"></i>
+        <input type="date" [(ngModel)]="periodStart" />
+        <span>—</span>
+        <input type="date" [(ngModel)]="periodEnd" />
+      </div>
+      <button class="btn btn-primary" type="button" (click)="generateReport()">
+        <i class="fa-solid fa-chart-column"></i>
+        Générer le rapport
+      </button>
+    </div>
+  </section>
+
+  <section class="overview-grid">
+    <article class="overview-card" *ngFor="let item of overviewCards">
+      <span class="overview-icon" [ngClass]="'tone-' + item.tone"><i [class]="item.icon"></i></span>
+      <div class="overview-content">
+        <div class="overview-label">{{ item.label }}</div>
+        <div class="overview-value-row"><strong>{{ item.value }}</strong></div>
+        <small>{{ item.subtitle }}</small>
+      </div>
+    </article>
+  </section>
+
+  <section class="analytics-grid">
+    <article class="panel chart-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Évolution des transactions</h2>
+          <p>Survolez la courbe pour afficher les détails de chaque journée.</p>
+        </div>
+        <select [(ngModel)]="reportType" aria-label="Type de graphique">
+          <option value="all">Transactions</option>
+          <option value="clients">Clients</option>
+          <option value="agents">Agents</option>
+          <option value="commissions">Commissions</option>
+        </select>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="y-axis"><span>200M</span><span>150M</span><span>100M</span><span>50M</span><span>0</span></div>
+        <div class="chart-area">
+          <div class="grid-lines"><span></span><span></span><span></span><span></span><span></span></div>
+
+          <div
+            class="chart-tooltip"
+            *ngIf="chartHover as hover"
+            [style.left.%]="hover.leftPercent"
+            [style.top.%]="hover.topPercent">
+            <strong>{{ hover.point.label }}</strong>
+            <span><b>Volume :</b> {{ hover.point.amount }}</span>
+            <span><b>Transactions :</b> {{ hover.point.transactions }}</span>
+            <span><b>Réussies :</b> {{ hover.point.successful }}</span>
+          </div>
+
+          <svg
+            viewBox="0 0 665 150"
+            preserveAspectRatio="none"
+            aria-label="Courbe des transactions"
+            (mousemove)="onChartMove($event)"
+            (mouseleave)="clearChartHover()">
+            <defs>
+              <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2d72ed" stop-opacity="0.23" />
+                <stop offset="100%" stop-color="#2d72ed" stop-opacity="0.02" />
+              </linearGradient>
+            </defs>
+            <polygon [attr.points]="trendFillPoints" fill="url(#chartFill)"></polygon>
+            <polyline [attr.points]="trendPoints" fill="none" stroke="#2d72ed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <circle
+              *ngFor="let point of trendData"
+              [attr.cx]="point.x"
+              [attr.cy]="point.y"
+              r="4.5"
+              [attr.fill]="chartHover?.point === point ? '#ffffff' : '#2d72ed'"
+              stroke="#2d72ed"
+              stroke-width="2.5"></circle>
+          </svg>
+          <div class="x-axis"><span *ngFor="let point of trendData">{{ point.label }}</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel indicators-panel">
+      <div class="panel-header compact"><div><h2>Indicateurs clés de la période</h2><p>Performance globale des opérations</p></div></div>
+      <div class="indicator-grid">
+        <div class="indicator-card" *ngFor="let item of indicators">
+          <span class="indicator-icon" [ngClass]="'tone-' + item.tone"><i [class]="item.icon"></i></span>
+          <div class="indicator-content">
+            <span>{{ item.label }}</span>
+            <div class="indicator-value"><strong>{{ item.value }}</strong></div>
+            <small>{{ item.helper }}</small>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel filter-panel">
+    <div class="filter-title"><span><i class="fa-solid fa-filter"></i></span><strong>Filtres de rapport</strong></div>
+    <div class="filter-actions">
+      <button type="button" class="btn btn-ghost" (click)="resetFilters()"><i class="fa-solid fa-rotate"></i> Réinitialiser</button>
+      <button type="button" class="btn btn-primary" (click)="applyFilters()"><i class="fa-solid fa-magnifying-glass"></i> Appliquer les filtres</button>
+    </div>
+    <div class="filter-grid">
+      <label>
+        <span>Période</span>
+        <div class="field-with-icon"><i class="fa-regular fa-calendar"></i><input type="date" [(ngModel)]="periodStart" /></div>
+      </label>
+      <label>
+        <span>Type de rapport</span>
+        <select [(ngModel)]="reportType">
+          <option value="all">Toutes les catégories</option>
+          <option value="transactions">Transactions</option>
+          <option value="clients">Clients</option>
+          <option value="agents">Agents</option>
+          <option value="commissions">Commissions</option>
+        </select>
+      </label>
+      <label>
+        <span>Statut</span>
+        <select [(ngModel)]="status"><option value="all">Tous les statuts</option><option value="termine">Terminé</option><option value="en cours">En cours</option></select>
+      </label>
+      <label>
+        <span>Agent / Super agent</span>
+        <select [(ngModel)]="agent"><option value="all">Tous les agents</option><option value="agent-1">Agent 001</option><option value="super-agent-1">Super Agent 001</option></select>
+      </label>
+      <label>
+        <span>Province</span>
+        <select [(ngModel)]="province"><option value="all">Toutes les provinces</option><option>Bujumbura</option><option>Gitega</option><option>Butanyerera</option><option>Buhumuza</option><option>Burunga</option></select>
+      </label>
+      <label>
+        <span>Commune</span>
+        <select [(ngModel)]="commune"><option value="all">Toutes les communes</option><option>Mukaza</option><option>Ntahangwa</option><option>Muha</option></select>
+      </label>
+    </div>
+  </section>
+
+  <section class="reports-content-grid">
+    <aside class="panel category-panel">
+      <div class="category-heading"><span><i class="fa-solid fa-file-chart-column"></i></span><strong>Catégories de rapports</strong></div>
+      <button *ngFor="let category of categories" type="button" [class.active]="selectedCategory === category.key" (click)="selectCategory(category.key)">
+        <i [class]="category.icon"></i><span>{{ category.label }}</span>
+      </button>
+    </aside>
+
+    <article class="panel recent-panel">
+      <div class="recent-header">
+        <div class="recent-title"><span><i class="fa-solid fa-file-circle-check"></i></span><div><h2>Rapports récents</h2><p>Liste des rapports générés récemment</p></div></div>
+        <div class="recent-tools">
+          <div class="table-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" [(ngModel)]="search" placeholder="Rechercher un rapport..." /></div>
+          <button type="button" class="btn btn-outline" (click)="generateReport()"><i class="fa-solid fa-plus"></i> Nouveau rapport</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Nom du rapport</th><th>Type</th><th>Période</th><th>Généré le</th><th>Format</th><th>Statut</th><th class="actions-col">Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let report of paginatedReports; trackBy: trackById">
+              <td>{{ report.id > 100 ? '•' : report.id }}</td>
+              <td class="report-name">{{ report.name }}</td>
+              <td>{{ report.type }}</td>
+              <td>{{ report.period }}</td>
+              <td>{{ report.generatedAt }}</td>
+              <td><span class="format-badge" [class.excel]="report.format === 'Excel'">{{ report.format }}</span></td>
+              <td><span class="status-badge"><i class="fa-solid fa-circle-check"></i>{{ report.status }}</span></td>
+              <td class="action-buttons">
+                <button title="Voir le rapport détaillé" (click)="openReport(report)"><i class="fa-regular fa-eye"></i></button>
+                <button title="Télécharger" (click)="downloadReport(report)"><i class="fa-solid fa-download"></i></button>
+                <button class="danger" title="Supprimer" (click)="deleteReport(report)"><i class="fa-regular fa-trash-can"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedReports.length === 0"><td colspan="8" class="empty-table">Aucun rapport ne correspond aux filtres sélectionnés.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <div class="pagination">
+          <button (click)="changePage(page - 1)" [disabled]="page === 1"><i class="fa-solid fa-chevron-left"></i></button>
+          <button *ngFor="let p of pages" (click)="changePage(p)" [class.active]="p === page">{{ p }}</button>
+          <button (click)="changePage(page + 1)" [disabled]="page === totalPages"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="result-count">Affichage de {{ filteredReports.length ? ((page - 1) * pageSize + 1) : 0 }} à {{ page * pageSize > filteredReports.length ? filteredReports.length : page * pageSize }} sur {{ filteredReports.length }} résultats</div>
+        <select [(ngModel)]="pageSize" (ngModelChange)="page = 1"><option [ngValue]="6">6</option><option [ngValue]="10">10</option><option [ngValue]="20">20</option></select>
+      </div>
+    </article>
+  </section>
+</div>
+
+<div class="report-modal-backdrop" *ngIf="selectedReport && selectedNarrative" (click)="closeReport()">
+  <section class="report-document" (click)="$event.stopPropagation()">
+    <header class="report-document-header">
+      <div>
+        <span class="document-kicker">IBLOPAY · RAPPORT DÉTAILLÉ</span>
+        <h2>{{ selectedNarrative.title }}</h2>
+        <p>{{ selectedNarrative.subtitle }}</p>
+      </div>
+      <button type="button" class="modal-close" (click)="closeReport()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+
+    <div class="report-meta-line">
+      <span><strong>Période :</strong> {{ selectedReport.period }}</span>
+      <span><strong>Généré le :</strong> {{ selectedReport.generatedAt }}</span>
+      <span><strong>Statut :</strong> {{ selectedReport.status }}</span>
+    </div>
+
+    <div class="report-prose">
+      <p *ngFor="let paragraph of selectedNarrative.paragraphs">{{ paragraph }}</p>
+    </div>
+
+    <footer class="report-document-footer">
+      <span>Document généré depuis l’espace Rapports IBLOPAY.</span>
+      <div>
+        <button type="button" class="btn btn-ghost" (click)="printSelectedReport()"><i class="fa-solid fa-print"></i> Imprimer</button>
+        <button type="button" class="btn btn-primary" (click)="closeReport()">Fermer</button>
+      </div>
+    </footer>
+  </section>
 </div>

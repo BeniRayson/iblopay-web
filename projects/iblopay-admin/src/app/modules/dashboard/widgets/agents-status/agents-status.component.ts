@@ -1,4 +1,3 @@
-// src/app/modules/dashboard/widgets/agents-status/agents-status.component.ts
 import { Component, Input } from '@angular/core';
 
 @Component({

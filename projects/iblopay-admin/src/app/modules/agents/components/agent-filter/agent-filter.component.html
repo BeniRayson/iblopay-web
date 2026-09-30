@@ -1,0 +1,15 @@
+<div class="filter-container">
+      <input
+        type="text"
+        placeholder="Rechercher..."
+        (input)="onSearch($event)"
+        class="search-input"
+      />
+      <select (change)="onStatusChange($event)" class="filter-select">
+        <option value="">Tous les statuts</option>
+        <option value="ACTIVE">Actif</option>
+        <option value="PENDING">En attente</option>
+        <option value="SUSPENDED">Suspendu</option>
+        <option value="BLOCKED">Bloqué</option>
+      </select>
+    </div>

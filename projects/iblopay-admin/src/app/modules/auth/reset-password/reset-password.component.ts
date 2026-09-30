@@ -1,4 +1,3 @@
-// src/app/modules/auth/reset-password/reset-password.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -23,7 +22,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
   phoneNumber = '';
-  
+
   showNewPin = false;
   showConfirmPin = false;
 
@@ -37,11 +36,9 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Get phone from query params
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.phoneNumber = params['phone'] || '';
       if (!this.phoneNumber) {
-        // Redirect to forgot password if no phone is present
         this.router.navigate([AUTH_CONSTANTS.FORGOT_PASSWORD_ROUTE]);
       }
     });
@@ -108,7 +105,6 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     const control = this.resetForm.get(fieldName);
     if (!control) return '';
 
-    // Check cross-field mismatch first for confirm_pin
     if (fieldName === 'confirm_pin' && this.resetForm.errors?.['pinMismatch'] && control.touched) {
       return 'Les PINs ne correspondent pas';
     }

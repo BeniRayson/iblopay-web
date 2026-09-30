@@ -1,20 +1,62 @@
-<div class="services-publics-detail">
-    <!-- Bouton Retour -->
-    <button class="back-btn" (click)="goBack()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-        Retour à la liste
-    </button>
+<!-- ============================================================
+     LIGNE D'ACTIVITÉ  (colonnes : icône | titre + détails | date)
+     ============================================================ -->
+<ng-template #activityRow let-act let-showType="showType">
+    <li class="act" [ngClass]="'act--' + act.type">
+        <span class="act__icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <ng-container [ngSwitch]="act.type">
+                    <ng-container *ngSwitchCase="'paiement'">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v8M8 12h8" />
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'utilisateur'">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'categorie'">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'type-rnf'">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </ng-container>
+                    <ng-container *ngSwitchDefault>
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v4l3 2" />
+                    </ng-container>
+                </ng-container>
+            </svg>
+        </span>
 
-    <!-- Loading -->
+        <div class="act__body">
+            <strong class="act__title">{{ act.title }}</strong>
+            <span class="act__meta">
+                <span class="act__tag" *ngIf="showType">{{ getActivityTypeLabel(act.type) }}</span>
+                <span class="act__user" *ngIf="act.user">par {{ act.user }}</span>
+            </span>
+        </div>
+
+        <time class="act__time">
+            <span>{{ act.date | date:'dd/MM/yyyy' }}</span>
+            <small>{{ act.date | date:'HH:mm' }}</small>
+        </time>
+    </li>
+</ng-template>
+
+
+<div class="services-publics-detail">
+
     <div *ngIf="loading" class="loading">
         <div class="loader-spinner"></div>
         <span>Chargement...</span>
     </div>
 
-    <!-- Not Found -->
+
     <div *ngIf="!loading && notFound" class="not-found">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
             stroke-linecap="round" stroke-linejoin="round">
@@ -23,16 +65,22 @@
             <line x1="9" y1="9" x2="15" y2="15" />
         </svg>
         <span>Service introuvable</span>
+        <button type="button" class="back-btn" (click)="goBack()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Retour à la liste
+        </button>
     </div>
 
-    <!-- Détail -->
-    <div *ngIf="!loading && service" class="detail-container">
-        <!-- Carte d'information principale -->
-        <div class="detail-card">
-            <div class="detail-header">
+
+    <div *ngIf="!loading && service" class="detail-shell">
+
+        <header class="detail-header">
                 <div class="detail-title">
                     <span class="detail-icon" [style.background]="getServiceColor(service.abreviation)">
-                        {{ service.abreviation.charAt(0) }}
+                        {{ getServiceInitials(service.abreviation) }}
                     </span>
                     <div>
                         <h2>{{ service.abreviation }}</h2>
@@ -41,39 +89,24 @@
                 </div>
                 <div class="detail-badges">
                     <span class="badge" [ngClass]="service.type === 'INTERNE' ? 'badge-interne' : 'badge-externe'">
-                        {{ service.type }}
+                        {{ service.type === 'INTERNE' ? 'Interne' : 'Externe' }}
                     </span>
                     <span class="badge" [ngClass]="service.actif ? 'badge-actif' : 'badge-inactif'">
                         <span class="status-dot"></span>
-                        {{ service.actif ? 'Actif' : 'Inactif' }}
+                        {{ service.actif ? 'Actif' : 'Désactivé' }}
                     </span>
+                    <button type="button" class="btn-edit" (click)="onEdit()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
+                        </svg>
+                        Modifier
+                    </button>
                 </div>
-            </div>
+        </header>
 
-            <div class="detail-body">
-                <div class="detail-grid">
-                    <div class="detail-item"><span class="label">Numéro</span><span class="value">{{ service.numero
-                            }}</span></div>
-                    <div class="detail-item"><span class="label">Version</span><span class="value">{{ service.version ||
-                            'N/A' }}</span></div>
-                    <div class="detail-item"><span class="label">Date de création</span><span class="value">{{
-                            service.dateCreation | date:'dd/MM/yyyy' }}</span></div>
-                    <div class="detail-item"><span class="label">Responsable</span><span class="value">{{
-                            service.responsable || 'Non défini' }}</span></div>
-                    <div class="detail-item"><span class="label">Email</span><span class="value">{{ service.email
-                            }}</span></div>
-                    <div class="detail-item"><span class="label">Téléphone</span><span class="value">{{
-                            service.telephone }}</span></div>
-                    <div class="detail-item"><span class="label">Site Web</span><span class="value"><a
-                                [href]="service.siteWeb" target="_blank">{{ service.siteWeb }}</a></span></div>
-                    <div class="detail-item full-width"><span class="label">Description</span><span class="value">{{
-                            service.description }}</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- NAVBAR DES MODULES -->
-        <div class="modules-navbar">
+        <nav class="modules-navbar">
             <button class="module-tab" [class.active]="activeModule === 'apercu'" (click)="switchModule('apercu')">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
@@ -152,13 +185,34 @@
                 Activités
                 <span class="tab-badge">{{ getAllActivitiesCount() }}</span>
             </button>
-        </div>
+        </nav>
 
-        <!-- ============================================================ -->
-        <!-- MODULE : APERÇU -->
-        <!-- ============================================================ -->
+        <div class="detail-scroll">
         <div *ngIf="activeModule === 'apercu'" class="module-content">
-            <!-- Statistiques horizontales -->
+
+            <!-- Informations du service -->
+            <div class="detail-body">
+                <div class="detail-grid">
+                    <div class="detail-item"><span class="label">Numéro</span><span class="value">{{ service.numero
+                            }}</span></div>
+                    <div class="detail-item"><span class="label">Version</span><span class="value">{{ service.version ||
+                            'N/A' }}</span></div>
+                    <div class="detail-item"><span class="label">Date de création</span><span class="value">{{
+                            service.dateCreation | date:'dd/MM/yyyy' }}</span></div>
+                    <div class="detail-item"><span class="label">Responsable</span><span class="value">{{
+                            service.responsable || 'Non défini' }}</span></div>
+                    <div class="detail-item"><span class="label">Email</span><span class="value">{{ service.email
+                            }}</span></div>
+                    <div class="detail-item"><span class="label">Téléphone</span><span class="value">{{
+                            service.telephone }}</span></div>
+                    <div class="detail-item"><span class="label">Site Web</span><span class="value"><a
+                                [href]="service.siteWeb" target="_blank">{{ service.siteWeb }}</a></span></div>
+                    <div class="detail-item full-width"><span class="label">Description</span><span class="value">{{
+                            service.description }}</span></div>
+                </div>
+            </div>
+
+
             <div class="stats-horizontal">
                 <div class="stat-card-horizontal">
                     <div class="stat-icon total">
@@ -233,51 +287,24 @@
                 </div>
             </div>
 
-            <!-- Dernières activités en temps réel -->
+
             <div class="activity-card">
                 <div class="activity-header">
                     <h3>Dernières activités <span class="activity-realtime">En direct</span></h3>
                     <button class="btn-voir-tout" (click)="switchModule('activites')">Voir toutes les activités
                         →</button>
                 </div>
-                <div class="activity-list activity-timeline">
-                    <div class="activity-item" *ngFor="let act of getRecentActivities(10)">
-                        <div class="activity-rail">
-                            <div class="activity-icon" [class]="act.type">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle *ngIf="act.type === 'paiement'" cx="12" cy="12" r="10" />
-                                    <path *ngIf="act.type === 'paiement'" d="M12 8v8M8 12h8" />
-                                    <path *ngIf="act.type === 'utilisateur'"
-                                        d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                                    <circle *ngIf="act.type === 'utilisateur'" cx="12" cy="7" r="4" />
-                                    <path *ngIf="act.type === 'categorie'" d="M12 2v4M12 22v-4M4 12H2M6 12H4" />
-                                    <path *ngIf="act.type === 'categorie'" d="M22 12h-2M20 12h-2" />
-                                    <circle *ngIf="act.type === 'categorie'" cx="12" cy="12" r="2" />
-                                    <path *ngIf="act.type === 'type-rnf'"
-                                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                                    <polyline *ngIf="act.type === 'type-rnf'" points="14 2 14 8 20 8" />
-                                    <path *ngIf="act.type === 'system'" d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                                    <path *ngIf="act.type === 'system'" d="M12 8v4l3 2" />
-                                </svg>
-                            </div>
-                            <span class="activity-connector"></span>
-                        </div>
-                        <div class="activity-content">
-                            <span class="activity-title">{{ act.title }}</span>
-                            <span class="activity-meta">
-                                <span class="activity-date">{{ act.date | date:'dd/MM/yyyy HH:mm' }}</span>
-                                <span class="activity-user" *ngIf="act.user">— {{ act.user }}</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                <ul class="act-list">
+                    <ng-container *ngFor="let act of getRecentActivities(10)">
+                        <ng-container *ngTemplateOutlet="activityRow; context: { $implicit: act, showType: true }"></ng-container>
+                    </ng-container>
+                </ul>
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- MODULE : UTILISATEURS -->
-        <!-- ============================================================ -->
+
+
+
         <div *ngIf="activeModule === 'utilisateurs'" class="module-content">
             <div class="module-header">
                 <h3>Gestion des utilisateurs</h3>
@@ -383,9 +410,9 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- MODULE : DEMANDES EN ATTENTE -->
-        <!-- ============================================================ -->
+
+
+
         <div *ngIf="activeModule === 'demandes'" class="module-content">
             <div class="module-header">
                 <h3>Demandes en attente</h3>
@@ -404,7 +431,7 @@
             </div>
 
             <div class="demandes-grid">
-                <!-- Carte de statistiques des demandes -->
+
                 <div class="demandes-stats">
                     <div class="stat-card-horizontal">
                         <div class="stat-icon total">
@@ -465,7 +492,7 @@
                     </div>
                 </div>
 
-                <!-- Liste des demandes -->
+
                 <div class="table-scroll" *ngIf="service.demandesEnAttente && service.demandesEnAttente.length > 0">
                     <table class="modern-table">
                         <thead>
@@ -571,9 +598,9 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- MODULE : CATÉGORIES -->
-        <!-- ============================================================ -->
+
+
+
         <div *ngIf="activeModule === 'categories'" class="module-content">
             <div class="module-header">
                 <h3>Catégories du service</h3>
@@ -649,9 +676,9 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- MODULE : TYPES RNF -->
-        <!-- ============================================================ -->
+
+
+
         <div *ngIf="activeModule === 'types-rnf'" class="module-content">
             <div class="module-header">
                 <h3>Types de RNF</h3>
@@ -736,9 +763,9 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- MODULE : PAIEMENTS RNF -->
-        <!-- ============================================================ -->
+
+
+
         <div *ngIf="activeModule === 'paiements'" class="module-content">
             <div class="module-header">
                 <h3>Paiements des RNF</h3>
@@ -813,9 +840,9 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- MODULE : ACTIVITÉS (journal complet) -->
-        <!-- ============================================================ -->
+
+
+
         <div *ngIf="activeModule === 'activites'" class="module-content">
             <div class="module-header">
                 <h3>Journal des activités</h3>
@@ -840,39 +867,11 @@
             </div>
 
             <div class="activity-card">
-                <div class="activity-list activity-timeline" *ngIf="paginatedActivities.length > 0">
-                    <div class="activity-item" *ngFor="let act of paginatedActivities">
-                        <div class="activity-rail">
-                            <div class="activity-icon" [class]="act.type">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle *ngIf="act.type === 'paiement'" cx="12" cy="12" r="10" />
-                                    <path *ngIf="act.type === 'paiement'" d="M12 8v8M8 12h8" />
-                                    <path *ngIf="act.type === 'utilisateur'"
-                                        d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                                    <circle *ngIf="act.type === 'utilisateur'" cx="12" cy="7" r="4" />
-                                    <path *ngIf="act.type === 'categorie'" d="M12 2v4M12 22v-4M4 12H2M6 12H4" />
-                                    <path *ngIf="act.type === 'categorie'" d="M22 12h-2M20 12h-2" />
-                                    <circle *ngIf="act.type === 'categorie'" cx="12" cy="12" r="2" />
-                                    <path *ngIf="act.type === 'type-rnf'"
-                                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                                    <polyline *ngIf="act.type === 'type-rnf'" points="14 2 14 8 20 8" />
-                                    <path *ngIf="act.type === 'system'" d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                                    <path *ngIf="act.type === 'system'" d="M12 8v4l3 2" />
-                                </svg>
-                            </div>
-                            <span class="activity-connector"></span>
-                        </div>
-                        <div class="activity-content">
-                            <span class="activity-title">{{ act.title }}</span>
-                            <span class="activity-meta">
-                                <span class="activity-type-label">{{ getActivityTypeLabel(act.type) }}</span>
-                                <span class="activity-date">{{ act.date | date:'dd/MM/yyyy HH:mm' }}</span>
-                                <span class="activity-user" *ngIf="act.user">— {{ act.user }}</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                <ul class="act-list" *ngIf="paginatedActivities.length > 0">
+                    <ng-container *ngFor="let act of paginatedActivities">
+                        <ng-container *ngTemplateOutlet="activityRow; context: { $implicit: act, showType: true }"></ng-container>
+                    </ng-container>
+                </ul>
 
                 <div class="empty-state" *ngIf="paginatedActivities.length === 0">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -909,9 +908,20 @@
                 </div>
             </div>
         </div>
+        </div>
+
+        <footer class="detail-footer">
+            <button type="button" class="back-btn" (click)="goBack()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Retour à la liste
+            </button>
+        </footer>
     </div>
 
-    <!-- Fiche rapide : Type RNF -->
+
     <div class="modal-overlay" *ngIf="viewingTypeRNF" (click)="closeTypeRNFModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header">
@@ -956,7 +966,7 @@
         </div>
     </div>
 
-    <!-- Fiche rapide : Demande -->
+
     <div class="modal-overlay" *ngIf="viewingDemande" (click)="closeDemandeModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header">

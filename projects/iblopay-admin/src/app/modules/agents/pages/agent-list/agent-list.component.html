@@ -1,105 +1,76 @@
-<!-- src/app/modules/agents/pages/agent-list/agent-list.component.html -->
-
+<div class="super-agent-page">
   <main class="main-content">
-    <!-- Page Title -->
-    <div class="page-title-section">
+    <section class="page-title-section">
       <div>
-        <h1><i class="fas fa-user-tie"></i> Super Agents</h1>
-        <p class="subtitle">Gérez tous les super agents de la plateforme IbloPay</p>
+        <div class="breadcrumb">Accueil <i class="fas fa-chevron-right"></i> <strong>Super Agents</strong></div>
+        <h1>Super Agents</h1>
+        <p class="subtitle">Gérez vos super agents, consultez leurs informations et effectuez des opérations.</p>
       </div>
       <button class="btn-primary" (click)="createAgent()">
-        <i class="fas fa-plus-circle"></i> Nouveau Super Agent
+        <i class="fas fa-plus"></i>
+        Nouveau Super Agent
       </button>
-    </div>
+    </section>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stat-card blue">
+    <section class="stats-grid">
+      <article class="stat-card blue">
         <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-info">
+        <div class="stat-copy">
           <span class="stat-value">{{ stats.total }}</span>
           <span class="stat-label">Total Super Agents</span>
         </div>
-        <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 12.5%</span>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="stat-info">
+        <i class="fas fa-user-group stat-side-icon"></i>
+      </article>
+
+      <article class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-check"></i></div>
+        <div class="stat-copy">
           <span class="stat-value">{{ stats.active }}</span>
           <span class="stat-label">Actifs</span>
         </div>
-        <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 8.3%</span>
-      </div>
-      <div class="stat-card orange">
-        <div class="stat-icon"><i class="fas fa-clock"></i></div>
-        <div class="stat-info">
+        <i class="fas fa-arrows-rotate stat-side-icon"></i>
+      </article>
+
+      <article class="stat-card orange">
+        <div class="stat-icon"><i class="fas fa-pause"></i></div>
+        <div class="stat-copy">
           <span class="stat-value">{{ stats.pending }}</span>
-          <span class="stat-label">En attente</span>
+          <span class="stat-label">Suspendus / en attente</span>
         </div>
-        <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 2.1%</span>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-icon"><i class="fas fa-ban"></i></div>
-        <div class="stat-info">
+        <i class="fas fa-clock stat-side-icon"></i>
+      </article>
+
+      <article class="stat-card red">
+        <div class="stat-icon"><i class="fas fa-lock"></i></div>
+        <div class="stat-copy">
           <span class="stat-value">{{ stats.blocked }}</span>
           <span class="stat-label">Bloqués</span>
         </div>
-        <span class="stat-change negative"><i class="fas fa-arrow-down"></i> 0.5%</span>
-      </div>
-      <div class="stat-card purple">
-        <div class="stat-icon"><i class="fas fa-coins"></i></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ stats.totalElectronicsAmount | number:'1.0-0' }}</span>
-          <span class="stat-label">Électroniques en circulation</span>
-        </div>
-        <span class="stat-change positive"><i class="fas fa-arrow-up"></i> 5.2%</span>
-      </div>
-    </div>
+        <i class="fas fa-lock stat-side-icon"></i>
+      </article>
+    </section>
 
-    <!-- Filters - DÉPLACÉ ICI (en dessous des stats) -->
-    <div class="filters-section">
-      <div class="filters-left">
-        <!-- Recherche -->
-        <div class="filter-group search-group">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Rechercher par nom, carte..." (input)="onSearch($event)" [value]="searchTerm" />
+    <section class="table-card">
+      <div class="table-toolbar">
+        <div>
+          <h2>Liste des super agents</h2>
+          <p>{{ filteredAgents.length }} super agent{{ filteredAgents.length > 1 ? 's' : '' }}</p>
         </div>
-        <!-- Filtre Statut -->
-        <div class="filter-group">
-          <i class="fas fa-filter"></i>
-          <select (change)="onStatusChange($event)">
+
+        <div class="toolbar-actions">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              placeholder="Rechercher un super agent..."
+              [value]="searchTerm"
+              (input)="onSearch($event)"
+            />
+          </div>
+          <select class="status-filter" (change)="onStatusChange($event)">
             <option *ngFor="let status of statuses" [value]="status.value">{{ status.label }}</option>
           </select>
-        </div>
-        <!-- Date début -->
-        <div class="filter-group">
-          <i class="fas fa-calendar-alt"></i>
-          <input type="date" placeholder="Date de début" />
-        </div>
-        <!-- Date fin -->
-        <div class="filter-group">
-          <i class="fas fa-calendar-alt"></i>
-          <input type="date" placeholder="Date de fin" />
-        </div>
-        <!-- Bouton réinitialiser -->
-        <button class="btn-secondary" (click)="resetFilters()">
-          <i class="fas fa-redo-alt"></i> Réinitialiser
-        </button>
-      </div>
-      <!-- Bouton exporter -->
-      <div class="filters-right">
-        <button class="btn-export">
-          <i class="fas fa-file-export"></i> Exporter
-        </button>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="table-wrapper">
-      <div class="table-header">
-        <div class="table-title">
-          <span>Liste des Super Agents</span>
-          <span class="table-count">{{ filteredAgents.length }} agents</span>
+          <button class="filter-btn" (click)="resetFilters()"><i class="fas fa-rotate-right"></i> Réinitialiser</button>
         </div>
       </div>
 
@@ -107,76 +78,60 @@
         <table class="modern-table">
           <thead>
             <tr>
-              <th style="min-width:180px;">Super Agent</th>
-              <th style="min-width:130px;">Carte</th>
-              <th style="min-width:150px;">Contact</th>
-              <th style="min-width:150px;">Adresse</th>
-              <th style="min-width:110px;text-align:center;">Électroniques</th>
-              <th style="min-width:70px;text-align:center;">Agents</th>
-              <th style="min-width:100px;">Statut</th>
-              <th style="min-width:140px;text-align:center;">Actions</th>
+              <th>#</th>
+              <th>Nom</th>
+              <th>Code</th>
+              <th>Téléphone</th>
+              <th>Statut</th>
+              <th class="align-right">Solde (BIF)</th>
+              <th>Date d'ajout</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngIf="isLoading">
-              <td colspan="8" class="loading-cell">
-                <div class="spinner"></div>
-                <span>Chargement...</span>
-              </td>
+              <td colspan="8" class="loading-cell"><div class="spinner"></div><span>Chargement...</span></td>
             </tr>
+
             <tr *ngIf="!isLoading && paginatedAgents.length === 0">
-              <td colspan="8" class="empty-cell">
-                <i class="fas fa-users"></i>
-                <p>Aucun super agent trouvé</p>
-              </td>
+              <td colspan="8" class="empty-cell"><i class="fas fa-users"></i><span>Aucun super agent trouvé</span></td>
             </tr>
+
             <tr *ngFor="let agent of paginatedAgents; let i = index">
+              <td class="row-number">{{ getStartIndex() + i }}</td>
               <td>
                 <div class="agent-cell">
-                  <div class="agent-avatar" [style.background]="'hsl(' + (i * 45 + 200) + ', 70%, 50%)'">
-                    {{ getInitials(agent.firstName, agent.lastName) }}
-                  </div>
-                  <div class="agent-info">
-                    <div class="agent-name">{{ agent.firstName }} {{ agent.lastName }}</div>
-                    <div class="agent-code">{{ agent.code }}</div>
+                  <div class="agent-avatar">{{ getInitials(agent.firstName, agent.lastName) }}</div>
+                  <div class="agent-name-wrap">
+                    <strong>{{ agent.firstName }} {{ agent.lastName }}</strong>
+                    <span>{{ agent.email }}</span>
                   </div>
                 </div>
               </td>
-              <td><span class="card-number">{{ agent.cardNumber }}</span></td>
-              <td>
-                <div class="contact-info">
-                  <span class="phone">{{ agent.phone }}</span>
-                  <span class="email">{{ agent.email }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="address-cell">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <span>{{ agent.address.completeAddress }}</span>
-                </div>
-              </td>
-              <td style="text-align:center;">
-                <span class="electronics-amount">{{ getTotalElectronicsAmount(agent) | number:'1.0-0' }} <span class="electronics-label">Fbu</span></span>
-              </td>
-              <td style="text-align:center;"><span class="badge">{{ agent.agents?.length || 0 }}</span></td>
+              <td><span class="agent-code">{{ agent.code }}</span></td>
+              <td><span class="phone">{{ agent.phone }}</span></td>
               <td>
                 <span class="status-badge" [class]="getStatusClass(agent.status)">
-                  <span class="status-dot"></span>
-                  {{ getStatusLabel(agent.status) }}
+                  <span class="status-dot"></span>{{ getStatusLabel(agent.status) }}
                 </span>
               </td>
+              <td class="align-right"><strong class="balance">{{ getTotalElectronicsAmount(agent) | number:'1.0-0' }}</strong></td>
+              <td><span class="date-text">{{ agent.createdAt | date:'dd/MM/yyyy' }}</span></td>
               <td>
                 <div class="action-buttons">
-                  <button class="action-btn view" (click)="viewAgent(agent)" title="Voir le détail">
+                  <button class="action-btn view" (click)="viewAgent(agent)" title="Voir">
                     <i class="fas fa-eye"></i>
                   </button>
                   <button class="action-btn fund" (click)="openFunding(agent)" title="Approvisionner">
-                    <i class="fas fa-coins"></i>
+                    <i class="fas fa-wallet"></i>
                   </button>
-                  <button class="action-btn block" (click)="openBlockOtpModal(agent)" 
-                          [class.unblock]="agent.status === 'BLOCKED'"
-                          title="{{ agent.status === 'BLOCKED' ? 'Débloquer' : 'Bloquer' }}">
-                    <i class="fas" [class.fa-lock]="agent.status !== 'BLOCKED'" [class.fa-unlock]="agent.status === 'BLOCKED'"></i>
+                  <button
+                    class="action-btn block"
+                    [class.unblock]="agent.status === 'BLOCKED'"
+                    (click)="openBlockOtpModal(agent)"
+                    [title]="agent.status === 'BLOCKED' ? 'Débloquer' : 'Bloquer'"
+                  >
+                    <i class="fas" [class.fa-unlock]="agent.status === 'BLOCKED'" [class.fa-lock]="agent.status !== 'BLOCKED'"></i>
                   </button>
                 </div>
               </td>
@@ -185,86 +140,45 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div class="table-footer">
-        <div class="pagination-info">
-          Affichage de <strong>{{ getStartIndex() }}</strong> à <strong>{{ getEndIndex() }}</strong> sur <strong>{{ filteredAgents.length }}</strong>
-        </div>
+      <div class="table-footer" *ngIf="filteredAgents.length > 0">
+        <span>Affichage de {{ getStartIndex() }} à {{ getEndIndex() }} sur {{ filteredAgents.length }}</span>
         <div class="pagination-controls">
-          <button (click)="changePage('prev')" [disabled]="currentPage === 1">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <button *ngFor="let page of [].constructor(totalPages); let i = index" 
-                  [class.active]="currentPage === i + 1"
-                  (click)="goToPage(i + 1)">
-            {{ i + 1 }}
-          </button>
-          <button (click)="changePage('next')" [disabled]="currentPage === totalPages">
-            <i class="fas fa-chevron-right"></i>
-          </button>
+          <button (click)="changePage('prev')" [disabled]="currentPage === 1"><i class="fas fa-chevron-left"></i></button>
+          <button
+            *ngFor="let page of [].constructor(totalPages); let i = index"
+            [class.active]="currentPage === i + 1"
+            (click)="goToPage(i + 1)"
+          >{{ i + 1 }}</button>
+          <button (click)="changePage('next')" [disabled]="currentPage === totalPages"><i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
-    </div>
+    </section>
   </main>
 
-  <!-- ================= MODAL OTP ================= -->
   <div class="otp-modal-overlay" *ngIf="showOtpModal" (click)="closeOtpModal()">
     <div class="otp-modal" (click)="$event.stopPropagation()">
-      <button class="otp-modal-close" (click)="closeOtpModal()">&times;</button>
-
-      <div class="otp-modal-icon">
-        <i class="fas fa-shield-alt"></i>
-      </div>
-
+      <button class="otp-modal-close" (click)="closeOtpModal()"><i class="fas fa-xmark"></i></button>
+      <div class="otp-modal-icon"><i class="fas fa-shield-halved"></i></div>
       <h3>Confirmation {{ blockAction === 'bloquer' ? 'de blocage' : 'de déblocage' }}</h3>
-
-      <p class="otp-modal-desc" *ngIf="agentToBlock">
-        Pour {{ blockAction }} l'agent <strong>{{ agentToBlock.firstName }} {{ agentToBlock.lastName }}</strong>,
-        veuillez entrer le code de vérification envoyé à votre numéro de téléphone.
-      </p>
-
-      <!-- Message d'erreur -->
-      <div class="otp-error" *ngIf="otpError">
-        <i class="fas fa-exclamation-circle"></i> {{ otpError }}
-      </div>
-
-      <!-- Champ OTP -->
-      <div class="otp-input-group">
-        <label for="otpCode">Code de vérification</label>
-        <input
-          id="otpCode"
-          type="text"
-          inputmode="numeric"
-          pattern="[0-9]*"
-          maxlength="6"
-          placeholder="123456"
-          [value]="otpCode"
-          (input)="otpCode = $any($event.target).value"
-          autocomplete="one-time-code"
-          class="otp-input"
-        />
-        <small>Code de simulation : 123456</small>
-      </div>
-
-      <!-- Boutons -->
+      <p *ngIf="agentToBlock">Entrez le code OTP pour {{ blockAction }} <strong>{{ agentToBlock.firstName }} {{ agentToBlock.lastName }}</strong>.</p>
+      <div class="otp-error" *ngIf="otpError"><i class="fas fa-circle-exclamation"></i>{{ otpError }}</div>
+      <label>Code de vérification</label>
+      <input
+        class="otp-input"
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="123456"
+        [value]="otpCode"
+        (input)="otpCode = $any($event.target).value"
+      />
+      <small>Code de simulation : 123456</small>
       <div class="otp-actions">
-        <button class="otp-btn-cancel" (click)="closeOtpModal()" [disabled]="otpLoading">
-          Annuler
-        </button>
-        <button class="otp-btn-confirm" (click)="verifyOtpAndBlock()" [disabled]="otpLoading || !otpCode">
-          <span *ngIf="!otpLoading">Confirmer {{ blockAction === 'bloquer' ? 'le blocage' : 'le déblocage' }}</span>
-          <span *ngIf="otpLoading" class="otp-btn-loader">
-            <span class="otp-spinner"></span> Vérification...
-          </span>
-        </button>
-      </div>
-
-      <!-- Renvoyer -->
-      <div class="otp-resend">
-        <span *ngIf="!otpCanResend">Renvoyer le code dans <strong>{{ otpCooldown }}s</strong></span>
-        <button *ngIf="otpCanResend" (click)="resendOtp()" class="otp-resend-btn" [disabled]="otpLoading">
-          <i class="fas fa-redo"></i> Renvoyer le code
+        <button class="otp-btn-cancel" (click)="closeOtpModal()">Annuler</button>
+        <button class="otp-btn-confirm" (click)="verifyOtpAndBlock()" [disabled]="otpLoading">
+          {{ otpLoading ? 'Vérification...' : 'Confirmer' }}
         </button>
       </div>
     </div>
   </div>
+</div>

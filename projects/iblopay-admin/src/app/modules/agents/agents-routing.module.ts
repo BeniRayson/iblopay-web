@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AgentListComponent } from './pages/agent-list/agent-list.component';
 import { AgentDetailComponent } from './pages/agent-detail/agent-detail.component';
@@ -15,12 +15,12 @@ const routes: Routes = [
     component: AgentCreateComponent
   },
   {
-    path: ':id',
-    component: AgentDetailComponent
-  },
-  {
     path: ':id/approvisionnement',
     component: AgentApprovisionnementComponent
+  },
+  {
+    path: ':id',
+    component: AgentDetailComponent
   }
 ];
 

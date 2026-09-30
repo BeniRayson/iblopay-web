@@ -23,8 +23,12 @@ interface Partner {
   swiftCode: string;
   accountNumber: string;
   isActive: boolean;
-  /** Champ UI uniquement (hors contrat backend) — utilisé par l'onglet "Par catégorie" */
+
   category?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
 }
 
 interface Integration {
@@ -73,24 +77,21 @@ export class PartnersSettingsComponent implements OnInit {
   toasts: Toast[] = [];
   private toastSeq = 0;
 
-  // Filters
   searchTerm: string = '';
   categoryFilter: string = '';
   statusFilter: string = '';
 
-  // Pagination
   pageSize: number = 12;
   currentPage: number = 1;
   filteredPartners: Partner[] = [];
 
-  // Tri (liste)
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
 
   tabs: TabItem[] = [
     { key: 'tous', label: 'Tous les partenaires', icon: '🤝' },
     { key: 'categories', label: 'Par catégorie', icon: '📂' },
-    { key: 'integrations', label: 'Intégrations', icon: '🔌' },
+    { key: 'integrations', label: 'Intégrations & API', icon: '🔌' },
     { key: 'commissions', label: 'Commissions', icon: '💰' }
   ];
 
@@ -110,7 +111,11 @@ export class PartnersSettingsComponent implements OnInit {
       swiftCode: 'BRBUBI01',
       accountNumber: '20001160001',
       isActive: true,
-      category: 'Banque'
+      category: 'Banque',
+      email: 'contact@brb.bi',
+      phone: '+257 22 25 12 34',
+      address: "Avenue de l’Indépendance, Bujumbura, Burundi",
+      notes: 'Partenaire principal pour les transactions bancaires nationales.'
     },
     {
       id: '2',
@@ -119,7 +124,11 @@ export class PartnersSettingsComponent implements OnInit {
       swiftCode: 'BCBUBI01',
       accountNumber: '20002260002',
       isActive: true,
-      category: 'Banque'
+      category: 'Banque',
+      email: 'contact@banque.bi',
+      phone: '+257 22 20 00 00',
+      address: 'Bujumbura, Burundi',
+      notes: 'Partenaire bancaire enregistré dans IBLOPAY.'
     },
     {
       id: '3',
@@ -128,7 +137,11 @@ export class PartnersSettingsComponent implements OnInit {
       swiftCode: 'BCBIBI01',
       accountNumber: '20003360003',
       isActive: true,
-      category: 'Banque'
+      category: 'Banque',
+      email: 'contact@banque.bi',
+      phone: '+257 22 20 00 00',
+      address: 'Bujumbura, Burundi',
+      notes: 'Partenaire bancaire enregistré dans IBLOPAY.'
     },
     {
       id: '4',
@@ -137,7 +150,11 @@ export class PartnersSettingsComponent implements OnInit {
       swiftCode: 'IBKBBU01',
       accountNumber: '20004460004',
       isActive: true,
-      category: 'Banque'
+      category: 'Banque',
+      email: 'contact@banque.bi',
+      phone: '+257 22 20 00 00',
+      address: 'Bujumbura, Burundi',
+      notes: 'Partenaire bancaire enregistré dans IBLOPAY.'
     },
     {
       id: '5',
@@ -146,7 +163,11 @@ export class PartnersSettingsComponent implements OnInit {
       swiftCode: 'ECOBBI01',
       accountNumber: '20005560005',
       isActive: false,
-      category: 'Banque'
+      category: 'Banque',
+      email: 'contact@banque.bi',
+      phone: '+257 22 20 00 00',
+      address: 'Bujumbura, Burundi',
+      notes: 'Partenaire bancaire enregistré dans IBLOPAY.'
     },
     {
       id: '6',
@@ -155,7 +176,11 @@ export class PartnersSettingsComponent implements OnInit {
       swiftCode: 'FINBBI01',
       accountNumber: '20006660006',
       isActive: false,
-      category: 'Banque'
+      category: 'Banque',
+      email: 'contact@banque.bi',
+      phone: '+257 22 20 00 00',
+      address: 'Bujumbura, Burundi',
+      notes: 'Partenaire bancaire enregistré dans IBLOPAY.'
     }
   ];
 
@@ -271,13 +296,11 @@ export class PartnersSettingsComponent implements OnInit {
     this.applyFilters();
   }
 
-  // ========== NAVIGATION ==========
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
   }
 
-  // ========== COMPTES ==========
 
   get totalPartners(): number {
     return this.partners.length;
@@ -299,7 +322,6 @@ export class PartnersSettingsComponent implements OnInit {
     return this.integrations.filter(i => i.active).length;
   }
 
-  // ========== CATEGORY STATS ==========
 
   get categoryStats(): any[] {
     const stats = this.categories.map(cat => {
@@ -328,7 +350,6 @@ export class PartnersSettingsComponent implements OnInit {
     return icons[category] || '🤝';
   }
 
-  // ========== FILTERS ==========
 
   applyFilters(): void {
     let filtered = [...this.partners];
@@ -363,13 +384,31 @@ export class PartnersSettingsComponent implements OnInit {
     this.applyFilters();
   }
 
+
+  exportPartners(): void {
+    const header = ['Nom','Code','Code SWIFT','Numero de compte','Categorie','Statut'];
+    const rows = this.filteredPartners.map(p => [
+      p.name, p.code, p.swiftCode || '', p.accountNumber || '', p.category || 'Banque', p.isActive ? 'Actif' : 'Inactif'
+    ]);
+    const csv = [header, ...rows]
+      .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(';'))
+      .join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'partenaires-iblopay.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    this.toast('Liste des partenaires exportée avec succès', 'success');
+  }
+
   filterByCategory(category: string): void {
     this.categoryFilter = category;
     this.activeTab = 'tous';
     this.applyFilters();
   }
 
-  // ========== PAGINATION & TRI ==========
 
   get paginatedPartners(): Partner[] {
     const sorted = [...this.filteredPartners].sort((a, b) => {
@@ -413,7 +452,6 @@ export class PartnersSettingsComponent implements OnInit {
     return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
-  // ========== STATUS HELPERS ==========
 
   getStatusLabel(active: boolean): string {
     return active ? 'Actif' : 'Inactif';
@@ -423,7 +461,6 @@ export class PartnersSettingsComponent implements OnInit {
     return active ? 'status-badge--success' : 'status-badge--danger';
   }
 
-  // ========== PARTNER ACTIONS ==========
 
   viewPartner(partner: Partner): void {
     this.selectedItem = partner;
@@ -443,7 +480,11 @@ export class PartnersSettingsComponent implements OnInit {
       swiftCode: '',
       accountNumber: '',
       isActive: true,
-      category: 'Banque'
+      category: 'Banque',
+      email: '',
+      phone: '',
+      address: '',
+      notes: ''
     };
     this.showModal = true;
   }
@@ -489,7 +530,6 @@ export class PartnersSettingsComponent implements OnInit {
     }
   }
 
-  // ========== INTEGRATION ACTIONS ==========
 
   configureIntegration(integration: Integration): void {
     this.selectedItem = integration;
@@ -508,7 +548,7 @@ export class PartnersSettingsComponent implements OnInit {
 
   toggleIntegration(integration: Integration): void {
     integration.active = !integration.active;
-    this.toast(`Intégration "${integration.name}" ${integration.active ? 'activée' : 'désactivée'}`, 
+    this.toast(`Intégration "${integration.name}" ${integration.active ? 'activée' : 'désactivée'}`,
                integration.active ? 'success' : 'danger');
   }
 
@@ -531,7 +571,6 @@ export class PartnersSettingsComponent implements OnInit {
     }
   }
 
-  // ========== COMMISSION ACTIONS ==========
 
   editCommission(rule: CommissionRule): void {
     this.selectedItem = rule;
@@ -543,7 +582,7 @@ export class PartnersSettingsComponent implements OnInit {
 
   toggleCommission(rule: CommissionRule): void {
     rule.active = !rule.active;
-    this.toast(`Commission "${rule.partner}" ${rule.active ? 'activée' : 'désactivée'}`, 
+    this.toast(`Commission "${rule.partner}" ${rule.active ? 'activée' : 'désactivée'}`,
                rule.active ? 'success' : 'danger');
   }
 
@@ -555,7 +594,6 @@ export class PartnersSettingsComponent implements OnInit {
     }
   }
 
-  // ========== MODAL ==========
 
   closeModal(): void {
     this.showModal = false;
@@ -563,7 +601,6 @@ export class PartnersSettingsComponent implements OnInit {
     this.formData = {};
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;

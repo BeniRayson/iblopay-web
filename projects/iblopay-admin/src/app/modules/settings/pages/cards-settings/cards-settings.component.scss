@@ -472,7 +472,6 @@
   }
 }
 
-// ========== MODALE PIN ==========
 .modal--pin {
   width: 420px;
   @media (max-width: 480px) { width: 94vw; }
@@ -544,7 +543,6 @@
   &.filled { color: var(--ib-primary); }
 }
 
-// ========== MODALES ==========
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -649,7 +647,6 @@
   }
 }
 
-// ========== ACTION CARD ==========
 .action-card {
   &__icon {
     font-size: 36px;
@@ -674,7 +671,6 @@
   }
 }
 
-// ========== CARD DETAIL ==========
 .card-detail {
   &__header {
     display: flex;
@@ -741,7 +737,6 @@
   }
 }
 
-// ========== FORM ==========
 .form-group {
   display: flex;
   flex-direction: column;
@@ -781,7 +776,6 @@ select.form-control {
   padding-right: 30px;
 }
 
-// ========== HISTORIQUE TABLEAU ==========
 .history-actions {
   display: flex;
   gap: 8px;
@@ -891,7 +885,6 @@ select.form-control {
   }
 }
 
-// ========== INVENTAIRE ==========
 .inventaire-summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -924,7 +917,6 @@ select.form-control {
   }
 }
 
-// ========== BUTTONS ==========
 .btn-primary, .btn-secondary {
   border: none;
   border-radius: var(--ib-radius-sm);
@@ -954,7 +946,6 @@ select.form-control {
   &:hover:not(:disabled) { background: var(--ib-bg); }
 }
 
-// ========== TOASTS ==========
 .toast-stack {
   position: fixed;
   bottom: 20px;

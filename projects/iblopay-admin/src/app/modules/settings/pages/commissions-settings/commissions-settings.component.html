@@ -1,7 +1,7 @@
 <div class="settings-page">
-  <!-- HEADER -->
+
   <header class="page-header">
-    
+
     <div class="page-header__title">
       <span class="icon">💵</span>
       <div>
@@ -11,7 +11,7 @@
     </div>
   </header>
 
-  <!-- KPI CARDS -->
+
   <div class="kpi-grid">
     <div class="kpi-card" *ngFor="let kpi of getKpiData()">
       <div class="kpi-card__icon" [style.background-color]="kpi.color" [style.color]="kpi.textColor">
@@ -28,7 +28,7 @@
     </div>
   </div>
 
-  <!-- TABS -->
+
   <nav class="tabs-nav">
     <button class="tab-btn" *ngFor="let tab of tabs"
             [class.active]="activeTab === tab.key"
@@ -39,7 +39,7 @@
     </button>
   </nav>
 
-  <!-- ============ DASHBOARD ============ -->
+
   <div *ngIf="activeTab === 'dashboard'" class="panel dashboard-panel">
     <div class="dashboard-grid">
       <div class="dashboard-card dashboard-card--blue">
@@ -129,7 +129,7 @@
     </div>
   </div>
 
-  <!-- ============ AGENTS ============ -->
+
   <div *ngIf="activeTab === 'agents'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">👤 Liste des Agents ({{ getAgents().length }})</h3>
@@ -170,7 +170,7 @@
     </div>
   </div>
 
-  <!-- ============ SUPER AGENTS ============ -->
+
   <div *ngIf="activeTab === 'super_agents'" class="panel">
     <div class="panel__header panel__header--gold">
       <h3 class="panel__title">⭐ Liste des Super Agents ({{ getSuperAgents().length }})</h3>
@@ -211,7 +211,7 @@
     </div>
   </div>
 
-  <!-- ============ ÉTAT ============ -->
+
   <div *ngIf="activeTab === 'etat'" class="panel">
     <div class="panel__header panel__header--etat">
       <h3 class="panel__title">🏛️ Gestion des Fonds État</h3>
@@ -219,7 +219,7 @@
         <button class="btn btn--etat" (click)="openPinModal()">🏦 Transférer</button>
       </div>
     </div>
-    
+
     <div class="etat-summary">
       <div class="etat-summary__grid">
         <div class="etat-stat-card" *ngFor="let etat of getEtat()">
@@ -286,7 +286,7 @@
     </div>
   </div>
 
-  <!-- ============ COMMISSIONS ============ -->
+
   <div *ngIf="activeTab === 'commissions'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">💰 Commissions ({{ getCommissions().length }})</h3>
@@ -336,7 +336,7 @@
     </div>
   </div>
 
-  <!-- ============ HISTORIQUE ============ -->
+
   <div *ngIf="activeTab === 'historique'" class="panel">
     <div class="panel__header">
       <h3 class="panel__title">📋 Historique des Commissions ({{ getHistorique().length }})</h3>
@@ -379,7 +379,7 @@
     </div>
   </div>
 
-  <!-- ============ TRANSFERTS ============ -->
+
   <div *ngIf="activeTab === 'transferts'" class="panel">
     <div class="panel__header panel__header--etat">
       <h3 class="panel__title">🏦 Transferts vers l'État ({{ getTransfertsEtat().length }})</h3>
@@ -420,7 +420,7 @@
     </div>
   </div>
 
-  <!-- ============ MODAL PIN ============ -->
+
   <div class="modal-overlay" *ngIf="showPinModal" (click)="closePinModal()"></div>
   <div class="modal modal--animated modal--pin" *ngIf="showPinModal">
     <div class="modal__header">
@@ -445,7 +445,7 @@
     </div>
   </div>
 
-  <!-- ============ MODAL TRANSFERT ============ -->
+
   <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
   <div class="modal modal--animated" *ngIf="modalOpen">
     <div class="modal__header">
@@ -454,7 +454,7 @@
     </div>
     <div class="modal__body">
       <div class="modal__icon">{{ modalIcon }}</div>
-      
+
       <div *ngIf="modalType === 'transfert_etat'">
         <div class="alert alert--info">
           ℹ️ Les commissions payées seront automatiquement transférées vers le compte de l'État.
@@ -598,7 +598,7 @@
     </div>
   </div>
 
-  <!-- ============ TOASTS ============ -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       <span class="toast__icon">{{ t.type === 'success' ? '✅' : t.type === 'danger' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️' }}</span>

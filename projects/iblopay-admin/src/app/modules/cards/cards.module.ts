@@ -30,6 +30,5 @@ import { CardTableComponent } from './components/card-table/card-table.component
     CardTableComponent
   ],
   imports: [CommonModule, FormsModule, CardsRoutingModule]
-  // CardService is providedIn: 'root', so it doesn't need to be listed here.
 })
 export class CardsModule { }

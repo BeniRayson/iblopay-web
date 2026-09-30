@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ServicePublic } from '../../models/service-public.model';
 import { ServicesPublicsService } from '../../services/services-publics.service';
+import { ICON_PATHS } from '../../utils/service-icons';
+import { getServiceColor, getServiceInitials } from '../../utils/service-display.util';
 
 @Component({
     selector: 'app-services-publics-edit',
@@ -15,6 +17,10 @@ export class ServicesPublicsEditComponent implements OnInit {
     loading = false;
     error: string = '';
     isNew: boolean = false;
+
+    readonly iconPaths = ICON_PATHS;
+    readonly getColor = getServiceColor;
+    readonly getInitials = getServiceInitials;
 
     constructor(
         private route: ActivatedRoute,
@@ -82,7 +88,6 @@ export class ServicesPublicsEditComponent implements OnInit {
     onSubmit(): void {
         if (!this.service) return;
 
-        // Validation
         if (!this.service.abreviation || !this.service.description) {
             this.error = 'Veuillez remplir tous les champs obligatoires';
             return;
@@ -103,20 +108,16 @@ export class ServicesPublicsEditComponent implements OnInit {
         });
     }
 
-    getServiceColor(abreviation: string): string {
-        if (!abreviation) return '#16293a';
+    /** Date de création au format « yyyy-MM-dd » attendu par <input type="date">. */
+    get dateCreationInput(): string {
+        if (!this.service?.dateCreation) return '';
+        const d = new Date(this.service.dateCreation);
+        return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+    }
 
-        const colors: string[] = [
-            '#16293a', '#a9803d', '#386a4e', '#9c4033',
-            '#2c5b76', '#6b4d2e', '#5c6b3f', '#7c5a2e',
-            '#46586a', '#85661f', '#2f4f5e', '#734531',
-            '#4d6650', '#8a6a2e', '#603a33', '#3f5a6e'
-        ];
-        let hash = 0;
-        for (let i = 0; i < abreviation.length; i++) {
-            hash = abreviation.charCodeAt(i) + ((hash << 5) - hash);
+    set dateCreationInput(value: string) {
+        if (this.service && value) {
+            this.service.dateCreation = new Date(value);
         }
-        const index = Math.abs(hash) % colors.length;
-        return colors[index] || '#16293a';
     }
 }

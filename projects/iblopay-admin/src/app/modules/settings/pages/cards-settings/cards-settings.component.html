@@ -1,6 +1,6 @@
 <div class="settings-page">
   <header class="page-header">
-    
+
     <div class="page-header__title">
       <span class="icon">💳</span>
       <div>
@@ -10,7 +10,7 @@
     </div>
   </header>
 
-  <!-- Statistiques -->
+
   <div class="stats-grid">
     <div class="stat-card" (click)="setActiveTab('cartes')" [class.active]="activeTab === 'cartes'">
       <span class="stat-card__icon">💳</span>
@@ -46,7 +46,7 @@
     </div>
   </div>
 
-  <!-- Filtre de recherche -->
+
   <div class="search-bar">
     <div class="search-bar__input">
       <span class="search-bar__icon">🔍</span>
@@ -75,7 +75,7 @@
     </div>
   </div>
 
-  <!-- Onglets -->
+
   <nav class="tabs">
     <button type="button" class="tab" [class.active]="activeTab === 'cartes'" (click)="setActiveTab('cartes')">
       <span class="tab__icon">💳</span>
@@ -89,7 +89,7 @@
     </button>
   </nav>
 
-  <!-- Section Cartes -->
+
   <div *ngIf="activeTab === 'cartes'" class="table-wrapper">
     <div class="table-header">
       <h3>Liste des Cartes ({{ getFilteredCartes().length }})</h3>
@@ -160,7 +160,7 @@
     </div>
   </div>
 
-  <!-- Section Stocks (uniquement INACTIVE) -->
+
   <div *ngIf="activeTab === 'stocks'" class="table-wrapper">
     <div class="table-header">
       <h3>Cartes Inactives ({{ getFilteredStock().length }})</h3>
@@ -213,7 +213,7 @@
     </div>
   </div>
 
-  <!-- MODALE PIN -->
+
   <div class="modal-overlay" *ngIf="pinModalOpen" (click)="closePinModal()"></div>
   <div class="modal modal--pin" *ngIf="pinModalOpen">
     <div class="modal__header">
@@ -253,7 +253,7 @@
     </div>
   </div>
 
-  <!-- MODALE ACTION -->
+
   <div class="modal-overlay" *ngIf="actionModalOpen && !pinModalOpen" (click)="closeActionModal()"></div>
   <div class="modal modal--action" *ngIf="actionModalOpen && !pinModalOpen">
     <div class="modal__header">
@@ -364,7 +364,7 @@
     </div>
   </div>
 
-  <!-- MODALE DÉTAILS CARTE -->
+
   <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
   <div class="modal modal--card" *ngIf="modalOpen && selectedCard">
     <div class="modal__header">
@@ -425,7 +425,7 @@
     </div>
   </div>
 
-  <!-- TOASTS -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       {{ t.message }}

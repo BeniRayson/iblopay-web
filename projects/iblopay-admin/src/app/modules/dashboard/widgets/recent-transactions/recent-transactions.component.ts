@@ -1,4 +1,3 @@
-// src/app/modules/dashboard/widgets/recent-transactions/recent-transactions.component.ts
 import { Component, Input } from '@angular/core';
 import { Transaction } from '../../models/dashboard.model';
 

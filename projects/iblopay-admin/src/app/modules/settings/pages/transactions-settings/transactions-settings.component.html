@@ -1,6 +1,6 @@
 <div class="settings-page">
   <header class="page-header">
-    
+
     <div class="page-header__title">
       <span class="icon">💸</span>
       <div>
@@ -10,9 +10,9 @@
     </div>
   </header>
 
-  <!-- Statistiques -->
+
 <div class="stats-grid">
-  <!-- Carte 1 : Total Transactions -->
+
   <div class="stat-card" (click)="setActiveTab('toutes')" [class.active]="activeTab === 'toutes'">
     <span class="stat-card__icon">📊</span>
     <div class="stat-card__content">
@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  <!-- Carte 2 : Montant Total -->
+
   <div class="stat-card" (click)="setActiveTab('toutes')" [class.active]="activeTab === 'toutes'">
     <span class="stat-card__icon">💰</span>
     <div class="stat-card__content">
@@ -32,7 +32,7 @@
     </div>
   </div>
 
-  <!-- Carte 3 : Types de transactions -->
+
   <div class="stat-card" (click)="setActiveTab('types')" [class.active]="activeTab === 'types'">
     <span class="stat-card__icon">🔀</span>
     <div class="stat-card__content">
@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <!-- Carte 4 : En attente (avec classe stat-card--total) -->
+
   <div class="stat-card stat-card--total" (click)="setActiveTab('toutes')" [class.active]="activeTab === 'toutes'">
     <span class="stat-card__icon">⏳</span>
     <div class="stat-card__content">
@@ -53,7 +53,7 @@
   </div>
 </div>
 
-  <!-- Barre d'outils -->
+
   <div class="toolbar">
     <div class="search-bar">
       <div class="search-bar__input">
@@ -98,7 +98,7 @@
     </div>
   </div>
 
-  <!-- Onglets -->
+
   <nav class="tabs">
     <button type="button" class="tab" [class.active]="activeTab === 'toutes'" (click)="setActiveTab('toutes')">
       <span class="tab__icon">📋</span>
@@ -122,7 +122,7 @@
     </button>
   </nav>
 
-  <!-- Section Toutes les transactions -->
+
   <div *ngIf="activeTab === 'toutes'" class="table-wrapper">
     <div class="table-header">
       <h3>Liste des Transactions ({{ getFilteredTransactions().length }})</h3>
@@ -180,7 +180,7 @@
     </div>
   </div>
 
-  <!-- Section Types -->
+
   <div *ngIf="activeTab === 'types'" class="table-wrapper">
     <div class="table-header">
       <h3>Types de Transactions ({{ getTypes().length }})</h3>
@@ -201,7 +201,7 @@
     </div>
   </div>
 
-  <!-- Section Filtres -->
+
   <div *ngIf="activeTab === 'filtres'" class="table-wrapper">
     <div class="table-header">
       <h3>Filtres disponibles</h3>
@@ -219,7 +219,7 @@
     </div>
   </div>
 
-  <!-- Section Analytique -->
+
   <div *ngIf="activeTab === 'analytique'" class="table-wrapper">
     <div class="table-header">
       <h3>📈 Analyse des Transactions</h3>
@@ -240,7 +240,7 @@
     </div>
   </div>
 
-  <!-- MODALE DÉTAILS TRANSACTION -->
+
   <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()"></div>
   <div class="modal modal--transaction" *ngIf="modalOpen && selectedTransaction">
     <div class="modal__header">
@@ -307,7 +307,7 @@
     </div>
   </div>
 
-  <!-- MODALE ACTION -->
+
   <div class="modal-overlay" *ngIf="actionModalOpen" (click)="closeActionModal()"></div>
   <div class="modal modal--action" *ngIf="actionModalOpen">
     <div class="modal__header">
@@ -320,7 +320,7 @@
         <div class="action-card__title">{{ actionModalTitle }}</div>
         <div class="action-card__sub" *ngIf="selectedTransaction">Transaction: {{ selectedTransaction.id }}</div>
 
-        <!-- Corriger -->
+
         <div class="form-group" *ngIf="actionModalType === 'corriger'">
           <label>Raison de la correction</label>
           <input type="text" [(ngModel)]="formData.raison" class="form-control" placeholder="Motif de la correction" />
@@ -341,7 +341,7 @@
           </select>
         </div>
 
-        <!-- Annuler -->
+
         <div class="form-group" *ngIf="actionModalType === 'annuler' || actionModalType === 'annuler_selection'">
           <label>Raison de l'annulation</label>
           <input type="text" [(ngModel)]="formData.raison" class="form-control" placeholder="Motif de l'annulation" />
@@ -351,7 +351,7 @@
           <input type="text" class="form-control" [value]="getSelectedCount() + ' transactions'" disabled />
         </div>
 
-        <!-- Télécharger reçu -->
+
         <div class="form-group" *ngIf="actionModalType === 'telecharger_reçu'">
           <div class="receipt-preview">
             <div class="receipt-preview__header">
@@ -371,7 +371,7 @@
           </div>
         </div>
 
-        <!-- Exporter -->
+
         <div class="form-group" *ngIf="actionModalType === 'exporter'">
           <label>Format d'export</label>
           <select [(ngModel)]="formData.format" class="form-control">
@@ -397,7 +397,7 @@
           <input type="date" [(ngModel)]="formData.dateFin" class="form-control" />
         </div>
 
-        <!-- Réattribuer -->
+
         <div class="form-group" *ngIf="actionModalType === 'reattribuer'">
           <label>Nouvel utilisateur</label>
           <input type="text" [(ngModel)]="formData.nouvelUtilisateur" class="form-control" placeholder="ID du nouvel utilisateur" />
@@ -407,7 +407,7 @@
           <input type="text" [(ngModel)]="formData.nouvelAgent" class="form-control" placeholder="ID du nouvel agent" />
         </div>
 
-        <!-- Frauduleuse -->
+
         <div class="form-group" *ngIf="actionModalType === 'frauduleuse'">
           <label>Raison du signalement</label>
           <input type="text" [(ngModel)]="formData.raison" class="form-control" placeholder="Motif du signalement" />
@@ -422,7 +422,7 @@
           </select>
         </div>
 
-        <!-- Partager -->
+
         <div class="form-group" *ngIf="actionModalType === 'partager'">
           <label>Méthode de partage</label>
           <select [(ngModel)]="formData.methode" class="form-control">
@@ -441,7 +441,7 @@
           <textarea [(ngModel)]="formData.message" class="form-control" rows="3" placeholder="Message optionnel"></textarea>
         </div>
 
-        <!-- Filtres -->
+
         <div class="form-group" *ngIf="actionModalType === 'date' || actionModalType === 'heure'">
           <label>Valeur</label>
           <input type="datetime-local" [(ngModel)]="formData.valeur" class="form-control" />
@@ -462,7 +462,7 @@
           </select>
         </div>
 
-        <!-- Voir toutes -->
+
         <div class="form-group" *ngIf="actionModalType === 'voir'">
           <div class="view-stats">
             <div class="view-stat">
@@ -494,7 +494,7 @@
     </div>
   </div>
 
-  <!-- TOASTS -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       {{ t.message }}

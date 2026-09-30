@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-// ========== INTERFACES ==========
 
 interface ReportData {
   id: string;
@@ -99,7 +98,6 @@ export class ReportsSettingsComponent implements OnInit {
   readonly icon = '📈';
   readonly description = 'Dashboard, rapports périodiques, exports et graphiques.';
 
-  // ========== DONNÉES ==========
 
   sections: SettingsSection[] = [
     {
@@ -186,7 +184,6 @@ export class ReportsSettingsComponent implements OnInit {
     }
   ];
 
-  // ========== KPIs ==========
 
   kpiData: KpiData[] = [
     { icon: '💰', label: 'Chiffre d\'affaires', value: '2 450 000 BIF', change: 12.5, trend: 'up', color: '#1a237e' },
@@ -197,7 +194,6 @@ export class ReportsSettingsComponent implements OnInit {
     { icon: '📈', label: 'Croissance', value: '+18.4%', change: 3.8, trend: 'up', color: '#bf360c' }
   ];
 
-  // ========== DONNÉES DE TEST ==========
 
   recentTransactions: ReportData[] = [
     { id: 'TRX-001', date: '2025-01-15', service: 'ARCT - Autorisation réseaux', category: 'Communications', amount: 25000, status: 'valide', paymentMethod: 'Mobile Money', clientName: 'Jean Bosco NIZIGIYIMANA' },
@@ -207,7 +203,6 @@ export class ReportsSettingsComponent implements OnInit {
     { id: 'TRX-005', date: '2025-01-13', service: 'Transport - Permis de conduire', category: 'Transport', amount: 35000, status: 'valide', paymentMethod: 'Mobile Money', clientName: 'Emmanuel NTAKIRUTIMANA' }
   ];
 
-  // ========== GRAPHIQUES ==========
 
   chartConfigs: ChartConfig[] = [
     {
@@ -289,82 +284,79 @@ export class ReportsSettingsComponent implements OnInit {
     }
   ];
 
-  // ========== ALERTES ==========
 
   alertConfigs: AlertConfig[] = [
-    { 
-      id: '1', 
-      name: 'Seuil de revenus minimum', 
-      type: 'seuil', 
-      active: true, 
-      threshold: 50000, 
+    {
+      id: '1',
+      name: 'Seuil de revenus minimum',
+      type: 'seuil',
+      active: true,
+      threshold: 50000,
       lastTriggered: '2025-01-10',
       description: 'Alerte lorsque les revenus journaliers sont inférieurs à 50 000 BIF'
     },
-    { 
-      id: '2', 
-      name: 'Anomalies de transactions', 
-      type: 'anomalie', 
-      active: true, 
+    {
+      id: '2',
+      name: 'Anomalies de transactions',
+      type: 'anomalie',
+      active: true,
       lastTriggered: '2025-01-12',
       description: 'Détection des transactions suspectes ou anormales'
     },
-    { 
-      id: '3', 
-      name: 'Rapport mensuel automatique', 
-      type: 'programme', 
-      active: true, 
-      frequency: 'mensuel', 
+    {
+      id: '3',
+      name: 'Rapport mensuel automatique',
+      type: 'programme',
+      active: true,
+      frequency: 'mensuel',
       recipients: ['admin@iblopay.bi', 'finance@iblopay.bi'],
       description: 'Envoi automatique du rapport mensuel aux destinataires'
     },
-    { 
-      id: '4', 
-      name: 'Notification de paiement', 
-      type: 'notification', 
+    {
+      id: '4',
+      name: 'Notification de paiement',
+      type: 'notification',
       active: true,
       description: 'Notification en temps réel lors des paiements importants'
     },
-    { 
-      id: '5', 
-      name: 'Seuil de transactions par jour', 
-      type: 'seuil', 
-      active: false, 
-      threshold: 200, 
+    {
+      id: '5',
+      name: 'Seuil de transactions par jour',
+      type: 'seuil',
+      active: false,
+      threshold: 200,
       lastTriggered: '2025-01-08',
       description: 'Alerte lorsque le nombre de transactions dépasse 200 par jour'
     },
-    { 
-      id: '6', 
-      name: 'Anomalie de montant', 
-      type: 'anomalie', 
-      active: true, 
+    {
+      id: '6',
+      name: 'Anomalie de montant',
+      type: 'anomalie',
+      active: true,
       lastTriggered: '2025-01-14',
       description: 'Détection des montants anormalement élevés ou bas'
     },
-    { 
-      id: '7', 
-      name: 'Rapport hebdomadaire', 
-      type: 'programme', 
-      active: true, 
-      frequency: 'hebdomadaire', 
+    {
+      id: '7',
+      name: 'Rapport hebdomadaire',
+      type: 'programme',
+      active: true,
+      frequency: 'hebdomadaire',
       recipients: ['direction@iblopay.bi'],
       description: 'Résumé hebdomadaire des activités'
     },
-    { 
-      id: '8', 
-      name: 'Alerte de dépassement de plafond', 
-      type: 'notification', 
+    {
+      id: '8',
+      name: 'Alerte de dépassement de plafond',
+      type: 'notification',
       active: false,
       description: 'Notification lorsque les plafonds de services sont atteints'
     }
   ];
 
-  // ========== RAPPORTS GÉNÉRÉS ==========
-  
+
   generatedReports: any[] = [];
 
-  // ========== FILTRES ==========
 
   filters: ReportFilter = {
     period: 'monthly',
@@ -375,7 +367,6 @@ export class ReportsSettingsComponent implements OnInit {
     status: 'all'
   };
 
-  // ========== ÉTAT ==========
 
   showModal: boolean = false;
   modalTitle: string = '';
@@ -392,7 +383,6 @@ export class ReportsSettingsComponent implements OnInit {
   showGeneratedReports: boolean = false;
   selectedChart: ChartConfig | null = null;
 
-  // ========== CONSTRUCTEUR ==========
 
   constructor() {
     this.loadData();
@@ -403,19 +393,17 @@ export class ReportsSettingsComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  // ========== INITIALISATION DES DATES ==========
 
   private initDates(): void {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     this.filters.dateStart = firstDay.toISOString().split('T')[0] || '';
     this.filters.dateEnd = now.toISOString().split('T')[0] || '';
-    
+
     if (!this.filters.dateStart) this.filters.dateStart = '2024-01-01';
     if (!this.filters.dateEnd) this.filters.dateEnd = '2024-12-31';
   }
 
-  // ========== CHARGEMENT DES DONNÉES ==========
 
   private loadData(): void {
     const saved = localStorage.getItem('reports_settings_data');
@@ -438,7 +426,6 @@ export class ReportsSettingsComponent implements OnInit {
     localStorage.setItem('reports_settings_data', JSON.stringify(data));
   }
 
-  // ========== GESTION DES RAPPORTS GÉNÉRÉS ==========
 
   private loadGeneratedReports(): void {
     const saved = localStorage.getItem('generated_reports');
@@ -470,11 +457,10 @@ export class ReportsSettingsComponent implements OnInit {
     localStorage.setItem('alert_configs', JSON.stringify(this.alertConfigs));
   }
 
-  // ========== ACTIONS ==========
 
   onAction(section: SettingsSection, action: SettingsAction, group?: any): void {
     console.log('[ReportsSettings]', section.key, action.actionId);
-    
+
     switch(action.actionId) {
       case 'chiffre_affaires':
       case 'transactions':
@@ -549,7 +535,6 @@ export class ReportsSettingsComponent implements OnInit {
     }
   }
 
-  // ========== GESTION DES RAPPORTS ==========
 
   openReportModal(title: string, icon: string): void {
     this.modalTitle = title;
@@ -565,11 +550,11 @@ export class ReportsSettingsComponent implements OnInit {
       mensuel: 'Rapport mensuel',
       annuel: 'Rapport annuel'
     };
-    
+
     this.reportType = type;
     this.showReportModal = true;
     this.toast(`Génération du ${labels[type]} en cours...`, 'info');
-    
+
     setTimeout(() => {
       const report = {
         id: `RPT-${String(100000 + this.generatedReports.length + 1).padStart(6, '0')}`,
@@ -579,18 +564,18 @@ export class ReportsSettingsComponent implements OnInit {
         status: 'généré',
         data: this.recentTransactions.map(tx => ({ ...tx }))
       };
-      
+
       this.generatedReports.push(report);
       this.saveGeneratedReports();
-      
+
       this.toast(`${labels[type]} généré avec succès`, 'success');
       this.showReportModal = false;
       this.showGeneratedReports = true;
-      
+
       this.modalTitle = `📄 ${labels[type]}`;
       this.modalType = 'report_detail';
-      this.modalData = { 
-        icon: '📄', 
+      this.modalData = {
+        icon: '📄',
         data: report.data,
         reportInfo: {
           id: report.id,
@@ -606,14 +591,13 @@ export class ReportsSettingsComponent implements OnInit {
     this.showReportModal = false;
   }
 
-  // ========== EXPORTS ==========
 
   exportReport(format: string): void {
     const data = this.modalData.data || this.recentTransactions;
     let content = '';
     let filename = `rapport_${new Date().toISOString().split('T')[0]}`;
     let mimeType = '';
-    
+
     const headers = ['Date', 'Client', 'Service', 'Catégorie', 'Montant', 'Statut'];
     const rows = data.map((tx: any) => [
       tx.date,
@@ -623,9 +607,9 @@ export class ReportsSettingsComponent implements OnInit {
       tx.amount.toString(),
       tx.status
     ]);
-    
+
     const csvContent = [headers.join(','), ...rows.map((r: string[]) => r.join(','))].join('\n');
-    
+
     switch(format) {
       case 'PDF':
         mimeType = 'application/pdf';
@@ -647,7 +631,7 @@ export class ReportsSettingsComponent implements OnInit {
         content = csvContent;
         filename += '.txt';
     }
-    
+
     const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -657,7 +641,7 @@ export class ReportsSettingsComponent implements OnInit {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     this.toast(`Export en ${format} terminé avec succès`, 'success');
   }
 
@@ -676,7 +660,6 @@ export class ReportsSettingsComponent implements OnInit {
     }, 500);
   }
 
-  // ========== ANALYSES ==========
 
   showAnalysis(type: string): void {
     const titles: Record<string, string> = {
@@ -685,7 +668,7 @@ export class ReportsSettingsComponent implements OnInit {
       segmentation: '👥 Segmentation clients',
       performances: '⭐ Performances'
     };
-    
+
     const dataMap: Record<string, any> = {
       previsions: {
         title: 'Analyse prédictive des revenus',
@@ -730,15 +713,14 @@ export class ReportsSettingsComponent implements OnInit {
 
     this.modalTitle = titles[type] || 'Analyse';
     this.modalType = 'analysis';
-    this.modalData = dataMap[type] || { 
-      title: 'Analyse', 
-      description: '', 
-      data: [] 
+    this.modalData = dataMap[type] || {
+      title: 'Analyse',
+      description: '',
+      data: []
     };
     this.showModal = true;
   }
 
-  // ========== GRAPHIQUES ==========
 
   showChartById(chartId: string): void {
     const chart = this.chartConfigs.find(c => c.id === chartId);
@@ -754,7 +736,6 @@ export class ReportsSettingsComponent implements OnInit {
     }
   }
 
-  // ========== ALERTES ==========
 
   openAlertConfig(type: string): void {
     const titles: Record<string, string> = {
@@ -763,7 +744,7 @@ export class ReportsSettingsComponent implements OnInit {
       programmes: '🔔 Configuration des rapports programmés',
       notifications: '🔔 Configuration des notifications'
     };
-    
+
     let filteredAlerts = this.alertConfigs.filter(a => {
       if (type === 'seuils') return a.type === 'seuil';
       if (type === 'anomalies') return a.type === 'anomalie';
@@ -771,11 +752,11 @@ export class ReportsSettingsComponent implements OnInit {
       if (type === 'notifications') return a.type === 'notification';
       return false;
     });
-    
+
     if (filteredAlerts.length === 0) {
       filteredAlerts = this.alertConfigs;
     }
-    
+
     this.modalTitle = titles[type] || 'Configuration des alertes';
     this.modalType = 'alert_config';
     this.modalData = {
@@ -805,7 +786,7 @@ export class ReportsSettingsComponent implements OnInit {
     const newAlert: AlertConfig = {
       id: String(Date.now()),
       name: 'Nouvelle alerte',
-      type: this.modalData.type === 'seuils' ? 'seuil' : 
+      type: this.modalData.type === 'seuils' ? 'seuil' :
              this.modalData.type === 'anomalies' ? 'anomalie' :
              this.modalData.type === 'programmes' ? 'programme' : 'notification',
       active: true,
@@ -814,14 +795,13 @@ export class ReportsSettingsComponent implements OnInit {
       recipients: ['admin@iblopay.bi'],
       description: 'Description de la nouvelle alerte'
     };
-    
+
     this.alertConfigs.push(newAlert);
     this.saveAlertConfigs();
     this.toast('Nouvelle alerte ajoutée avec succès', 'success');
     this.openAlertConfig(this.modalData.type || 'seuils');
   }
 
-  // ========== PIN MODAL ==========
 
   openPinModal(title: string): void {
     this.modalTitle = `🔐 ${title}`;
@@ -854,7 +834,6 @@ export class ReportsSettingsComponent implements OnInit {
     this.pinCode = '';
   }
 
-  // ========== MODAL ==========
 
   closeModal(): void {
     this.showModal = false;
@@ -862,7 +841,6 @@ export class ReportsSettingsComponent implements OnInit {
     this.selectedChart = null;
   }
 
-  // ========== FILTRES ==========
 
   applyFilters(): void {
     if (!this.filters.dateStart) this.filters.dateStart = '2024-01-01';
@@ -886,7 +864,6 @@ export class ReportsSettingsComponent implements OnInit {
     this.toast('Filtres réinitialisés', 'info');
   }
 
-  // ========== MÉTHODES POUR LES GRAPHIQUES ==========
 
   getChartTotal(chart: ChartConfig): string {
     if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length === 0) {
@@ -913,7 +890,6 @@ export class ReportsSettingsComponent implements OnInit {
     return Math.round(avg).toLocaleString('fr-FR');
   }
 
-  // ========== MÉTHODES POUR LES ALERTES ==========
 
   getAlertTotal(alerts: AlertConfig[]): number {
     return alerts ? alerts.length : 0;
@@ -927,7 +903,6 @@ export class ReportsSettingsComponent implements OnInit {
     return alerts ? alerts.filter(a => !a.active).length : 0;
   }
 
-  // ========== MÉTHODES POUR LES GRAPHIQUES EN LIGNE ==========
 
   getLinePoints(data: number[], width: number, height: number): string {
     if (!data || data.length === 0) return '';
@@ -937,7 +912,7 @@ export class ReportsSettingsComponent implements OnInit {
     const padding = 30;
     const chartWidth = width - padding * 2;
     const chartHeight = height - padding * 2;
-    
+
     return data.map((value, index) => {
       const x = padding + (index / (data.length - 1)) * chartWidth;
       const y = padding + chartHeight - ((value - min) / range) * chartHeight;
@@ -953,7 +928,7 @@ export class ReportsSettingsComponent implements OnInit {
     const padding = 30;
     const chartWidth = width - padding * 2;
     const chartHeight = height - padding * 2;
-    
+
     return data.map((value, index) => {
       const x = padding + (index / (data.length - 1)) * chartWidth;
       const y = padding + chartHeight - ((value - min) / range) * chartHeight;
@@ -961,7 +936,6 @@ export class ReportsSettingsComponent implements OnInit {
     });
   }
 
-  // ========== MÉTHODES POUR LES UTILITAIRES ==========
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
@@ -1032,7 +1006,6 @@ export class ReportsSettingsComponent implements OnInit {
     return icons[type] || '📊';
   }
 
-  // ========== TOASTS ==========
 
   toast(message: string, type: Toast['type'] = 'info'): void {
     const id = ++this.toastSeq;

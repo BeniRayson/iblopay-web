@@ -1,13 +1,9 @@
-/**
- * Données simulées (mock) pour la page Gestion des utilisateurs.
- * 30 Clients, 30 Agents, 30 Super Agents, 10 Administrateurs.
- * Génération déterministe (pas de Math.random) pour un rendu stable.
- */
+
 
 export type Statut = 'actif' | 'suspendu' | 'archive';
 export type StatutAdmin = 'actif' | 'desactive';
 
-/** Découpage administratif du Burundi : Province > Commune > Zone > Colline/Quartier */
+
 export interface Adresse {
   province: string;
   commune: string;
@@ -94,7 +90,7 @@ const NOMS = [
   'Manirakiza','Nsengiyumva','Ntahonkuriye','Barampama','Nininahazwe','Nzisabira','Ntakirutimana'
 ];
 
-/** Province -> Communes -> Zones -> Collines/Quartiers (échantillon représentatif) */
+
 export const DECOUPAGE: Record<string, Record<string, Record<string, string[]>>> = {
   'Bujumbura Mairie': {
     'Mukaza': { 'Zone Rohero': ['Rohero I', 'Rohero II'], 'Zone Buyenzi': ['Buyenzi', 'Bunanga'] },
@@ -200,7 +196,6 @@ function adresse(i: number, offset = 0): Adresse {
   return { province, commune, zone, colline };
 }
 
-// ---------- Super Agents (30) ----------
 export const SUPER_AGENTS: SuperAgentUser[] = Array.from({ length: 30 }, (_, idx) => {
   const i = idx + 1;
   const statut: Statut = i % 11 === 0 ? 'suspendu' : i % 17 === 0 ? 'archive' : 'actif';
@@ -224,7 +219,6 @@ export const SUPER_AGENTS: SuperAgentUser[] = Array.from({ length: 30 }, (_, idx
   };
 });
 
-// ---------- Agents (30) ----------
 export const AGENTS: AgentUser[] = Array.from({ length: 30 }, (_, idx) => {
   const i = idx + 1;
   const sa = SUPER_AGENTS[i % SUPER_AGENTS.length]!;
@@ -251,7 +245,6 @@ export const AGENTS: AgentUser[] = Array.from({ length: 30 }, (_, idx) => {
   };
 });
 
-// ---------- Clients (30) ----------
 export const CLIENTS: ClientUser[] = Array.from({ length: 30 }, (_, idx) => {
   const i = idx + 1;
   const statut: Statut = i % 8 === 0 ? 'suspendu' : i % 19 === 0 ? 'archive' : 'actif';
@@ -277,7 +270,6 @@ export const CLIENTS: ClientUser[] = Array.from({ length: 30 }, (_, idx) => {
   };
 });
 
-// ---------- Administrateurs (10) ----------
 export const ADMINS: AdminUser[] = Array.from({ length: 10 }, (_, idx) => {
   const i = idx + 1;
   const statut: StatutAdmin = i % 6 === 0 ? 'desactive' : 'actif';

@@ -1,0 +1,81 @@
+<section class="create-page">
+  <div class="page-heading">
+    <div>
+      <div class="breadcrumb"><span>Accueil</span><b>›</b><span>Supers Agents</span><b>›</b><span>Nouveau</span></div>
+      <h1>Nouveau Super Agent</h1>
+      <p>Créer un nouveau super agent pour gérer un réseau d'agents.</p>
+    </div>
+    <button type="button" class="back-btn" (click)="cancel()">← Retour à la liste</button>
+  </div>
+
+  <form #agentForm="ngForm" (ngSubmit)="submit(agentForm)" novalidate>
+    <div class="form-layout">
+      <div class="main-column">
+        <article class="form-card">
+          <header><span class="section-icon blue">●</span><div><h2>Informations personnelles</h2><p>Identité du super agent</p></div></header>
+          <div class="form-grid two">
+            <label><span>Nom <b>*</b></span><input name="lastName" [(ngModel)]="model.lastName" required placeholder="Nom" /></label>
+            <label><span>Prénom <b>*</b></span><input name="firstName" [(ngModel)]="model.firstName" required placeholder="Prénom" /></label>
+            <label><span>Téléphone <b>*</b></span><div class="phone-input"><em>🇧🇮 +257</em><input name="phone" [(ngModel)]="model.phone" required placeholder="79 123 456" /></div></label>
+            <label><span>Email <b>*</b></span><input type="email" name="email" [(ngModel)]="model.email" required email placeholder="exemple@email.com" /></label>
+            <label><span>Numéro CNI <b>*</b></span><input name="cni" [(ngModel)]="model.cni" required placeholder="Numéro de la carte d'identité" /></label>
+            <label><span>Date de naissance</span><input type="date" name="birthDate" [(ngModel)]="model.birthDate" /></label>
+            <label><span>Sexe</span><select name="gender" [(ngModel)]="model.gender"><option value="">Sélectionner</option><option>Masculin</option><option>Féminin</option></select></label>
+            <label><span>Photo (optionnelle)</span><div class="upload"><input type="file" accept="image/png,image/jpeg" (change)="onPhotoSelected($event)"/><strong>⇧</strong><div>{{ selectedPhotoName || 'Cliquer pour ajouter une photo' }}<small>JPG, PNG — max 2 MB</small></div></div></label>
+          </div>
+        </article>
+
+        <article class="form-card">
+          <header><span class="section-icon purple">⌖</span><div><h2>Affiliation et localisation</h2><p>Zone d'intervention du super agent</p></div></header>
+          <div class="form-grid two">
+            <label><span>Région <b>*</b></span><select name="region" [(ngModel)]="model.region" (ngModelChange)="onRegionChange()" required><option value="">Sélectionner la région</option><option *ngFor="let region of regions" [value]="region">{{ region }}</option></select></label>
+            <label><span>Commune <b>*</b></span><select name="commune" [(ngModel)]="model.commune" required [disabled]="!model.region"><option value="">Sélectionner la commune</option><option *ngFor="let commune of communes" [value]="commune">{{ commune }}</option></select></label>
+            <label class="full"><span>Adresse complète <b>*</b></span><input name="address" [(ngModel)]="model.address" required placeholder="Adresse complète du super agent" /></label>
+          </div>
+        </article>
+
+        <article class="form-card">
+          <header><span class="section-icon orange">◉</span><div><h2>Paramètres financiers</h2><p>Configuration des commissions et limites</p></div></header>
+          <div class="form-grid three">
+            <label><span>Taux de commission <b>*</b></span><div class="suffix"><input type="number" min="0" max="100" step="0.01" name="commissionRate" [(ngModel)]="model.commissionRate" required placeholder="0" /><em>%</em></div></label>
+            <label><span>Limite de transaction journalière</span><div class="suffix"><input type="number" min="0" name="dailyLimit" [(ngModel)]="model.dailyLimit" placeholder="Montant"/><em>BIF</em></div></label>
+            <label><span>Solde initial (optionnel)</span><div class="suffix"><input type="number" min="0" name="initialBalance" [(ngModel)]="model.initialBalance" placeholder="Montant"/><em>BIF</em></div></label>
+          </div>
+        </article>
+      </div>
+
+      <aside class="side-column">
+        <article class="form-card account-card">
+          <header><span class="section-icon blue">▣</span><div><h2>Informations compte</h2><p>Accès à la plateforme</p></div></header>
+          <div class="form-grid one">
+            <label><span>Identifiant <b>*</b></span><input name="login" [(ngModel)]="model.login" required placeholder="Identifiant de connexion" /></label>
+            <label><span>Mot de passe <b>*</b></span><div class="password"><input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="model.password" required minlength="6" placeholder="Mot de passe sécurisé"/><button type="button" (click)="showPassword=!showPassword">{{ showPassword ? '◉' : '◎' }}</button></div></label>
+            <label><span>Confirmer le mot de passe <b>*</b></span><div class="password"><input [type]="showConfirmPassword ? 'text' : 'password'" name="confirmPassword" [(ngModel)]="model.confirmPassword" required placeholder="Confirmer le mot de passe"/><button type="button" (click)="showConfirmPassword=!showConfirmPassword">{{ showConfirmPassword ? '◉' : '◎' }}</button></div><small class="error" *ngIf="submitted && model.password !== model.confirmPassword">Les mots de passe ne correspondent pas.</small></label>
+          </div>
+        </article>
+
+        <article class="form-card permissions-card">
+          <header><span class="section-icon green">✿</span><div><h2>Paramètres supplémentaires</h2><p>Rôles et permissions</p></div></header>
+          <label><span>Statut du compte <b>*</b></span><select name="status" [(ngModel)]="model.status" required><option>Actif</option><option>Suspendu</option><option>Bloqué</option></select></label>
+          <div class="toggles">
+            <label><input type="checkbox" name="canCreateAgents" [(ngModel)]="model.canCreateAgents"><i></i><span>Autoriser la création d'agents</span></label>
+            <label><input type="checkbox" name="canManageCards" [(ngModel)]="model.canManageCards"><i></i><span>Autoriser la gestion des cartes</span></label>
+            <label><input type="checkbox" name="canProcessTransactions" [(ngModel)]="model.canProcessTransactions"><i></i><span>Autoriser les transactions</span></label>
+            <label><input type="checkbox" name="receiveReports" [(ngModel)]="model.receiveReports"><i></i><span>Recevoir les rapports par email</span></label>
+          </div>
+        </article>
+
+        <article class="form-card notes-card">
+          <header><span class="section-icon blue">▤</span><div><h2>Notes</h2></div></header>
+          <label><span>Notes internes (optionnel)</span><textarea name="notes" [(ngModel)]="model.notes" rows="4" placeholder="Notes sur ce super agent..."></textarea></label>
+        </article>
+      </aside>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="cancel()">Annuler</button>
+      <div class="validation" *ngIf="submitted && agentForm.invalid">Veuillez compléter tous les champs obligatoires.</div>
+      <button type="submit" class="save-btn">▣ Créer le Super Agent</button>
+    </div>
+  </form>
+</section>

@@ -1,8 +1,5 @@
-// src/app/modules/users/components/users-status/users-status.component.scss
 
-/* ================================================================
-   THEME VARIABLES
-   ================================================================ */
+
 :host {
   --status-bg-overlay: rgba(0, 0, 0, 0.5);
   --status-bg-card: #ffffff;
@@ -42,9 +39,7 @@
   --status-success-light: rgba(16, 185, 129, 0.15);
 }
 
-/* ================================================================
-   OVERLAY
-   ================================================================ */
+
 .status-modal-overlay {
   position: fixed;
   inset: 0;
@@ -60,19 +55,17 @@
 }
 
 @keyframes statusFadeIn {
-  from { 
+  from {
     opacity: 0;
     backdrop-filter: blur(0px);
   }
-  to { 
+  to {
     opacity: 1;
     backdrop-filter: blur(8px);
   }
 }
 
-/* ================================================================
-   MODAL CARD
-   ================================================================ */
+
 .status-modal-container {
   background: var(--status-bg-card);
   border-radius: var(--status-radius);
@@ -111,9 +104,7 @@
   }
 }
 
-/* ================================================================
-   HEADER
-   ================================================================ */
+
 .status-modal-header {
   display: flex;
   justify-content: space-between;
@@ -169,9 +160,7 @@
   transform: rotate(90deg);
 }
 
-/* ================================================================
-   BODY
-   ================================================================ */
+
 .status-modal-body {
   padding: 24px;
 }
@@ -192,9 +181,7 @@
   line-height: 1.6;
 }
 
-/* ================================================================
-   USER INFO CARD
-   ================================================================ */
+
 .status-user-info {
   display: flex;
   align-items: center;
@@ -269,9 +256,7 @@
   margin-left: 8px;
 }
 
-/* ================================================================
-   STATUS CURRENT
-   ================================================================ */
+
 .status-current {
   display: flex;
   align-items: center;
@@ -360,9 +345,7 @@
   color: #f87171;
 }
 
-/* ================================================================
-   OTP HEADER AVEC CHRONO
-   ================================================================ */
+
 .status-otp-header {
   display: flex;
   align-items: center;
@@ -389,7 +372,7 @@
   margin-left: 8px;
 }
 
-/* Petit chrono circulaire */
+
 .status-otp-timer {
   position: relative;
   width: 36px;
@@ -431,9 +414,7 @@
   color: var(--status-danger);
 }
 
-/* ================================================================
-   OTP INPUT GROUP
-   ================================================================ */
+
 .status-otp-input-group {
   display: flex;
   gap: 8px;
@@ -482,9 +463,7 @@
   cursor: not-allowed;
 }
 
-/* ================================================================
-   OTP FOOTER
-   ================================================================ */
+
 .status-otp-footer {
   display: flex;
   align-items: center;
@@ -523,9 +502,7 @@
   background: var(--status-danger);
 }
 
-/* ================================================================
-   VERIFIED BADGE
-   ================================================================ */
+
 .status-verified-badge {
   display: flex;
   align-items: center;
@@ -545,9 +522,7 @@
   font-size: 18px;
 }
 
-/* ================================================================
-   FORM GROUP
-   ================================================================ */
+
 .status-form-group {
   margin-bottom: 14px;
 }
@@ -579,9 +554,7 @@
   cursor: not-allowed;
 }
 
-/* ================================================================
-   ALERTS
-   ================================================================ */
+
 .status-alert {
   padding: 12px 16px;
   border-radius: 10px;
@@ -630,9 +603,7 @@
   color: #f87171;
 }
 
-/* ================================================================
-   STATUS OPTIONS
-   ================================================================ */
+
 .status-select-section {
   margin-bottom: 18px;
 }
@@ -740,9 +711,7 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ================================================================
-   BOUTON VÉRIFIER
-   ================================================================ */
+
 .status-btn-verify {
   width: 100%;
   padding: 12px;
@@ -772,9 +741,7 @@
   transform: none;
 }
 
-/* ================================================================
-   FOOTER
-   ================================================================ */
+
 .status-modal-footer {
   display: flex;
   gap: 12px;
@@ -852,101 +819,99 @@
   to { transform: rotate(360deg); }
 }
 
-/* ================================================================
-   RESPONSIVE
-   ================================================================ */
+
 @media (max-width: 640px) {
   .status-modal-container {
     max-width: 100%;
     margin: 10px;
     max-height: 95vh;
   }
-  
+
   .status-modal-header {
     padding: 14px 18px;
   }
-  
+
   .status-modal-header h2 {
     font-size: 16px;
   }
-  
+
   .status-modal-body {
     padding: 18px;
   }
-  
+
   .status-options-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .status-modal-footer {
     flex-direction: column;
   }
-  
+
   .status-modal-footer button {
     width: 100%;
     padding: 14px;
   }
-  
+
   .status-user-info {
     flex-wrap: wrap;
     padding: 14px;
   }
-  
+
   .status-avatar-wrapper {
     width: 40px;
     height: 40px;
   }
-  
+
   .status-avatar-img,
   .status-avatar-initials {
     width: 40px;
     height: 40px;
     font-size: 15px;
   }
-  
+
   .status-user-text h4 {
     font-size: 14px;
   }
-  
+
   .status-option {
     padding: 10px 12px;
   }
-  
+
   .status-option-icon {
     width: 32px;
     height: 32px;
     font-size: 14px;
   }
-  
+
   .status-otp-header {
     flex-wrap: wrap;
     gap: 6px;
   }
-  
+
   .status-otp-timer {
     width: 30px;
     height: 30px;
   }
-  
+
   .status-otp-timer-svg {
     width: 30px;
     height: 30px;
   }
-  
+
   .status-otp-timer-text {
     font-size: 9px;
   }
-  
+
   .status-otp-input {
     font-size: 16px;
     letter-spacing: 6px;
   }
-  
+
   .status-otp-resend {
     min-width: 40px;
     height: 40px;
   }
-  
+
   .status-otp-footer {
     flex-wrap: wrap;
     gap: 4px;
@@ -957,36 +922,36 @@
   .status-modal-body {
     padding: 14px;
   }
-  
+
   .status-modal-header {
     padding: 12px 14px;
   }
-  
+
   .status-user-info {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .status-current {
     flex-direction: column;
     gap: 6px;
     text-align: center;
   }
-  
+
   .status-otp-timer {
     width: 26px;
     height: 26px;
   }
-  
+
   .status-otp-timer-svg {
     width: 26px;
     height: 26px;
   }
-  
+
   .status-otp-timer-text {
     font-size: 8px;
   }
-  
+
   .status-otp-input {
     font-size: 14px;
     letter-spacing: 4px;

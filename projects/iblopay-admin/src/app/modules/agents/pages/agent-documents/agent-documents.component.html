@@ -1,0 +1,11 @@
+<div *ngIf="agent" class="documents-container">
+      <h1>Documents de l'agent</h1>
+      <div class="info-card">
+        <p><strong>Agent:</strong> {{ agent.firstName }} {{ agent.lastName }}</p>
+        <p><strong>Code:</strong> {{ agent.code }}</p>
+      </div>
+      <div class="documents-list">
+        <p>Aucun document disponible</p>
+      </div>
+      <button (click)="goBack()" class="btn-secondary">Retour</button>
+    </div>

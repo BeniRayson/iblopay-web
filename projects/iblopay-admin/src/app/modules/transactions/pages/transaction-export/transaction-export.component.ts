@@ -3,7 +3,7 @@ import { TransactionService } from '../../services/transaction.service';
 import { TransactionExportService } from '../../services/transaction-export.service';
 import { TransactionFilter } from '../../models/transaction-filter.model';
 
-const EXPORT_PAGE_SIZE = 1000; // client-side export cap; large ranges should use requestServerExport instead
+const EXPORT_PAGE_SIZE = 1000;
 
 @Component({
   selector: 'app-transaction-export',

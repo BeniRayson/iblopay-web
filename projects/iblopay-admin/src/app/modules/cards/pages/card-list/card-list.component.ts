@@ -1,8 +1,16 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { CardService } from '../../services/card.service';
-import { Card } from '../../models/card.model';
-import { CardStatus } from '../../enums/card-status.enum';
+import {
+  Component,
+  OnInit
+} from '@angular/core';
+
+import {
+  CardService
+} from '../../services/card.service';
+
+import {
+  Card
+} from '../../models/card.model';
+
 
 @Component({
   selector: 'app-card-list',
@@ -10,49 +18,51 @@ import { CardStatus } from '../../enums/card-status.enum';
   styleUrls: ['./card-list.component.scss']
 })
 export class CardListComponent implements OnInit {
+
   cards: Card[] = [];
+
   isLoading = true;
+
   errorMessage = '';
 
-  statusFilter: CardStatus | 'ALL' = 'ALL';
-  readonly statusOptions: (CardStatus | 'ALL')[] = [
-    'ALL',
-    CardStatus.NEUTRAL,
-    CardStatus.ACTIVE,
-    CardStatus.BLOCKED,
-    CardStatus.REPLACED,
-    CardStatus.CLOSED
-  ];
 
-  constructor(private cardService: CardService, private router: Router) {}
+  constructor(
+    private cardService: CardService
+  ) {}
+
 
   ngOnInit(): void {
     this.loadCards();
   }
 
-  loadCards(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.cardService.getCards().subscribe({
-      next: (cards) => {
-        this.cards = cards;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Unable to load cards. Please try again.';
-        this.isLoading = false;
-      }
-    });
-  }
 
-  get filteredCards(): Card[] {
-    if (this.statusFilter === 'ALL') {
-      return this.cards;
+  // silent = true : rafraîchit les données sans détruire le tableau
+  // (le panneau de détail ouvert reste affiché).
+  loadCards(silent = false): void {
+
+    if (!silent) {
+      this.isLoading = true;
     }
-    return this.cards.filter((c) => c.status === this.statusFilter);
+
+    this.errorMessage = '';
+
+    this.cardService
+      .getCards()
+      .subscribe({
+
+        next: cards => {
+          this.cards = cards;
+          this.isLoading = false;
+        },
+
+        error: () => {
+          this.errorMessage =
+            'Une erreur est survenue pendant le chargement des cartes.';
+          this.isLoading = false;
+        }
+
+      });
+
   }
 
-  openCard(card: Card): void {
-    this.router.navigate(['/cards', card.cardId]);
-  }
 }

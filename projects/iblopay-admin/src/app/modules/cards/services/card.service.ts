@@ -6,17 +6,13 @@ import { CardTransaction } from '../models/card-transaction.model';
 import { CardStatus } from '../enums/card-status.enum';
 import { DUMMY_CARDS, DUMMY_CARD_TRANSACTIONS } from '../data/card-dummy.data';
 
-/**
- * Card service backed by in-memory dummy data so the UI displays real-looking
- * content during development. Replace the method bodies with real HTTP calls
- * once the cards API is available.
- */
+
 @Injectable({ providedIn: 'root' })
 export class CardService {
   private cards: Card[] = [...DUMMY_CARDS];
   private transactions: CardTransaction[] = [...DUMMY_CARD_TRANSACTIONS];
 
-  private readonly simDelay = 400; // ms — simulate network latency
+  private readonly simDelay = 400;
 
   getCards(): Observable<Card[]> {
     return of([...this.cards]).pipe(delay(this.simDelay));
@@ -81,16 +77,13 @@ export class CardService {
     return of({ ...card }).pipe(delay(this.simDelay));
   }
 
-  /** Marks a card as closed. Terminal state — a closed card cannot be reactivated. */
-  // Le service reste le même, mais voici la méthode closeCard améliorée
+
   closeCard(cardId: string): Observable<Card> {
     const card = this.cards.find((c) => c.cardId === cardId);
     if (!card) {
       return throwError(() => new Error('Card not found')).pipe(delay(this.simDelay));
     }
-    // On change le statut mais on garde toutes les autres propriétés
     card.status = CardStatus.CLOSED;
-    // On garde toutes les autres données (activatedAt, blockedAt, etc.)
     return of({ ...card }).pipe(delay(this.simDelay));
   }
 

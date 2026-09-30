@@ -16,7 +16,6 @@ export class CategoryDetailComponent implements OnInit {
     loading = false;
     notFound = false;
 
-    // Pagination
     fraisCurrentPage: number = 1;
     fraisItemsPerPage: number = 10;
     fraisTotalPages: number = 0;
@@ -31,13 +30,11 @@ export class CategoryDetailComponent implements OnInit {
     notificationMessage: string = '';
     notificationType: 'success' | 'error' | 'info' = 'success';
 
-    // Formulaire Frais (modale)
     fraisModalOpen: boolean = false;
     fraisModalMode: 'add' | 'edit' = 'add';
     fraisForm: any = this.getEmptyFraisForm();
     private editingFraisId: number | null = null;
 
-    // Formulaire Document requis (modale)
     documentModalOpen: boolean = false;
     documentModalMode: 'add' | 'edit' = 'add';
     documentForm: any = this.getEmptyDocumentForm();
@@ -58,7 +55,6 @@ export class CategoryDetailComponent implements OnInit {
 
         this.loading = true;
 
-        // Récupérer le service et trouver la catégorie
         this.servicesPublicsService.getById(serviceId).subscribe({
             next: (service) => {
                 if (service && service.categories) {

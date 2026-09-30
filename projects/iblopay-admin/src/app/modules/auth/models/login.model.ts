@@ -1,4 +1,3 @@
-// src/app/modules/auth/models/login.model.ts
 export interface LoginRequest {
   phone_number: string;
   pin: string;

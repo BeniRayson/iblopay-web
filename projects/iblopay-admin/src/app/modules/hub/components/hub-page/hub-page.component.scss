@@ -3,13 +3,13 @@
     max-width: 1600px;
     margin: 0 auto;
     min-height: 100vh;
-    background-color: var(--ink); // Plus aucune couleur en dur. Blanc sur mode clair, Sombre uni sur mode nuit.
+    background-color: var(--ink);
     color: var(--text);
     font-family: var(--font-body);
 
     &__analytics {
         &-item {
-            background: var(--surface); // Devient blanc pur en mode clair, bleu nuit en mode sombre
+            background: var(--surface);
             border: 1px solid var(--border);
         }
     }

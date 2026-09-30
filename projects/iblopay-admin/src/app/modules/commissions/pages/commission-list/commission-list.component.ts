@@ -19,7 +19,6 @@ export class CommissionListComponent implements OnInit, OnDestroy {
   pageSize = 15;
   isLoading = true;
 
-  // Filters
   filter: CommissionFilter = {
     dateFrom: null,
     dateTo: null,
@@ -30,10 +29,8 @@ export class CommissionListComponent implements OnInit, OnDestroy {
     search: '',
   };
 
-  // Sort
   sort: SortConfig = { column: 'createdAt', direction: 'desc' };
 
-  // Dropdown options
   agents: { agentId: string; agentName: string }[] = [];
   superAgents: { superAgentId: string; superAgentName: string }[] = [];
   statuses: ({ value: CommissionStatus | null; label: string })[] = [
@@ -48,7 +45,6 @@ export class CommissionListComponent implements OnInit, OnDestroy {
     { value: 'SUPER_AGENT_COMMISSION', label: 'Commission Super Agent' },
   ];
 
-  // Detail panel
   selectedCommission: Commission | null = null;
   detailVisible = false;
 

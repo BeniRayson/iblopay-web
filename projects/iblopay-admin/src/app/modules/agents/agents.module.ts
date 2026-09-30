@@ -1,7 +1,6 @@
-﻿// src/app/modules/agents/agents.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'; // 👈 Ajoutez ReactiveFormsModule
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { AgentListComponent } from './pages/agent-list/agent-list.component';
@@ -21,7 +20,7 @@ import { AgentsRoutingModule } from './agents-routing.module';
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule, // 👈 AJOUTEZ CETTE LIGNE
+    ReactiveFormsModule,
     RouterModule,
     AgentsRoutingModule
   ]

@@ -1,5 +1,5 @@
 <div class="users-page">
-  <!-- Dashboard stats -->
+
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-card__icon">👤</div>
@@ -32,7 +32,7 @@
   </div>
 
   <header class="page-header">
-  
+
     <div class="page-header__title">
       <span class="icon">{{ icon }}</span>
       <div>
@@ -42,7 +42,7 @@
     </div>
   </header>
 
-  <!-- Onglets acteurs -->
+
   <nav class="actor-tabs">
     <button
       type="button"
@@ -60,7 +60,7 @@
     </button>
   </nav>
 
-  <!-- Barre d'outils -->
+
   <div class="toolbar">
     <div class="toolbar__search">
       <span aria-hidden="true">⌕</span>
@@ -97,7 +97,7 @@
     </button>
   </div>
 
-  <!-- Tableau -->
+
   <div class="table-wrapper">
     <table>
       <thead>
@@ -115,7 +115,7 @@
       </thead>
 
       <tbody [ngSwitch]="activeTab">
-        <!-- CLIENTS -->
+
         <ng-container *ngSwitchCase="'clients'">
           <tr *ngFor="let u of paginatedList; trackBy: trackById" (click)="openDrawer(u)">
             <td>
@@ -147,7 +147,7 @@
           </tr>
         </ng-container>
 
-        <!-- AGENTS -->
+
         <ng-container *ngSwitchCase="'agents'">
           <tr *ngFor="let u of paginatedList; trackBy: trackById" (click)="openDrawer(u)">
             <td>
@@ -185,7 +185,7 @@
           </tr>
         </ng-container>
 
-        <!-- SUPER AGENTS -->
+
         <ng-container *ngSwitchCase="'super-agents'">
           <tr *ngFor="let u of paginatedList; trackBy: trackById" (click)="openDrawer(u)">
             <td>
@@ -228,7 +228,7 @@
     </div>
   </div>
 
-  <!-- Pagination -->
+
   <div class="pagination" *ngIf="filteredList.length > 0">
     <span class="pagination__info">{{ filteredList.length }} résultat(s) — page {{ currentPage }} / {{ totalPages }}</span>
     <div class="pagination__controls">
@@ -238,7 +238,7 @@
     </div>
   </div>
 
-  <!-- ============ CARTE DE DÉTAIL ============ -->
+
   <div class="detail-overlay" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
   <div class="detail-card" *ngIf="drawerOpen && drawerUser as u" role="dialog" aria-modal="true">
     <div class="detail-card__header">
@@ -255,7 +255,7 @@
       <button type="button" class="close-btn" (click)="closeDrawer()" aria-label="Fermer">✕</button>
     </div>
 
-    <!-- Actions rapides -->
+
     <div class="detail-card__quick-actions">
       <button type="button" class="qa-btn" (click)="handleAction(u, 'modifier')">
         <span>✏️</span> Modifier
@@ -333,7 +333,7 @@
     </nav>
 
     <div class="detail-card__body">
-      <!-- INFOS -->
+
       <ng-container *ngIf="drawerTab === 'infos'">
         <ng-container [ngSwitch]="drawerType">
           <ng-container *ngSwitchCase="'clients'">
@@ -444,7 +444,7 @@
         </ng-container>
       </ng-container>
 
-      <!-- WALLET -->
+
       <ng-container *ngIf="drawerTab === 'wallet'">
         <div class="stat-block">
           <span class="stat-block__label">Solde du portefeuille</span>
@@ -456,7 +456,7 @@
         </div>
       </ng-container>
 
-      <!-- CARTES -->
+
       <ng-container *ngIf="drawerTab === 'cartes'">
         <div class="wallet-actions">
           <button type="button" class="btn-secondary" (click)="handleAction(u, 'consulter_cartes')">💳 Consulter les cartes</button>
@@ -469,14 +469,14 @@
         </div>
       </ng-container>
 
-      <!-- BÉNÉFICIAIRES -->
+
       <ng-container *ngIf="drawerTab === 'beneficiaires'">
         <ul class="simple-list">
           <li *ngFor="let b of range(asClient(u).nbBeneficiaires); let i = index">👤 Bénéficiaire enregistré #{{ i + 1 }}</li>
         </ul>
       </ng-container>
 
-      <!-- HISTORIQUE - Version complète avec détails -->
+
       <ng-container *ngIf="drawerTab === 'historique'">
         <div class="history-card">
           <div class="history-card__header">
@@ -517,7 +517,7 @@
         </div>
       </ng-container>
 
-      <!-- CONNEXIONS -->
+
       <ng-container *ngIf="drawerTab === 'connexions'">
         <div class="history-card">
           <div class="history-card__header">
@@ -545,7 +545,7 @@
         </div>
       </ng-container>
 
-      <!-- PERFORMANCE -->
+
       <ng-container *ngIf="drawerTab === 'performance'">
         <div class="stat-block">
           <span class="stat-block__label">Score de performance</span>
@@ -573,7 +573,7 @@
         </div>
       </ng-container>
 
-      <!-- COMMISSIONS -->
+
       <ng-container *ngIf="drawerTab === 'commissions'">
         <div class="stat-block">
           <span class="stat-block__label">Commissions du mois</span>
@@ -591,7 +591,7 @@
         </div>
       </ng-container>
 
-      <!-- LIMITES JOURNALIÈRES -->
+
       <ng-container *ngIf="drawerTab === 'limites'">
         <div class="limits-card">
           <div class="limits-card__header">
@@ -631,7 +631,7 @@
         </div>
       </ng-container>
 
-      <!-- DOCUMENTS - Dossier officiel -->
+
       <ng-container *ngIf="drawerTab === 'documents'">
         <div class="documents-card">
           <div class="documents-card__header">
@@ -639,7 +639,7 @@
             <span class="documents-card__count">3 documents</span>
           </div>
           <div class="documents-card__body">
-            <!-- Dossier d'acceptation - Lettre officielle -->
+
             <div class="document-folder">
               <div class="document-folder__header" (click)="toggleFolder()">
                 <span class="document-folder__icon">📂</span>
@@ -707,7 +707,7 @@
               </div>
             </div>
 
-            <!-- Autres documents -->
+
             <div class="document-item">
               <span class="doc-icon">📄</span>
               <div>
@@ -736,7 +736,7 @@
         </div>
       </ng-container>
 
-      <!-- RÉSEAU -->
+
       <ng-container *ngIf="drawerTab === 'reseau'">
         <div class="history-card">
           <div class="history-card__header">
@@ -762,7 +762,7 @@
         </div>
       </ng-container>
 
-      <!-- STOCKS -->
+
       <ng-container *ngIf="drawerTab === 'stocks'">
         <div class="stat-block">
           <span class="stat-block__label">Cartes en stock (région)</span>
@@ -772,7 +772,7 @@
     </div>
   </div>
 
-  <!-- ============ CARTE CRÉATION ============ -->
+
   <div class="modal-overlay" *ngIf="wizardOpen" (click)="closeWizard()"></div>
   <div class="wizard" *ngIf="wizardOpen">
     <div class="wizard__header">
@@ -794,7 +794,7 @@
     </ol>
 
     <div class="wizard__body">
-      <!-- ÉTAPE 1 : CARTE & OTP -->
+
       <section *ngIf="currentStepKey === 'carte'" class="wizard__step">
         <div class="card-visual card-visual--compact">
           <div class="card-visual__top">
@@ -809,7 +809,7 @@
               <span class="card-visual__value">{{ wizardData.uid || 'NFC-XXXX' }}</span>
             </div>
             <div>
-           
+
             </div>
           </div>
           <button type="button" class="card-visual__regen" (click)="regenerateCard()" *ngIf="wizardMode === 'create'" title="Régénérer">
@@ -848,7 +848,7 @@
         </div>
       </section>
 
-      <!-- ÉTAPE 2 : IDENTITÉ -->
+
       <section *ngIf="currentStepKey === 'identite'" class="wizard__step">
         <div class="wizard__grid">
           <div class="form-group">
@@ -893,7 +893,7 @@
         </div>
       </section>
 
-      <!-- ÉTAPE 3 : ADRESSE -->
+
       <section *ngIf="currentStepKey === 'adresse'" class="wizard__step">
         <div class="wizard__grid">
           <div class="form-group">
@@ -927,7 +927,7 @@
         </div>
       </section>
 
-      <!-- ÉTAPE 4 : INFOS PROFESSIONNELLES -->
+
       <section *ngIf="currentStepKey === 'professionnel'" class="wizard__step">
         <div class="wizard__grid">
           <div class="form-group">
@@ -950,7 +950,7 @@
         </div>
       </section>
 
-      <!-- ÉTAPE 5 : RÉCAPITULATIF -->
+
       <section *ngIf="currentStepKey === 'recap'" class="wizard__step">
         <div class="recap-grid">
           <div class="recap-block">
@@ -1000,7 +1000,7 @@
     </div>
   </div>
 
-  <!-- ============ CONFIRMATION ============ -->
+
   <div class="modal-overlay" *ngIf="confirm" (click)="cancelConfirm()"></div>
   <div class="modal modal--small" *ngIf="confirm as c">
     <h2>{{ c.title }}</h2>
@@ -1011,7 +1011,7 @@
     </div>
   </div>
 
-  <!-- ============ TOASTS ============ -->
+
   <div class="toast-stack">
     <div class="toast" *ngFor="let t of toasts" [class]="'toast--' + t.type">
       {{ t.message }}

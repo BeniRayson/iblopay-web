@@ -1,25 +1,20 @@
-<div class="card-list-page">
-  <header class="card-list-page__header">
-    <h1>Cards</h1>
-    <select class="status-filter" [(ngModel)]="statusFilter">
-      <option *ngFor="let opt of statusOptions" [ngValue]="opt">
-        {{ opt === 'ALL' ? 'All statuses' : opt }}
-      </option>
-    </select>
-  </header>
+<div class="cards-page">
 
-  <div *ngIf="isLoading" class="state-message">Loading cards…</div>
-
-  <div *ngIf="errorMessage" class="state-message state-message--error">
-    {{ errorMessage }}
-    <button (click)="loadCards()">Retry</button>
+  <div class="state-card" *ngIf="isLoading">
+    <span class="spinner"></span>
+    <strong>Chargement des cartes...</strong>
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage && filteredCards.length === 0" class="state-message">
-    No cards match this filter.
+  <div class="state-card state-card--error" *ngIf="errorMessage">
+    <strong>Impossible de charger les cartes</strong>
+    <span>{{ errorMessage }}</span>
+    <button type="button" (click)="loadCards()">Réessayer</button>
   </div>
 
-  <app-card-table *ngIf="!isLoading && !errorMessage && filteredCards.length > 0" [cards]="filteredCards"
-    (actionCompleted)="loadCards()">
+  <app-card-table
+    *ngIf="!isLoading && !errorMessage"
+    [cards]="cards"
+    (actionCompleted)="loadCards(true)">
   </app-card-table>
+
 </div>

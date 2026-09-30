@@ -1,8 +1,6 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LES CARTES DE RÉSUMÉ
-   ========================================================== */
+
 :root {
-  /* Mode Lumière (Light) */
+
   --summary-surface: rgba(255, 255, 255, 0.75);
   --summary-border: var(--border-light, rgba(0, 0, 0, 0.08));
   --summary-label: #8a8f98;
@@ -12,7 +10,7 @@
 
 [data-theme='dark'],
 body.dark-theme {
-  /* Mode Sombre (Dark) */
+
   --summary-surface: rgba(18, 26, 47, 0.65);
   --summary-border: var(--border-light, rgba(255, 255, 255, 0.12));
   --summary-label: var(--text-dim, rgba(255, 255, 255, 0.5));
@@ -21,9 +19,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   CONTENEUR DES CARTES DE RÉSUMÉ (.summary-cards)
-   ========================================================== */
+
 .summary-cards {
   display: flex;
   gap: 16px;
@@ -42,9 +38,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   CARTE DE RÉSUMÉ INDIVIDUELLE (.summary-card)
-   ========================================================== */
+
 .summary-card {
   flex: 1;
   background: var(--summary-surface);

@@ -1,17 +1,18 @@
 {
-  "name": "iblopay_web",
+  "name": "iblopay-web",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "npx tsc -p .",
-    "start": "ng serve iblopay-admin --port 10800 --host 0.0.0.0",
-    "start:public": "ng serve iblopay-public --port 80 --host 0.0.0.0",
-    "start:admin": "ng serve iblopay-admin --port 10800 --host 0.0.0.0",
-    "start:providers": "ng serve iblopay-providers --port 11200 --host 0.0.0.0",
-    "build:public": "ng build iblopay-public",
+    "start": "ng serve iblopay-admin",
+    "start:admin": "ng serve iblopay-admin",
+    "start:providers": "ng serve iblopay-providers",
+    "start:public": "ng serve iblopay-public",
+    "start:all": "concurrently -n admin,providers,public \"npm run start:admin\" \"npm run start:providers\" \"npm run start:public\"",
+    "build": "ng build iblopay-admin",
     "build:admin": "ng build iblopay-admin",
     "build:providers": "ng build iblopay-providers",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:public": "ng build iblopay-public",
+    "build:all": "npm run build:admin && npm run build:providers && npm run build:public"
   },
   "dependencies": {
     "@angular/animations": "^17.0.0",
@@ -39,5 +40,6 @@
     "@types/node": "^20.11.0",
     "concurrently": "^9.2.4",
     "typescript": "^5.4.5"
-  }
+  },
+  "private": true
 }

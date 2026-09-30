@@ -1,416 +1,192 @@
-<!-- src/app/modules/agents/pages/agent-approvisionnement/agent-approvisionnement.component.html -->
-<div class="funding-container" [class.dark-mode]="isDarkMode" *ngIf="!isLoading && agent">
-
-  <!-- HEADER -->
-  <div class="funding-header">
-    <div class="header-left">
-      <button class="btn-back" (click)="goBack()">
-        <i class="fas fa-arrow-left"></i> Retour
-      </button>
-      <div class="agent-info">
-        <div class="avatar" [style.background]="'linear-gradient(135deg, ' + getColor(agent.id, 0) + ', ' + getColor(agent.id, 1) + ')'">
-          {{ getInitials(agent.firstName, agent.lastName) }}
-        </div>
-        <div>
-          <h1>{{ agent.firstName }} {{ agent.lastName }}</h1>
-          <span class="agent-code">{{ agent.code }}</span>
-        </div>
-      </div>
+<div class="funding-page" *ngIf="!isLoading && agent">
+  <div class="page-head">
+    <div>
+      <button class="back-link" (click)="goBack()"><i class="fas fa-arrow-left"></i> Retour aux Super Agents</button>
+      <h1>Approvisionner un Super Agent</h1>
+      <p>Vérifiez le bordereau bancaire, saisissez sa référence puis confirmez l’opération avec votre code PIN.</p>
     </div>
-    <div class="header-right">
-      <button class="btn-theme" (click)="toggleTheme()">
-        <i class="fas" [class.fa-moon]="!isDarkMode" [class.fa-sun]="isDarkMode"></i>
-      </button>
-      <span class="status-badge" [class]="getStatusClass(agent.status)">
-        <span class="dot"></span> {{ getStatusLabel(agent.status) }}
-      </span>
+    <div class="agent-mini-card">
+      <div class="agent-avatar">{{ getInitials() }}</div>
+      <div>
+        <strong>{{ agent.firstName }} {{ agent.lastName }}</strong>
+        <span>{{ agent.code }} · {{ agent.phone }}</span>
+      </div>
     </div>
   </div>
 
-  <!-- CONTENU PRINCIPAL -->
-  <div class="funding-content">
+  <div class="steps-card">
+    <div class="step" [class.active]="currentStep >= 1"><span>1</span><label>Bordereau bancaire</label></div>
+    <div class="step-line" [class.active]="currentStep >= 2"></div>
+    <div class="step" [class.active]="currentStep >= 2"><span>2</span><label>Référence</label></div>
+    <div class="step-line" [class.active]="currentStep >= 3"></div>
+    <div class="step" [class.active]="currentStep >= 3"><span>3</span><label>Code PIN</label></div>
+    <div class="step-line" [class.active]="currentStep >= 4"></div>
+    <div class="step" [class.active]="currentStep >= 4"><span>4</span><label>Confirmation</label></div>
+  </div>
 
-    <!-- Résumé du solde -->
-    <div class="balance-summary">
-      <div class="balance-card">
-        <span class="balance-label">Solde e-Money actuel</span>
-        <span class="balance-value">{{ getTotalElectronicsAmount() | number:'1.0-0' }} Fbu</span>
+  <div class="feedback error" *ngIf="errorMessage"><i class="fas fa-circle-exclamation"></i>{{ errorMessage }}</div>
+  <div class="feedback success" *ngIf="successMessage"><i class="fas fa-circle-check"></i>{{ successMessage }}</div>
+
+  <div class="funding-grid">
+    <section class="bank-slip-panel">
+      <div class="section-title">
+        <div class="section-icon soft-blue"><i class="fas fa-building-columns"></i></div>
+        <div>
+          <h2>Bordereau de paiement bancaire</h2>
+          <p>Exemple du document à présenter après le versement à la banque.</p>
+        </div>
       </div>
-      <div class="balance-card highlight">
-        <span class="balance-label">Nouveau solde après approvisionnement</span>
-        <span class="balance-value">{{ (getTotalElectronicsAmount() + fundData.amount) | number:'1.0-0' }} Fbu</span>
+
+      <div class="bank-slip">
+        <div class="slip-top">
+          <div class="bank-mark"><i class="fas fa-building-columns"></i></div>
+          <div>
+            <strong>BORDEREAU DE VERSEMENT</strong>
+            <small>Compte de cantonnement IBLOPAY</small>
+          </div>
+          <span>ORIGINAL</span>
+        </div>
+        <div class="slip-divider"></div>
+        <div class="slip-row"><span>Banque</span><strong>Banque partenaire</strong></div>
+        <div class="slip-row"><span>Compte bénéficiaire</span><strong>IBLOPAY – Trust Account</strong></div>
+        <div class="slip-row"><span>Déposant</span><strong>{{ agent.firstName }} {{ agent.lastName }}</strong></div>
+        <div class="slip-row"><span>Code Super Agent</span><strong>{{ agent.code }}</strong></div>
+        <div class="slip-row"><span>Référence</span><strong>BA2402057893</strong></div>
+        <div class="slip-row"><span>Montant</span><strong>100 000 BIF</strong></div>
+        <div class="slip-row"><span>Date</span><strong>{{ form.depositDate | date:'dd/MM/yyyy HH:mm' }}</strong></div>
+        <div class="slip-signatures">
+          <div><span>Signature déposant</span><i class="fas fa-signature"></i></div>
+          <div><span>Cachet banque</span><div class="stamp">BANQUE</div></div>
+        </div>
+        <div class="barcode" aria-label="code barre"></div>
       </div>
-    </div>
 
-    <!-- Panneau de réconciliation Trust Account -->
-    <div class="recon-panel" [class.recon-alert]="reconciliationGap() < 0">
-      <i class="fas fa-scale-balanced"></i>
-      <div class="recon-text">
-        <span class="recon-title">Couverture Trust Account (indicatif)</span>
-        <span class="recon-detail">
-          Solde Trust Account : {{ trustAccountBalance | number:'1.0-0' }} Fbu —
-          Écart avec l'e-Money en circulation : {{ reconciliationGap() | number:'1.0-0' }} Fbu
-        </span>
+      <div class="slip-note">
+        <i class="fas fa-circle-info"></i>
+        <span>Le numéro de référence figurant sur ce bordereau doit être saisi exactement dans le formulaire.</span>
       </div>
-    </div>
+    </section>
 
-    <!-- Messages -->
-    <div class="fund-error" *ngIf="fundError">
-      <i class="fas fa-exclamation-circle"></i> {{ fundError }}
-    </div>
-    <div class="fund-success" *ngIf="fundSuccess">
-      <i class="fas fa-check-circle"></i> {{ fundSuccess }}
-    </div>
+    <section class="form-panel">
+      <div class="section-title">
+        <div class="section-icon soft-violet"><i class="fas fa-wallet"></i></div>
+        <div>
+          <h2>Détails de l’approvisionnement</h2>
+          <p>Saisissez les informations figurant sur le bordereau bancaire.</p>
+        </div>
+      </div>
 
-    <!-- Alerte doublon de référence -->
-    <div class="fund-warning" *ngIf="isDuplicateReference()">
-      <i class="fas fa-triangle-exclamation"></i>
-      Cette référence de bordereau a déjà été utilisée. Un même bordereau ne peut servir qu'à un seul approvisionnement.
-    </div>
+      <div class="balance-strip">
+        <div><span>Solde actuel</span><strong>{{ currentBalance | number:'1.0-0' }} BIF</strong></div>
+        <i class="fas fa-arrow-right"></i>
+        <div class="next"><span>Nouveau solde</span><strong>{{ newBalance | number:'1.0-0' }} BIF</strong></div>
+      </div>
 
-    <!-- Alerte bordereau expiré -->
-    <div class="fund-warning" *ngIf="isReceiptExpired() && !isDuplicateReference()">
-      <i class="fas fa-clock"></i>
-      Ce bordereau date de {{ receiptAgeInDays() }} jour(s), au-delà du délai de validité standard ({{ RECEIPT_MAX_AGE_DAYS }} j). Une vérification renforcée est requise.
-    </div>
-
-    <!-- Info double contrôle -->
-    <div class="fund-info" *ngIf="requiresSecondApproval()">
-      <i class="fas fa-user-shield"></i>
-      Montant supérieur à {{ APPROVAL_THRESHOLD | number:'1.0-0' }} Fbu : cette opération nécessitera la validation d'un second administrateur avant d'être créditée.
-    </div>
-
-    <!-- Formulaire -->
-    <form #fundForm="ngForm" (ngSubmit)="submitFund()" class="fund-form">
-      <div class="form-grid">
-        <!-- Référence du bordereau -->
-        <div class="fund-form-group full-width">
-          <label for="receiptReference">
-            <i class="fas fa-receipt"></i> Référence du bordereau *
-          </label>
-          <input
-            id="receiptReference"
-            type="text"
-            name="receiptReference"
-            [(ngModel)]="fundData.receiptReference"
-            required
-            placeholder="Ex: DEP-2026-07-16-001"
-            class="fund-input"
-            [class.fund-input-error]="isDuplicateReference()"
-          />
-          <small>Numéro de référence figurant sur le bordereau bancaire — doit être unique</small>
+      <form #fundForm="ngForm" (ngSubmit)="continueFunding()" class="fund-form">
+        <div class="form-group full">
+          <label>Numéro de référence du bordereau <em>*</em></label>
+          <div class="input-with-icon">
+            <i class="fas fa-receipt"></i>
+            <input name="receiptReference" [(ngModel)]="form.receiptReference" required placeholder="Ex. BA2402057893" />
+          </div>
         </div>
 
-        <!-- Montant -->
-        <div class="fund-form-group full-width">
-          <label for="amount">
-            <i class="fas fa-coins"></i> Montant à créditer (Fbu) *
-          </label>
-          <input
-            id="amount"
-            type="number"
-            name="amount"
-            [(ngModel)]="fundData.amount"
-            required
-            min="1"
-            step="100"
-            placeholder="0"
-            class="fund-input"
-            (input)="onAmountChange()"
-          />
-          <small>Montant du dépôt en espèces sur le Trust Account</small>
+        <div class="form-group">
+          <label>Montant à approvisionner <em>*</em></label>
+          <div class="input-with-suffix">
+            <input type="number" min="1" name="amount" [(ngModel)]="form.amount" required placeholder="0" />
+            <span>BIF</span>
+          </div>
         </div>
 
-        <!-- Banque -->
-        <div class="fund-form-group">
-          <label for="bank">
-            <i class="fas fa-university"></i> Banque *
-          </label>
-          <select
-            id="bank"
-            name="bank"
-            [(ngModel)]="fundData.bank"
-            required
-            class="fund-input"
-          >
-            <option value="">Sélectionner une banque</option>
-            <option *ngFor="let b of banks" [value]="b.code">{{ b.name }} ({{ b.code }})</option>
+        <div class="form-group">
+          <label>Banque <em>*</em></label>
+          <select name="bank" [(ngModel)]="form.bank" required>
+            <option value="">Sélectionner</option>
+            <option *ngFor="let bank of banks" [value]="bank.code">{{ bank.name }}</option>
           </select>
         </div>
 
-        <!-- Agence -->
-        <div class="fund-form-group">
-          <label for="branch">
-            <i class="fas fa-map-marker-alt"></i> Agence *
-          </label>
-          <input
-            id="branch"
-            type="text"
-            name="branch"
-            [(ngModel)]="fundData.branch"
-            required
-            placeholder="Nom de l'agence"
-            class="fund-input"
-          />
+        <div class="form-group full">
+          <label>Date et heure du versement <em>*</em></label>
+          <input type="datetime-local" name="depositDate" [(ngModel)]="form.depositDate" required />
         </div>
 
-        <!-- Date du dépôt -->
-        <div class="fund-form-group full-width">
-          <label for="depositDate">
-            <i class="fas fa-calendar-alt"></i> Date et heure du dépôt *
-          </label>
-          <input
-            id="depositDate"
-            type="datetime-local"
-            name="depositDate"
-            [(ngModel)]="fundData.depositDate"
-            required
-            class="fund-input"
-          />
+        <div class="form-group full">
+          <label>Note interne</label>
+          <textarea rows="3" name="note" [(ngModel)]="form.note" placeholder="Ajouter une note optionnelle..."></textarea>
         </div>
 
-        <!-- Vérification renforcée (bordereau expiré) -->
-        <div class="fund-form-group full-width" *ngIf="isReceiptExpired()">
-          <div class="fund-checkbox-group fund-checkbox-warning">
-            <label class="fund-checkbox">
-              <input
-                type="checkbox"
-                name="reinforcedVerification"
-                [(ngModel)]="fundData.reinforcedVerification"
-              />
-              <span class="fund-checkbox-label">
-                <i class="fas fa-shield-halved"></i>
-                Je confirme avoir effectué une vérification renforcée (contact direct de la banque) pour ce bordereau ancien
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Validation du Trust Account -->
-        <div class="fund-form-group full-width">
-          <div class="fund-checkbox-group">
-            <label class="fund-checkbox">
-              <input
-                type="checkbox"
-                name="trustAccountVerified"
-                [(ngModel)]="fundData.trustAccountVerified"
-                required
-              />
-              <span class="fund-checkbox-label">
-                <i class="fas fa-check-circle"></i>
-                Je confirme que le dépôt a été vérifié sur le Trust Account et que les informations du bordereau sont conformes
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Note interne -->
-        <div class="fund-form-group full-width">
-          <label for="adminNote">
-            <i class="fas fa-sticky-note"></i> Note interne (optionnelle)
-          </label>
-          <textarea
-            id="adminNote"
-            name="adminNote"
-            [(ngModel)]="fundData.adminNote"
-            rows="3"
-            placeholder="Observations supplémentaires..."
-            class="fund-input fund-textarea"
-          ></textarea>
-        </div>
-      </div>
-
-      <!-- Boutons -->
-      <div class="fund-actions">
-        <button type="button" class="fund-btn-cancel" (click)="resetFundForm()" [disabled]="fundLoading">
-          <i class="fas fa-redo"></i> Réinitialiser
+        <button type="submit" class="continue-btn">
+          Continuer <i class="fas fa-arrow-right"></i>
         </button>
-        <button
-          type="submit"
-          class="fund-btn-confirm"
-          [disabled]="fundLoading || !fundForm.valid || !fundData.trustAccountVerified || isDuplicateReference() || (isReceiptExpired() && !fundData.reinforcedVerification)"
-        >
-          <span *ngIf="!fundLoading && !requiresSecondApproval()">
-            <i class="fas fa-lock"></i> Valider et créditer
-          </span>
-          <span *ngIf="!fundLoading && requiresSecondApproval()">
-            <i class="fas fa-lock"></i> Envoyer pour double validation
-          </span>
-          <span *ngIf="fundLoading" class="fund-btn-loader">
-            <span class="fund-spinner"></span> Traitement...
-          </span>
-        </button>
-      </div>
-    </form>
-
-    <!-- Historique -->
-    <div class="fund-history" *ngIf="fundHistory.length > 0">
-      <div class="fund-history-header">
-        <span><i class="fas fa-history"></i> Historique des approvisionnements</span>
-        <span class="history-count">{{ fundHistory.length }} opérations</span>
-      </div>
-      <div class="fund-history-list">
-        <div class="fund-history-item" *ngFor="let item of fundHistory">
-          <div class="fund-history-info">
-            <div class="fund-history-top">
-              <span class="fund-history-ref">{{ item.receiptReference }}</span>
-              <span class="fund-status-badge" [ngClass]="getFundStatusClass(item.status)">
-                {{ getFundStatusLabel(item.status) }}
-              </span>
-            </div>
-            <span class="fund-history-agent" *ngIf="item.agentName">{{ item.agentName }}</span>
-            <span class="fund-history-date">{{ item.date | date:'dd/MM/yyyy HH:mm' }}</span>
-            <span class="fund-history-audit">
-              Saisi par {{ item.createdBy }}<span *ngIf="item.validatedBy"> · Validé par {{ item.validatedBy }}</span>
-            </span>
-            <span class="fund-history-reject-reason" *ngIf="item.rejectionReason">
-              <i class="fas fa-ban"></i> Motif du rejet : {{ item.rejectionReason }}
-            </span>
-          </div>
-          <div class="fund-history-right">
-            <div class="fund-history-amount">
-              +{{ item.amount | number:'1.0-0' }} Fbu
-            </div>
-            <div class="fund-history-actions" *ngIf="item.status === 'PENDING_APPROVAL'">
-              <button class="fund-btn-mini fund-btn-approve" (click)="approvePending(item)">
-                <i class="fas fa-lock"></i> Valider
-              </button>
-              <button class="fund-btn-mini fund-btn-reject" (click)="openRejectModal(item)">
-                <i class="fas fa-xmark"></i> Rejeter
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </form>
+    </section>
   </div>
 </div>
 
-<!-- MODALE DE REJET -->
-<div class="reject-modal-overlay" *ngIf="showRejectModal" (click)="cancelReject()">
-  <div class="reject-modal" (click)="$event.stopPropagation()">
-    <h3><i class="fas fa-ban"></i> Rejeter l'opération</h3>
-    <p>Merci d'indiquer le motif du rejet. Cette information est conservée dans l'historique d'audit.</p>
-    <textarea
-      class="fund-input fund-textarea"
-      rows="3"
-      [(ngModel)]="rejectionReason"
-      placeholder="Ex : montant incohérent avec le bordereau présenté"
-    ></textarea>
-    <div class="reject-modal-actions">
-      <button class="fund-btn-cancel" (click)="cancelReject()">Annuler</button>
-      <button class="fund-btn-reject-confirm" [disabled]="!rejectionReason.trim()" (click)="confirmReject()">
-        Confirmer le rejet
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODALE CODE PIN -->
-<div class="pin-modal-overlay" *ngIf="showPinModal" (click)="cancelPin()">
-  <div class="pin-modal" (click)="$event.stopPropagation()">
-    <div class="pin-modal-icon"><i class="fas fa-shield-halved"></i></div>
-    <h3>Confirmation requise</h3>
-    <p>Saisissez votre code PIN administrateur pour autoriser cette opération financière.</p>
-
-    <input
-      type="password"
-      inputmode="numeric"
-      pattern="[0-9]*"
-      maxlength="6"
-      class="pin-input"
-      placeholder="• • • •"
-      [(ngModel)]="pinValue"
-      [disabled]="isPinLocked"
-      (keyup.enter)="confirmPin()"
-      autofocus
-    />
-
-    <div class="pin-error" *ngIf="pinError">
-      <i class="fas fa-exclamation-circle"></i> {{ pinError }}
-    </div>
-
-    <div class="pin-modal-actions">
-      <button class="fund-btn-cancel" (click)="cancelPin()">Annuler</button>
-      <button class="fund-btn-confirm" [disabled]="isPinLocked || pinValue.length < 4" (click)="confirmPin()">
-        <i class="fas fa-check"></i> Confirmer
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ÉCRAN DE TRAITEMENT (entre la confirmation du PIN et la carte récapitulative) -->
-<div class="processing-overlay" *ngIf="showProcessingOverlay">
-  <div class="processing-box">
-    <span class="fund-spinner fund-spinner-lg"></span>
-    <p>{{ processingLabel }}</p>
-  </div>
-</div>
-
-<!-- CARTE RÉCAPITULATIVE / REÇU -->
-<div class="summary-modal-overlay" *ngIf="showSummaryModal && summaryData" (click)="closeSummaryCard()">
-  <div class="summary-modal" (click)="$event.stopPropagation()">
-
-    <div class="printable-card">
-      <div class="summary-card-header">
-        <div class="summary-card-logo">IBLOPAY</div>
-        <span class="fund-status-badge" [ngClass]="getFundStatusClass(summaryData.status)">
-          {{ getFundStatusLabel(summaryData.status) }}
-        </span>
-      </div>
-
-      <h3 class="summary-card-title">{{ summaryData.actionLabel }}</h3>
-      <p class="summary-card-txn">Transaction n° {{ summaryData.transactionId }}</p>
-
-      <div class="summary-card-rows">
-        <div class="summary-row">
-          <span class="summary-label">Super Agent</span>
-          <span class="summary-value">{{ summaryData.agentName }} ({{ summaryData.agentCode }})</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Référence bordereau</span>
-          <span class="summary-value">{{ summaryData.receiptReference }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Banque / Agence</span>
-          <span class="summary-value">{{ summaryData.bank }} — {{ summaryData.branch }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Date du dépôt</span>
-          <span class="summary-value">{{ summaryData.depositDate | date:'dd/MM/yyyy HH:mm' }}</span>
-        </div>
-        <div class="summary-row summary-row-amount">
-          <span class="summary-label">Montant</span>
-          <span class="summary-value">{{ summaryData.amount | number:'1.0-0' }} Fbu</span>
-        </div>
-        <div class="summary-row" *ngIf="summaryData.status === 'ACTIVE'">
-          <span class="summary-label">Nouveau solde e-Money</span>
-          <span class="summary-value">{{ summaryData.newBalance | number:'1.0-0' }} Fbu</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Effectué par</span>
-          <span class="summary-value">{{ summaryData.performedBy }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Horodatage</span>
-          <span class="summary-value">{{ summaryData.performedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
-        </div>
-      </div>
-
-      <p class="summary-card-footer">Document généré automatiquement — à conserver pour l'audit interne.</p>
-    </div>
-
-    <div class="summary-modal-actions">
-      <button class="fund-btn-cancel" (click)="closeSummaryCard()">Fermer</button>
-      <button class="fund-btn-print" (click)="printSummaryCard()">
-        <i class="fas fa-print"></i> Imprimer la carte
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- LOADING -->
 <div class="loading-screen" *ngIf="isLoading">
   <div class="spinner"></div>
   <p>Chargement...</p>
+</div>
+
+<div class="modal-overlay" *ngIf="showPinModal" (click)="closePin()">
+  <div class="pin-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closePin()"><i class="fas fa-xmark"></i></button>
+    <div class="pin-icon"><i class="fas fa-lock"></i></div>
+    <h3>Confirmer avec le code PIN</h3>
+    <p>Entrez votre code PIN administrateur pour autoriser l’approvisionnement de <strong>{{ form.amount | number:'1.0-0' }} BIF</strong>.</p>
+
+    <input
+      class="pin-field"
+      type="password"
+      inputmode="numeric"
+      maxlength="6"
+      [(ngModel)]="pinValue"
+      (keyup.enter)="confirmPin()"
+      placeholder="••••"
+      autofocus
+    />
+    <small class="pin-hint">Code de démonstration : 1234</small>
+    <div class="pin-error" *ngIf="pinError"><i class="fas fa-circle-exclamation"></i>{{ pinError }}</div>
+
+    <button class="validate-pin" (click)="confirmPin()" [disabled]="pinValue.length < 4">
+      <i class="fas fa-check"></i> Valider le code PIN
+    </button>
+  </div>
+</div>
+
+<div class="modal-overlay receipt-overlay" *ngIf="showReceipt && receipt">
+  <div class="receipt-modal">
+    <div class="receipt-success"><i class="fas fa-circle-check"></i></div>
+    <h3>Approvisionnement prêt à être confirmé</h3>
+    <p class="receipt-subtitle">Vérifiez le reçu avant de confirmer définitivement l’opération.</p>
+
+    <div class="receipt-card printable-receipt">
+      <div class="receipt-head">
+        <div class="brand"><span class="brand-symbol">I</span><strong>IBLOPAY</strong></div>
+        <div class="receipt-title"><strong>REÇU D’APPROVISIONNEMENT</strong><span>N° {{ receipt.transactionId }}</span></div>
+      </div>
+      <div class="receipt-line"></div>
+      <div class="receipt-row"><span>Super Agent</span><strong>{{ receipt.agentName }} ({{ receipt.agentCode }})</strong></div>
+      <div class="receipt-row"><span>Référence bordereau</span><strong>{{ receipt.reference }}</strong></div>
+      <div class="receipt-row"><span>Banque</span><strong>{{ receipt.bank }}</strong></div>
+      <div class="receipt-row amount"><span>Montant</span><strong>{{ receipt.amount | number:'1.0-0' }} BIF</strong></div>
+      <div class="receipt-row"><span>Ancien solde</span><strong>{{ receipt.previousBalance | number:'1.0-0' }} BIF</strong></div>
+      <div class="receipt-row"><span>Nouveau solde</span><strong>{{ receipt.newBalance | number:'1.0-0' }} BIF</strong></div>
+      <div class="receipt-row"><span>Date / Heure</span><strong>{{ receipt.date | date:'dd/MM/yyyy HH:mm' }}</strong></div>
+      <div class="receipt-row"><span>Initié par</span><strong>{{ receipt.createdBy }}</strong></div>
+      <div class="receipt-status"><i class="fas fa-shield-check"></i> PIN vérifié</div>
+      <div class="receipt-footer">Document généré par IBLOPAY. À conserver pour le suivi et l’audit interne.</div>
+    </div>
+
+    <div class="receipt-actions">
+      <button class="icon-print-btn" (click)="printReceipt()" title="Imprimer"><i class="fas fa-print"></i><span>Imprimer</span></button>
+      <button class="confirm-funding-btn" (click)="confirmFunding()" [disabled]="isSubmitting">
+        <i class="fas fa-check"></i>
+        <span *ngIf="!isSubmitting">Confirmer l’approvisionnement</span>
+        <span *ngIf="isSubmitting">Confirmation...</span>
+      </button>
+    </div>
+  </div>
 </div>

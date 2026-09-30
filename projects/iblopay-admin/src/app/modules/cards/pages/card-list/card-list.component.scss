@@ -1,59 +1,92 @@
-.card-list-page {
-  padding: 24px 32px;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-
-    h1 {
-      font-size: 22px;
-      font-weight: 600;
-      margin: 0;
-    }
-  }
+// La page pose elle-même son fond clair : elle ne dépend plus du fond
+// (sombre) du conteneur parent.
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: 24px 28px 32px;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: #172554;
+  color-scheme: light;
+  background: linear-gradient(180deg, #f8fbff 0%, #f2f7fc 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.status-filter {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #d7dae0;
-  background: #fff;
-  font-size: 14px;
+* {
+  box-sizing: border-box;
 }
 
-.state-message {
-  color: #6f737c;
-  padding: 40px 0;
+.cards-page {
+  width: 100%;
+}
+
+.state-card {
+  min-height: 220px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   text-align: center;
+  color: #4a5b80;
+  background: #fff;
+  border: 1px solid #e3ebf7;
+  border-radius: 16px;
+  box-shadow: 0 5px 22px rgba(27, 67, 125, .05);
 
-  &--error {
-    color: #e14b4b;
+  strong {
+    color: #13235b;
+    font-size: 14px;
+  }
+
+  span {
+    font-size: 12px;
   }
 
   button {
-    margin-left: 12px;
-    border: none;
-    background: #1c1e26;
+    margin-top: 6px;
+    padding: 9px 18px;
+    border: 0;
+    border-radius: 9px;
     color: #fff;
-    padding: 6px 14px;
-    border-radius: 6px;
+    background: #116be8;
+    font-size: 12px;
+    font-weight: 700;
     cursor: pointer;
+
+    &:hover {
+      background: #0d57bd;
+    }
   }
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+.state-card--error {
+  border-color: #f8e1e3;
+  background: #fff9f9;
 
-  &__item {
-    cursor: pointer;
-    transition: transform 0.15s ease;
+  strong {
+    color: #e3313f;
+  }
+}
 
-    &:hover {
-      transform: translateY(-2px);
-    }
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #dbe8fb;
+  border-top-color: #116be8;
+  border-radius: 50%;
+  animation: cards-spin .8s linear infinite;
+}
+
+@keyframes cards-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 620px) {
+  :host {
+    padding: 16px 10px 24px;
   }
 }

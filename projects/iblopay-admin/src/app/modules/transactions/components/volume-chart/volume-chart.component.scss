@@ -1,8 +1,6 @@
-/* ==========================================================
-   VARIABLES DE THÈME POUR LES GRAPHIQUES
-   ========================================================== */
+
 :root {
-  /* Mode Lumière (Light) */
+
   --chart-surface: rgba(255, 255, 255, 0.75);
   --chart-surface-hover: rgba(255, 255, 255, 0.95);
   --chart-border: var(--border-light, rgba(0, 0, 0, 0.08));
@@ -10,7 +8,7 @@
   --chart-label: #9ca3af;
   --chart-shadow: rgba(0, 0, 0, 0.06);
 
-  /* Tab styles */
+
   --tab-bg: #ffffff;
   --tab-color: #6b7280;
   --tab-border: #e5e7eb;
@@ -21,7 +19,7 @@
 
 [data-theme='dark'],
 body.dark-theme {
-  /* Mode Sombre (Dark) */
+
   --chart-surface: rgba(18, 26, 47, 0.65);
   --chart-surface-hover: rgba(26, 37, 66, 0.85);
   --chart-border: var(--border-light, rgba(255, 255, 255, 0.12));
@@ -29,7 +27,7 @@ body.dark-theme {
   --chart-label: var(--text-dim, rgba(255, 255, 255, 0.5));
   --chart-shadow: rgba(0, 0, 0, 0.35);
 
-  /* Tab styles */
+
   --tab-bg: rgba(255, 255, 255, 0.05);
   --tab-color: var(--text-dim, rgba(255, 255, 255, 0.6));
   --tab-border: rgba(255, 255, 255, 0.12);
@@ -39,9 +37,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   CARTE CONTENEUR (.chart-card)
-   ========================================================== */
+
 .chart-card {
   background: var(--chart-surface);
   backdrop-filter: blur(12px);
@@ -81,9 +77,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   ONGLETS / TABS (.chart-tab)
-   ========================================================== */
+
 .chart-tab {
   padding: 4px 10px;
   border: 1px solid var(--tab-border);
@@ -113,9 +107,7 @@ body.dark-theme {
 }
 
 
-/* ==========================================================
-   GRAPHIQUE À BARRES (.bar-chart)
-   ========================================================== */
+
 .bar-chart {
   display: flex;
   align-items: flex-end;
@@ -135,7 +127,7 @@ body.dark-theme {
     max-width: 24px;
     min-height: 2px;
     border-radius: 3px 3px 0 0;
-    /* Couleur par défaut avec repli dynamique, personnalisable via style inline dans Angular */
+
     background: var(--bar-color, var(--sun, #3b82f6));
     transition: height 0.3s ease, filter 0.2s ease, transform 0.2s ease;
     cursor: pointer;

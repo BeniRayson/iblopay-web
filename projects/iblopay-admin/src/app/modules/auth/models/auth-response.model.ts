@@ -1,4 +1,3 @@
-// src/app/modules/auth/models/auth-response.model.ts
 import { User } from './user.model';
 import { TokenPair } from './token.model';
 
@@ -16,7 +15,7 @@ export interface OtpResponse {
   message: string;
   data?: {
     otp_sent: boolean;
-    expires_in: number;  // seconds
+    expires_in: number;
     phone_number: string;
   };
 }

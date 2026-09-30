@@ -15,7 +15,7 @@
         <span>{{ notificationMessage }}</span>
     </div>
 
-    <!-- Bouton Retour -->
+
     <button class="back-btn" (click)="goBack()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -24,13 +24,13 @@
         Retour aux catégories
     </button>
 
-    <!-- Loading -->
+
     <div *ngIf="loading" class="loading">
         <div class="loader-spinner"></div>
         <span>Chargement...</span>
     </div>
 
-    <!-- Not Found -->
+
     <div *ngIf="!loading && notFound" class="not-found">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
             stroke-linecap="round" stroke-linejoin="round">
@@ -41,9 +41,9 @@
         <span>Catégorie introuvable</span>
     </div>
 
-    <!-- Détail -->
+
     <div *ngIf="!loading && category" class="detail-container">
-        <!-- Carte d'information -->
+
         <div class="detail-card">
             <div class="detail-header">
                 <div class="detail-title">
@@ -95,7 +95,7 @@
             </div>
         </div>
 
-        <!-- Tabs Navigation -->
+
         <div class="tabs-nav">
             <button class="tab-btn" [class.active]="activeTab === 'frais'" (click)="activeTab = 'frais'">
                 Frais ({{ (category.frais || []).length }})
@@ -105,7 +105,7 @@
             </button>
         </div>
 
-        <!-- Tab: Frais -->
+
         <div *ngIf="activeTab === 'frais'" class="tab-content">
             <div class="module-header">
                 <h3>Liste des frais</h3>
@@ -199,7 +199,7 @@
             </div>
         </div>
 
-        <!-- Tab: Documents Requis -->
+
         <div *ngIf="activeTab === 'documents'" class="tab-content">
             <div class="module-header">
                 <h3>Documents requis</h3>
@@ -288,7 +288,7 @@
         </div>
     </div>
 
-    <!-- Modale : Ajouter / Modifier un frais -->
+
     <div class="modal-overlay" *ngIf="fraisModalOpen" (click)="closeFraisModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header">
@@ -364,7 +364,7 @@
         </div>
     </div>
 
-    <!-- Modale : Ajouter / Modifier un document requis -->
+
     <div class="modal-overlay" *ngIf="documentModalOpen" (click)="closeDocumentModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header">

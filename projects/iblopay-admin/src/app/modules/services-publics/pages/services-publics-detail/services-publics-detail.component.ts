@@ -8,6 +8,7 @@ import {
     PaiementRNF
 } from '../../models/service-public.model';
 import { ServicesPublicsService } from '../../services/services-publics.service';
+import { getServiceColor, getServiceInitials } from '../../utils/service-display.util';
 
 export interface Activite {
     id: number;
@@ -44,12 +45,8 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
     loading = false;
     notFound = false;
 
-    // Module actif
     activeModule: string = 'apercu';
 
-    // ============================================================
-    // PAGINATION
-    // ============================================================
     usersCurrentPage: number = 1;
     usersItemsPerPage: number = 10;
     usersTotalPages: number = 0;
@@ -74,32 +71,22 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
     activitiesItemsPerPage: number = 12;
     activityTypeFilter: string = '';
 
-    // ============================================================
-    // ACTIVITÉS EN TEMPS RÉEL
-    // ============================================================
     allActivities: Activite[] = [];
     private activityInterval: any;
     private activityCounter: number = 0;
 
-    // ============================================================
-    // EXPORT
-    // ============================================================
     exportLoading: boolean = false;
 
-    // Notification
     showNotification: boolean = false;
     notificationMessage: string = '';
     notificationType: 'success' | 'error' | 'info' = 'success';
 
-    // Fiche Type RNF (aperçu rapide)
     viewingTypeRNF: TypeRNF | null = null;
 
-    // Fiche Demande (aperçu rapide)
     viewingDemande: DemandeEnAttente | null = null;
 
     readonly Math = Math;
 
-    // Types pour getRandomItem
     private activityTypes: ('paiement' | 'utilisateur' | 'categorie' | 'type-rnf')[] =
         ['paiement', 'utilisateur', 'categorie', 'type-rnf'];
 
@@ -134,9 +121,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         this.stopActivityRealtime();
     }
 
-    // ============================================================
-    // INITIALISATION
-    // ============================================================
 
     initPagination(): void {
         this.usersTotalPages = Math.ceil((this.service?.utilisateurs?.length || 0) / this.usersItemsPerPage);
@@ -155,9 +139,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         if (this.demandesTotalPages === 0) this.demandesTotalPages = 1;
     }
 
-    // ============================================================
-    // ACTIVITÉS EN TEMPS RÉEL
-    // ============================================================
 
     initActivities(): void {
         this.allActivities = this.generateInitialActivities();
@@ -244,9 +225,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return this.allActivities.length;
     }
 
-    // ============================================================
-    // ONGLET "TOUTES LES ACTIVITÉS"
-    // ============================================================
 
     get filteredActivities(): Activite[] {
         if (!this.activityTypeFilter) return this.allActivities;
@@ -297,9 +275,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return labels[type] || type;
     }
 
-    // ============================================================
-    // MODULES - NAVIGATION
-    // ============================================================
 
     switchModule(module: string): void {
         this.activeModule = module;
@@ -314,9 +289,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
             (this.service.paiements?.length || 0);
     }
 
-    // ============================================================
-    // GETTERS PAGINATION
-    // ============================================================
 
     get paginatedUtilisateurs(): Utilisateur[] {
         if (!this.service?.utilisateurs) return [];
@@ -348,9 +320,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return this.service.demandesEnAttente.slice(start, start + this.demandesItemsPerPage);
     }
 
-    // ============================================================
-    // MÉTHODES DE PAGINATION - UTILISATEURS
-    // ============================================================
 
     changeUsersPage(page: number): void {
         if (page < 1 || page > this.usersTotalPages) return;
@@ -371,9 +340,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return pages;
     }
 
-    // ============================================================
-    // MÉTHODES DE PAGINATION - CATÉGORIES
-    // ============================================================
 
     changeCategoriesPage(page: number): void {
         if (page < 1 || page > this.categoriesTotalPages) return;
@@ -394,9 +360,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return pages;
     }
 
-    // ============================================================
-    // MÉTHODES DE PAGINATION - TYPES RNF
-    // ============================================================
 
     changeTypesRNFPage(page: number): void {
         if (page < 1 || page > this.typesRNFTotalsPages) return;
@@ -417,9 +380,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return pages;
     }
 
-    // ============================================================
-    // MÉTHODES DE PAGINATION - PAIEMENTS
-    // ============================================================
 
     changePaiementsPage(page: number): void {
         if (page < 1 || page > this.paiementsTotalPages) return;
@@ -440,9 +400,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return pages;
     }
 
-    // ============================================================
-    // MÉTHODES DE PAGINATION - DEMANDES
-    // ============================================================
 
     changeDemandesPage(page: number): void {
         if (page < 1 || page > this.demandesTotalPages) return;
@@ -463,9 +420,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return pages;
     }
 
-    // ============================================================
-    // STATISTIQUES DES DEMANDES
-    // ============================================================
 
     getDemandesParPriorite(priorite: string): number {
         if (!this.service?.demandesEnAttente) return 0;
@@ -477,17 +431,11 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return this.service.demandesEnAttente.filter((d: DemandeEnAttente) => d.statut === statut).length;
     }
 
-    // ============================================================
-    // NAVIGATION
-    // ============================================================
 
     goBack(): void {
         this.router.navigate(['../'], { relativeTo: this.route });
     }
 
-    // ============================================================
-    // ACTIONS SERVICE
-    // ============================================================
 
     onEdit(): void {
         if (this.service) {
@@ -519,9 +467,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         });
     }
 
-    // ============================================================
-    // ACTIONS UTILISATEURS
-    // ============================================================
 
     onAddUtilisateur(): void {
         if (this.service) {
@@ -555,9 +500,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         }
     }
 
-    // ============================================================
-    // ACTIONS CATÉGORIES
-    // ============================================================
 
     onAddCategory(): void {
         if (this.service) {
@@ -591,9 +533,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return colors[Math.abs(hash) % colors.length] || '#16293a';
     }
 
-    // ============================================================
-    // ACTIONS TYPES RNF
-    // ============================================================
 
     onAddTypeRNF(): void {
         if (this.service) {
@@ -620,9 +559,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         this.addActivity('system', `Type RNF "${type.libelle}" ${type.actif ? 'activé' : 'désactivé'}`);
     }
 
-    // ============================================================
-    // ACTIONS PAIEMENTS
-    // ============================================================
 
     onAddPaiement(): void {
         if (this.service) {
@@ -649,9 +585,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         return this.service.paiements.reduce((sum, p) => sum + (p.montant || 0), 0);
     }
 
-    // ============================================================
-    // ACTIONS DEMANDES
-    // ============================================================
 
     onViewDemande(demande: DemandeEnAttente): void {
         this.viewingDemande = demande;
@@ -680,9 +613,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         }
     }
 
-    // ============================================================
-    // EXPORT
-    // ============================================================
 
     exportUsers(): void {
         this.exportData('UTILISATEURS', 'export_utilisateurs');
@@ -722,9 +652,6 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         }, 1500);
     }
 
-    // ============================================================
-    // GESTION DES ACTIVITÉS
-    // ============================================================
 
     private addActivity(user: string, action: string): void {
         const newActivity: Activite = {
@@ -740,22 +667,15 @@ export class ServicesPublicsDetailComponent implements OnInit, OnDestroy {
         }
     }
 
-    // ============================================================
-    // UTILITAIRES
-    // ============================================================
 
+    /** Couleur d'avatar — même palette que la liste. */
     getServiceColor(abreviation: string): string {
-        if (!abreviation) return '#16293a';
-        const colors: string[] = [
-            '#16293a', '#a9803d', '#386a4e', '#9c4033',
-            '#2c5b76', '#6b4d2e', '#5c6b3f', '#7c5a2e',
-            '#46586a', '#85661f', '#2f4f5e', '#734531'
-        ];
-        let hash = 0;
-        for (let i = 0; i < abreviation.length; i++) {
-            hash = abreviation.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return colors[Math.abs(hash) % colors.length] || '#16293a';
+        return getServiceColor(abreviation);
+    }
+
+    /** Initiales d'avatar — identiques à la liste. */
+    getServiceInitials(abreviation: string): string {
+        return getServiceInitials(abreviation);
     }
 
     closeNotification(): void {

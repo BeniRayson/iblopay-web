@@ -12,19 +12,15 @@ export class ExportService {
 
   constructor() { }
 
-  /**
-   * Exporte les données en CSV et télécharge le fichier
-   */
+
   exportToCsv(data: any[], columns: ExportColumn[], filename: string = 'export'): void {
     if (!data || data.length === 0) {
       console.warn('Aucune donnée à exporter');
       return;
     }
 
-    // En-têtes CSV
     const headers = columns.map(col => this.escapeCsvValue(col.title)).join(';');
 
-    // Lignes de données
     const rows = data.map(item => {
       return columns.map(col => {
         const value = this.getNestedValue(item, col.dataKey);
@@ -45,10 +41,7 @@ export class ExportService {
     URL.revokeObjectURL(url);
   }
 
-  /**
-   * Exporte les données en PDF en utilisant l'impression navigateur
-   * avec un formatage tableau
-   */
+
   exportToPdf(data: any[], columns: ExportColumn[], title: string = 'Export', filename: string = 'export'): void {
     if (!data || data.length === 0) {
       console.warn('Aucune donnée à exporter');
@@ -99,7 +92,6 @@ export class ExportService {
     const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
 
-    // Ouvrir dans une nouvelle fenêtre pour impression
     const printWindow = window.open(url, '_blank');
     if (printWindow) {
       printWindow.onload = () => {
@@ -111,9 +103,7 @@ export class ExportService {
     URL.revokeObjectURL(url);
   }
 
-  /**
-   * Récupère une valeur imbriquée par une clé (ex: "adresse.rue")
-   */
+
   private getNestedValue(obj: any, key: string): any {
     if (!obj) return '';
     return key.split('.').reduce((current, k) => {
@@ -121,9 +111,7 @@ export class ExportService {
     }, obj);
   }
 
-  /**
-   * Échappe une valeur pour le CSV
-   */
+
   private escapeCsvValue(value: any): string {
     const str = String(value ?? '');
     if (str.includes(';') || str.includes('"') || str.includes('\n')) {
@@ -132,9 +120,7 @@ export class ExportService {
     return str;
   }
 
-  /**
-   * Formate une valeur pour l'affichage
-   */
+
   private formatValue(value: any): string {
     if (value === null || value === undefined) return '';
 
@@ -153,9 +139,7 @@ export class ExportService {
     return String(value);
   }
 
-  /**
-   * Génère les colonnes à partir d'un mapping
-   */
+
   static createColumns(mapping: { title: string; key: string }[]): ExportColumn[] {
     return mapping.map(m => ({ title: m.title, dataKey: m.key }));
   }
